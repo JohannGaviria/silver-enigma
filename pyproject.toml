@@ -60,7 +60,7 @@ exclude = [
     ".git",
     ".venv",
     "__pycache__",
-    "migrations",
+    "alembic",
     "build",
     "dist"
 ]
@@ -94,7 +94,7 @@ convention = "google"
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["D104"]
 "tests/*" = ["D100", "D101", "D102", "D103", "D104", "D105", "D106"]
-"migrations/*" = ["D100", "D101", "D102", "D103", "D104"]
+"alembic/*" = ["D100", "D101", "D102", "D103", "D104"]
 
 [tool.ruff.format]
 quote-style = "double"
