@@ -43,7 +43,8 @@ def get_settings() -> Settings:
     Returns:
         Settings: The application settings instance.
     """
-    return Settings()
+    settings = Settings()  # type: ignore[call-arg]
+    return settings
 
 
 settings = get_settings()
