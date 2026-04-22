@@ -116,6 +116,8 @@ cp .env.example .env
 | Backend Configuration      | ENVIRONMENT                  | Environment                       | development                                                         |
 | Backend Configuration      | BACKEND_PORT                 | Backend port                      | 8000                                                                |
 | Backend Configuration      | BACKEND_WORKERS              | Backend workers                   | 4                                                                   |
+| Backend Configuration      | CORS_ALLOW_ORIGINS           | Allowed frontend origins          | https://app.midominio.com,https://admin.midominio.com               |
+| Backend Configuration      | CORS_ALLOW_CREDENTIALS       | Allow cookies/auth credentials    | True                                                                |
 | Database Configuration     | DATABASE_URL                 | Database URL                      | postgresql+psycopg2://postgres:password@postgres:5432/silver_enigma |
 | Database Configuration     | DB_PORT                      | Database port                     | 5432                                                                |
 | Database Configuration     | POSTGRES_USER                | PostgreSQL user                   | postgres                                                            |

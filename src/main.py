@@ -1,6 +1,7 @@
 """This module contains the main application code for the FastAPI application."""
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.config import settings
@@ -19,6 +20,21 @@ app = FastAPI(
 
 # Configure logging using Structlog
 StructlogConfigureLogging.configure(debug=settings.DEBUG)
+
+
+allow_origins = [
+    origin.strip()
+    for origin in settings.CORS_ALLOW_ORIGINS.split(",")
+    if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allow_origins,
+    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get(
