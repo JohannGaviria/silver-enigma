@@ -3,6 +3,9 @@
 from fastapi import FastAPI
 
 from src.config import settings
+from src.shared.infrastructure.logging.structlog_configure_logging import (
+    StructlogConfigureLogging,
+)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -10,6 +13,9 @@ app = FastAPI(
     description=settings.APP_DESCRIPTION,
     debug=settings.DEBUG,
 )
+
+# Configure logging using Structlog
+StructlogConfigureLogging.configure(debug=settings.DEBUG)
 
 
 @app.get(
