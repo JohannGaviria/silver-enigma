@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     BACKEND_PORT: int = Field(..., validation_alias="BACKEND_PORT")
     BACKEND_WORKERS: int = Field(..., validation_alias="BACKEND_WORKERS")
     CORS_ALLOW_ORIGINS: str = Field(..., validation_alias="CORS_ALLOW_ORIGINS")
-    CORS_ALLOW_CREDENTIALS: str = Field(..., validation_alias="CORS_ALLOW_CREDENTIALS")
+    CORS_ALLOW_CREDENTIALS: bool = Field(..., validation_alias="CORS_ALLOW_CREDENTIALS")
 
     # Database configuration
     DATABASE_URL: str = Field(..., validation_alias="DATABASE_URL")
