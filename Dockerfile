@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y \
     vim \
     && rm -rf /var/lib/apt/lists/*
 
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 WORKDIR /app
 
 RUN pip install --no-cache-dir poetry
@@ -23,8 +25,6 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-root --no-interaction --no-ansi
 
 COPY . .
-
-RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 RUN chown -R appuser:appuser /app
 
