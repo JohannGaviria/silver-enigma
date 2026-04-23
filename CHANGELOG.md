@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/JohannGaviria/silver-enigma/compare/v1.0.0...v1.1.0) (2026-04-23)
+
+
+### Features
+
+* **shared:** dd domain layer base classes and enable CORS support ([609d017](https://github.com/JohannGaviria/silver-enigma/commit/609d017dcd37d7069c603f2de8025099cc98e45d))
+
 # 1.0.0 (2026-04-22)
 
 
