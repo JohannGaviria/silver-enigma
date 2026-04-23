@@ -8,6 +8,10 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 
+echo ${GREEN} "Applying migrations..." ${NC}
+alembic upgrade head
+
+
 echo ${GREEN} "Starting application in $ENVIRONMENT mode..." ${NC}
 echo ${GREEN} "Host: 0.0.0.0, Port: $BACKEND_PORT" ${NC}
 
