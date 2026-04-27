@@ -47,7 +47,7 @@ class InvalidPasswordHashException(BaseDomainException):
         super().__init__("Invalid password hash.")
 
 
-class InvalidPasswordException(BaseDomainException):
+class InvalidPlainPasswordException(BaseDomainException):
     """Exception raised when a plain password does not meet the defined validation criteria."""
 
     def __init__(self, errors: list[str]) -> None:
@@ -57,4 +57,4 @@ class InvalidPasswordException(BaseDomainException):
             errors (list[str]): A list of error messages describing the validation failures.
         """
         self.errors = errors
-        super().__init__("Invalid password provided.")
+        super().__init__("Invalid plain password provided.")

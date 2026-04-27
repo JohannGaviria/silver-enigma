@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass
 
-from src.modules.auth.domain.exceptions.auth_exception import InvalidPasswordException
+from src.modules.auth.domain.exceptions.auth_exception import (
+    InvalidPlainPasswordException,
+)
 from src.shared.domain.value_objects.base_value_object import BaseValueObject
 
 
@@ -32,12 +34,12 @@ class PlainPasswordVO(BaseValueObject):
         - At least one special character from the set `!@#$%^&*()-_=+[]{}|;:,.<>?/\\`
 
         Raises:
-            InvalidPasswordException: If the plain password does not meet the validation criteria.
+            InvalidPlainPasswordException: If the plain password does not meet the validation criteria.
         """
         errors = []
         SPECIAL_CHARS = "!@#$%^&*()-_=+[]{}|;:,.<>?/\\"
-        if self.plain_password is None:
-            raise InvalidPasswordException("Password cannot be None.")
+        if self.plain_password is None or not self.plain_password.strip():
+            errors.append("Password cannot be None.")
         if len(self.plain_password) < 8:
             errors.append("Password must be at least 8 characters long.")
         if not any(c.isupper() for c in self.plain_password):
@@ -50,7 +52,7 @@ class PlainPasswordVO(BaseValueObject):
             errors.append("Password must contain at least one special character.")
 
         if errors:
-            raise InvalidPasswordException(errors)
+            raise InvalidPlainPasswordException(errors)
 
     def __str__(self) -> str:
         """Returns the plain password as a string.

@@ -6,7 +6,7 @@ from datetime import datetime
 from uuid import UUID
 
 
-@dataclass
+@dataclass(frozen=True)
 class BaseEntity(ABC):
     """BaseEntity is a base class for entities in the domain layer.
 

@@ -41,7 +41,7 @@ class EmailVO(BaseValueObject):
         EMAIL_PATTERN = (
             r"^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,6}$"
         )
-        if self.email is None or self.email.strip() == "":
+        if self.email is None or not self.email.strip():
             errors.append("Email cannot be empty.")
         if any(w in self.email for w in (" ", "\t", "\n")):
             errors.append("Email cannot contain whitespace characters.")

@@ -34,7 +34,7 @@ class NameVO(BaseValueObject):
             InvalidNameException: If the name does not meet the validation criteria.
         """
         errors = []
-        if self.name is None or self.name.strip() == "":
+        if self.name is None or not self.name.strip():
             errors.append("Name cannot be empty.")
         if len(self.name) > 255:
             errors.append("Name cannot exceed 255 characters.")

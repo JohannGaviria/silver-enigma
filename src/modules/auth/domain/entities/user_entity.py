@@ -11,7 +11,7 @@ from src.modules.auth.domain.value_objects.password_hash_vo import PasswordHashV
 from src.shared.domain.entities.base_entity import BaseEntity
 
 
-@dataclass
+@dataclass(frozen=True)
 class UserEntity(BaseEntity):
     """Entity representing a user in the authentication domain.
 

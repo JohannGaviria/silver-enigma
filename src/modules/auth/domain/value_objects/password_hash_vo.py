@@ -20,7 +20,7 @@ class PasswordHashVO(BaseValueObject):
         Raises:
             InvalidPasswordHashException: If the password hash is None.
         """
-        if self.password_hash is None:
+        if self.password_hash is None or not self.password_hash.strip():
             raise InvalidPasswordHashException("Password hash cannot be None.")
 
     def __str__(self) -> str:
