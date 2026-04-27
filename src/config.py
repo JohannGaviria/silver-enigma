@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     # Database configuration
     DATABASE_URL: str = Field(..., validation_alias="DATABASE_URL")
+    DATABASE_URL_ALEMBIC: str = Field(..., validation_alias="DATABASE_URL_ALEMBIC")
     DB_PORT: int = Field(..., validation_alias="DB_PORT")
     POSTGRES_USER: str = Field(..., validation_alias="POSTGRES_USER")
     POSTGRES_DB: str = Field(..., validation_alias="POSTGRES_DB")

@@ -1,6 +1,6 @@
 """This module contains the main application code for the FastAPI application."""
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -67,24 +67,19 @@ async def health_check() -> JSONResponse:
     Returns:
         dict: A dictionary containing the health status of the services.
     """
-    db_status = DatabaseEngine.health_check()
+    db_status = await DatabaseEngine.health_check()
     redis_status = RedisConnection.health_check()
 
-    if db_status and redis_status:
-        return JSONResponse(
-            content={
-                "status": "healthy",
-                "database": db_status,
-                "redis": redis_status,
-            },
-            status_code=status.HTTP_200_OK,
-        )
+    payload = {
+        "status": "healthy" if db_status and redis_status else "unhealthy",
+        "database": db_status,
+        "redis": redis_status,
+    }
 
-    raise HTTPException(
-        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-        detail={
-            "status": "unhealthy",
-            "database": db_status,
-            "redis": redis_status,
-        },
+    status_code = (
+        status.HTTP_200_OK
+        if db_status and redis_status
+        else status.HTTP_503_SERVICE_UNAVAILABLE
     )
+
+    return JSONResponse(content=payload, status_code=status_code)
