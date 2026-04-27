@@ -3,10 +3,14 @@
 from threading import Lock
 
 import structlog
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from src.config import settings
 
@@ -14,29 +18,24 @@ logger = structlog.get_logger(__name__)
 
 
 class DatabaseEngine:
-    """Manages SQLAlchemy engine and session factory lifecycle."""
+    """Manages SQLAlchemy async engine and session factory lifecycle."""
 
-    _engine = None
-    _session_factory: sessionmaker | None = None
+    _engine: AsyncEngine | None = None
+    _session_factory: async_sessionmaker[AsyncSession] | None = None
     _lock = Lock()
 
     @classmethod
-    def get_engine(cls) -> Engine:
-        """Get or create the SQLAlchemy engine.
-
-        Uses double-checked locking to ensure thread-safe lazy initialization.
-
-        Returns:
-            Engine: A SQLAlchemy engine instance.
-        """
+    def get_engine(cls) -> AsyncEngine:
+        """Get or create async SQLAlchemy engine."""
         if cls._engine is None:
             with cls._lock:
-                if cls._engine is None:  # double-check locking
+                if cls._engine is None:
                     logger.info(
-                        event="db_engine_create",
+                        event="Creating async database engine.",
                         url=settings.DATABASE_URL,
                     )
-                    cls._engine = create_engine(
+
+                    cls._engine = create_async_engine(
                         settings.DATABASE_URL,
                         echo=False,
                         pool_pre_ping=True,
@@ -45,62 +44,53 @@ class DatabaseEngine:
                         pool_timeout=30,
                         pool_recycle=1800,
                     )
+
         return cls._engine
 
     @classmethod
-    def get_session_factory(cls) -> sessionmaker:
-        """Get or create the SQLAlchemy session factory.
-
-        Uses double-checked locking to ensure thread-safe lazy initialization.
-
-        Returns:
-            sessionmaker: A SQLAlchemy session factory bound to the engine.
-        """
+    def get_session_factory(cls) -> async_sessionmaker[AsyncSession]:
+        """Get or create async session factory."""
         if cls._session_factory is None:
             with cls._lock:
                 if cls._session_factory is None:
-                    logger.debug(event="db_session_factory_create")
-                    cls._session_factory = sessionmaker(
+                    logger.debug(event="Creating async session factory.")
+
+                    cls._session_factory = async_sessionmaker(
                         bind=cls.get_engine(),
-                        autocommit=False,
+                        class_=AsyncSession,
                         autoflush=False,
                         expire_on_commit=False,
                     )
+
         return cls._session_factory
 
     @classmethod
-    def create_session(cls) -> Session:
-        """Create a new database session."""
+    def create_session(cls) -> AsyncSession:
+        """Create a new async database session."""
         return cls.get_session_factory()()
 
     @classmethod
-    def health_check(cls) -> bool:
-        """Perform a health check by executing a simple query against the database.
-
-        Returns:
-            bool: True if the database is healthy, False otherwise.
-        """
+    async def health_check(cls) -> bool:
+        """Perform async health check."""
         try:
-            with cls.get_engine().connect() as conn:
-                conn.execute(text("SELECT 1"))
-            logger.debug(event="db_health_ok")
+            async with cls.get_engine().connect() as conn:
+                await conn.execute(text("SELECT 1"))
+
+            logger.debug(event="Database health check passed.")
             return True
+
         except SQLAlchemyError as exc:
-            logger.error(event="db_health_fail", error=str(exc))
-            cls.dispose()
+            logger.error(event="Database health check failed.", error=str(exc))
+            await cls.dispose()
             return False
 
     @classmethod
-    def dispose(cls) -> None:
-        """Dispose engine and reset state.
-
-        Discard the motor if the status check fails to ensure that any
-        obsolete or broken connections are closed and a new motor is
-        created on the next attempt.
-        """
+    async def dispose(cls) -> None:
+        """Dispose engine and reset state."""
         with cls._lock:
             if cls._engine:
-                logger.info(event="db_engine_dispose")
-                cls._engine.dispose()
+                logger.info(event="Disposing database engine.")
+                await cls._engine.dispose()
+
             cls._engine = None
             cls._session_factory = None
