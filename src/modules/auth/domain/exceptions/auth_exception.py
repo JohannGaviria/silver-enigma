@@ -58,3 +58,11 @@ class InvalidPlainPasswordException(BaseDomainException):
         """
         self.errors = errors
         super().__init__("Invalid plain password provided.")
+
+
+class AdminAlreadyExistsException(BaseDomainException):
+    """Exception raised when an attempt is made to create an admin user but one already exists."""
+
+    def __init__(self) -> None:
+        """Initializes the AdminAlreadyExistsException."""
+        super().__init__("An admin user already exists.")
