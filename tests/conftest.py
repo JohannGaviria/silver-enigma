@@ -13,14 +13,10 @@ from sqlalchemy.ext.asyncio import (
 from src.modules.auth.infrastructure.persistence.repositories.sqlalchemy_user_repository_adapter import (
     SQLAlchemyUserRepositoryAdapter,
 )
+from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapter import (
+    StructlogLoggerFactoryOutboundAdapter,
+)
 from src.shared.infrastructure.persistence.base_model import Base
-
-
-@pytest.fixture
-def faker() -> Faker:
-    """Fixture that provides a Faker instance."""
-    return Faker()
-
 
 TEST_DATABASE_URL = (
     "postgresql+asyncpg://test-postgres:password@localhost:5433/test_silver_enigma"
@@ -71,6 +67,17 @@ async def db_session(engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
         await transaction.rollback()
 
 
+@pytest.fixture
+def faker() -> Faker:
+    """Fixture that provides a Faker instance."""
+    return Faker()
+
+
+@pytest.fixture
+def logger_factory_outbound() -> StructlogLoggerFactoryOutboundAdapter:
+    return StructlogLoggerFactoryOutboundAdapter()
+
+
 # ===============================
 # Modules: AUTH
 # ===============================
@@ -83,6 +90,11 @@ def password_hash() -> str:
 
 
 @pytest.fixture()
-def user_repository(db_session: AsyncSession) -> SQLAlchemyUserRepositoryAdapter:
+def user_repository(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyUserRepositoryAdapter:
     """Fixture that provides an instance of SQLAlchemyUserRepositoryAdapter for testing."""
-    return SQLAlchemyUserRepositoryAdapter(session=db_session)
+    return SQLAlchemyUserRepositoryAdapter(
+        session=db_session, logger_factory_outbound=logger_factory_outbound
+    )

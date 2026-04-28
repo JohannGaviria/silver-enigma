@@ -15,18 +15,25 @@ from src.modules.auth.domain.ports.repositories.user_repository_port import (
 )
 from src.modules.auth.infrastructure.persistence.mappers.user_mapper import UserMapper
 from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
+from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
+    LoggerFactoryOutboundPort,
+)
 
 
 class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
     """Implements UserRepositoryPort using SQLAlchemy for database operations."""
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(
+        self, session: AsyncSession, logger_factory_outbound: LoggerFactoryOutboundPort
+    ) -> None:
         """Initializes the SQLAlchemyUserRepositoryAdapter.
 
         Args:
             session (AsyncSession): The SQLAlchemy asynchronous session for database operations.
+            logger_factory_outbound (LoggerFactoryOutboundPort): The logger factory for creating loggers.
         """
         self.session = session
+        self._logger = logger_factory_outbound.get_logger(__name__)
 
     async def exists_by_role(self, role: UserRoleEnum) -> bool:
         """Checks if a user with the specified role exists in the database.
@@ -45,6 +52,9 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
             result = await self.session.execute(stmt)
             return bool(result.scalar())
         except SQLAlchemyError as e:
+            self._logger.error(
+                "Database error while checking existence by role", exc_info=str(e)
+            )
             raise UserRepositoryException(
                 "Database error while checking existence by role."
             ) from e
@@ -74,10 +84,12 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
 
         except IntegrityError as e:
             await self.session.rollback()
+            self._logger.error("Integrity error while saving user", exc_info=str(e))
             raise UserAlreadyExistsException(
                 "User already exists or violates constraints"
             ) from e
 
         except SQLAlchemyError as e:
             await self.session.rollback()
+            self._logger.error("Database error while saving user", exc_info=str(e))
             raise UserRepositoryException("Database error during user creation.") from e

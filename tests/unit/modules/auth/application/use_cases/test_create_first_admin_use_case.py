@@ -26,6 +26,7 @@ class TestCreateFirstAdminUseCase:
         user_repository_mock: AsyncMock,
         password_hash_outbound_mock: Mock,
         password_hash: str,
+        logger_factory_mock: Mock,
     ) -> None:
         """Test that the CreateFirstAdminUseCase successfully creates an admin user.
 
@@ -43,6 +44,7 @@ class TestCreateFirstAdminUseCase:
         use_case = CreateFirstAdminUseCase(
             user_repository=user_repository_mock,
             password_hash_outbound=password_hash_outbound_mock,
+            logger_factory_outbound=logger_factory_mock,
         )
 
         result = await use_case.execute(command)
@@ -58,6 +60,7 @@ class TestCreateFirstAdminUseCase:
         user_repository_mock: AsyncMock,
         password_hash_outbound_mock: Mock,
         password_hash: str,
+        logger_factory_mock: Mock,
     ) -> None:
         """Test that the CreateFirstAdminUseCase raises an AdminAlreadyExistsException.
 
@@ -73,6 +76,7 @@ class TestCreateFirstAdminUseCase:
         use_case = CreateFirstAdminUseCase(
             user_repository=user_repository_mock,
             password_hash_outbound=password_hash_outbound_mock,
+            logger_factory_outbound=logger_factory_mock,
         )
 
         with pytest.raises(AdminAlreadyExistsException):
@@ -85,6 +89,7 @@ class TestCreateFirstAdminUseCase:
         user_repository_mock: AsyncMock,
         password_hash_outbound_mock: Mock,
         password_hash: str,
+        logger_factory_mock: Mock,
     ) -> None:
         """Test that the CreateFirstAdminUseCase raises an InvalidNameException.
 
@@ -102,6 +107,7 @@ class TestCreateFirstAdminUseCase:
         use_case = CreateFirstAdminUseCase(
             user_repository=user_repository_mock,
             password_hash_outbound=password_hash_outbound_mock,
+            logger_factory_outbound=logger_factory_mock,
         )
 
         with pytest.raises(InvalidNameException):
@@ -114,6 +120,7 @@ class TestCreateFirstAdminUseCase:
         user_repository_mock: AsyncMock,
         password_hash_outbound_mock: Mock,
         password_hash: str,
+        logger_factory_mock: Mock,
     ) -> None:
         """Test that the CreateFirstAdminUseCase raises an InvalidEmailException.
 
@@ -129,6 +136,7 @@ class TestCreateFirstAdminUseCase:
         use_case = CreateFirstAdminUseCase(
             user_repository=user_repository_mock,
             password_hash_outbound=password_hash_outbound_mock,
+            logger_factory_outbound=logger_factory_mock,
         )
 
         with pytest.raises(InvalidEmailException):
@@ -141,6 +149,7 @@ class TestCreateFirstAdminUseCase:
         user_repository_mock: AsyncMock,
         password_hash_outbound_mock: Mock,
         password_hash: str,
+        logger_factory_mock: Mock,
     ) -> None:
         """Test that the CreateFirstAdminUseCase raises an InvalidPlainPasswordException.
 
@@ -158,6 +167,7 @@ class TestCreateFirstAdminUseCase:
         use_case = CreateFirstAdminUseCase(
             user_repository=user_repository_mock,
             password_hash_outbound=password_hash_outbound_mock,
+            logger_factory_outbound=logger_factory_mock,
         )
 
         with pytest.raises(InvalidPlainPasswordException):
