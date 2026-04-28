@@ -1,6 +1,6 @@
 """This module contains the SQLAlchemyUserRepositoryAdapter class."""
 
-from sqlalchemy import select
+from sqlalchemy import exists, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,10 +34,9 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
             bool: True if a user with the specified role exists, False otherwise.
         """
         try:
-            result = await self.session.execute(
-                select(UserModel).where(UserModel.role == role.value)
-            )
-            return result.scalar_one_or_none() is not None
+            stmt = select(exists().where(UserModel.role == role.value))
+            result = await self.session.execute(stmt)
+            return bool(result.scalar())
         except SQLAlchemyError as e:
             raise RuntimeError(
                 "Database error while checking existence by role."

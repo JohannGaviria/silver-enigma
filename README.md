@@ -120,6 +120,7 @@ cp .env.example .env
 | Backend Configuration      | CORS_ALLOW_CREDENTIALS       | Allow cookies/auth credentials    | True                                                                |
 | Database Configuration     | DATABASE_URL                 | Database URL                      | postgresql+asyncpg://postgres:password@postgres:5432/silver_enigma  |
 | Database Configuration     | DATABASE_URL_ALEMBIC         | Database URL for alembic          | postgresql+psycopg2://postgres:password@postgres:5432/silver_enigma |
+| Database Configuration     | DB_HOST                      | Database host                     | postgres                                                            |
 | Database Configuration     | DB_PORT                      | Database port                     | 5432                                                                |
 | Database Configuration     | POSTGRES_USER                | PostgreSQL user                   | postgres                                                            |
 | Database Configuration     | POSTGRES_DB                  | PostgreSQL database               | silver_enigma                                                       |

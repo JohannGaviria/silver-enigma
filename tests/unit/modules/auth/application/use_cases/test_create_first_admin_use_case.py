@@ -20,13 +20,17 @@ from src.modules.auth.domain.exceptions.auth_exception import (
 
 class TestCreateFirstAdminUseCase:
     @pytest.mark.asyncio
-    async def test_should_a(
+    async def test_should_create_admin_when_no_admin_exists(
         self,
         faker: Faker,
         user_repository_mock: AsyncMock,
         password_hash_outbound_mock: Mock,
         password_hash: str,
     ) -> None:
+        """Test that the CreateFirstAdminUseCase successfully creates an admin user.
+
+        when no admin already exists.
+        """
         user_repository_mock.exists_by_role.return_value = False
         password_hash_outbound_mock.hash.return_value = password_hash
 
@@ -48,13 +52,17 @@ class TestCreateFirstAdminUseCase:
         assert result.role == UserRoleEnum.ADMIN
 
     @pytest.mark.asyncio
-    async def test_should_b(
+    async def test_should_raise_exception_when_admin_already_exists(
         self,
         faker: Faker,
         user_repository_mock: AsyncMock,
         password_hash_outbound_mock: Mock,
         password_hash: str,
     ) -> None:
+        """Test that the CreateFirstAdminUseCase raises an AdminAlreadyExistsException.
+
+        when an admin user already exists.
+        """
         user_repository_mock.exists_by_role.return_value = True
         password_hash_outbound_mock.hash_return_value = password_hash
 
@@ -71,13 +79,17 @@ class TestCreateFirstAdminUseCase:
             await use_case.execute(command)
 
     @pytest.mark.asyncio
-    async def test_should_c(
+    async def test_should_raise_exception_when_name_is_invalid(
         self,
         faker: Faker,
         user_repository_mock: AsyncMock,
         password_hash_outbound_mock: Mock,
         password_hash: str,
     ) -> None:
+        """Test that the CreateFirstAdminUseCase raises an InvalidNameException.
+
+        when the name is invalid.
+        """
         user_repository_mock.exists_by_role.return_value = False
         password_hash_outbound_mock.hash_return_value = password_hash
 
@@ -96,13 +108,17 @@ class TestCreateFirstAdminUseCase:
             await use_case.execute(command)
 
     @pytest.mark.asyncio
-    async def test_should_d(
+    async def test_should_raise_exception_when_email_is_invalid(
         self,
         faker: Faker,
         user_repository_mock: AsyncMock,
         password_hash_outbound_mock: Mock,
         password_hash: str,
     ) -> None:
+        """Test that the CreateFirstAdminUseCase raises an InvalidEmailException.
+
+        when the email is invalid.
+        """
         user_repository_mock.exists_by_role.return_value = False
         password_hash_outbound_mock.hash_return_value = password_hash
 
@@ -119,13 +135,17 @@ class TestCreateFirstAdminUseCase:
             await use_case.execute(command)
 
     @pytest.mark.asyncio
-    async def test_should_e(
+    async def test_should_raise_exception_when_plain_password_is_invalid(
         self,
         faker: Faker,
         user_repository_mock: AsyncMock,
         password_hash_outbound_mock: Mock,
         password_hash: str,
     ) -> None:
+        """Test that the CreateFirstAdminUseCase raises an InvalidPlainPasswordException.
+
+        when the plain password is invalid.
+        """
         user_repository_mock.exists_by_role.return_value = False
         password_hash_outbound_mock.hash_return_value = password_hash
 
