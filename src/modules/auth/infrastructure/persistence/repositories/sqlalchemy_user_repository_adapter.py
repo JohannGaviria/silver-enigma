@@ -1,0 +1,70 @@
+"""This module contains the SQLAlchemyUserRepositoryAdapter class."""
+
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.modules.auth.domain.entities.user_entity import UserEntity
+from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
+from src.modules.auth.domain.ports.repositories.user_repository_port import (
+    UserRepositoryPort,
+)
+from src.modules.auth.infrastructure.persistence.mappers.user_mapper import UserMapper
+from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
+
+
+class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
+    """Implements UserRepositoryPort using SQLAlchemy for database operations."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        """Initializes the SQLAlchemyUserRepositoryAdapter.
+
+        Args:
+            session (AsyncSession): The SQLAlchemy asynchronous session for database operations.
+        """
+        self.session = session
+
+    async def exists_by_role(self, role: UserRoleEnum) -> bool:
+        """Checks if a user with the specified role exists in the database.
+
+        Args:
+            role (UserRoleEnum): The user role to check for existence.
+
+        Returns:
+            bool: True if a user with the specified role exists, False otherwise.
+        """
+        try:
+            result = await self.session.execute(
+                select(UserModel).where(UserModel.role == role.value)
+            )
+            return result.scalar_one_or_none() is not None
+        except SQLAlchemyError as e:
+            raise RuntimeError(
+                "Database error while checking existence by role."
+            ) from e
+
+    async def save(self, entity: UserEntity) -> UserEntity:
+        """Saves a UserEntity to the database and returns the saved entity.
+
+        Args:
+            entity (UserEntity): The user entity to be saved.
+
+        Returns:
+            UserEntity: The saved user entity.
+        """
+        try:
+            model = UserMapper.to_model(entity)
+
+            self.session.add(model)
+            await self.session.commit()
+            await self.session.refresh(model)
+
+            return UserMapper.to_entity(model)
+
+        except IntegrityError as e:
+            await self.session.rollback()
+            raise ValueError("User already exists or violates constraints") from e
+
+        except SQLAlchemyError as e:
+            await self.session.rollback()
+            raise RuntimeError("Database error during user creation.") from e
