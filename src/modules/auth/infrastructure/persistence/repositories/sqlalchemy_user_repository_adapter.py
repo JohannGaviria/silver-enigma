@@ -6,6 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.auth.domain.entities.user_entity import UserEntity
 from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
+from src.modules.auth.domain.exceptions.auth_exception import (
+    UserAlreadyExistsException,
+    UserRepositoryException,
+)
 from src.modules.auth.domain.ports.repositories.user_repository_port import (
     UserRepositoryPort,
 )
@@ -32,13 +36,16 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
 
         Returns:
             bool: True if a user with the specified role exists, False otherwise.
+
+        Raises:
+            UserRepositoryException: If a database error occurs during the query.
         """
         try:
             stmt = select(exists().where(UserModel.role == role.value))
             result = await self.session.execute(stmt)
             return bool(result.scalar())
         except SQLAlchemyError as e:
-            raise RuntimeError(
+            raise UserRepositoryException(
                 "Database error while checking existence by role."
             ) from e
 
@@ -50,6 +57,11 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
 
         Returns:
             UserEntity: The saved user entity.
+
+        Raises:
+            UserAlreadyExistsException: If a user with the same email already exists
+                or violates constraints.
+            UserRepositoryException: If a database error occurs during the save operation.
         """
         try:
             model = UserMapper.to_model(entity)
@@ -62,8 +74,10 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
 
         except IntegrityError as e:
             await self.session.rollback()
-            raise ValueError("User already exists or violates constraints") from e
+            raise UserAlreadyExistsException(
+                "User already exists or violates constraints"
+            ) from e
 
         except SQLAlchemyError as e:
             await self.session.rollback()
-            raise RuntimeError("Database error during user creation.") from e
+            raise UserRepositoryException("Database error during user creation.") from e

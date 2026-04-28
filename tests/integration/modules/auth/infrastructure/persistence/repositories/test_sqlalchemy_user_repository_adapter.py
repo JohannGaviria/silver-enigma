@@ -6,6 +6,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from src.modules.auth.domain.entities.user_entity import UserEntity
 from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
+from src.modules.auth.domain.exceptions.auth_exception import (
+    UserAlreadyExistsException,
+    UserRepositoryException,
+)
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.password_hash_vo import PasswordHashVO
@@ -58,7 +62,7 @@ class TestSQLAlchemyUserRepositoryAdapter:
     async def test_should_raise_runtime_error_when_sqlalchemy_error_occurs_in_exists_by_role(
         self, user_repository: SQLAlchemyUserRepositoryAdapter
     ) -> None:
-        """Test that the exists_by_role method raises a RuntimeError.
+        """Test that the exists_by_role method raises a UserRepositoryException.
 
         when a SQLAlchemyError occurs during the database query.
         """
@@ -67,7 +71,7 @@ class TestSQLAlchemyUserRepositoryAdapter:
             "execute",
             new=AsyncMock(side_effect=SQLAlchemyError("boom")),
         ):
-            with pytest.raises(RuntimeError):
+            with pytest.raises(UserRepositoryException):
                 await user_repository.exists_by_role(UserRoleEnum.ADMIN)
 
     # ================================================
@@ -106,7 +110,7 @@ class TestSQLAlchemyUserRepositoryAdapter:
         password_hash: str,
         user_repository: SQLAlchemyUserRepositoryAdapter,
     ) -> None:
-        """Test that the save method raises a ValueError.
+        """Test that the save method raises a UserAlreadyExistsException.
 
         when attempting to save a UserEntity with an
         email that already exists in the database.
@@ -129,7 +133,7 @@ class TestSQLAlchemyUserRepositoryAdapter:
 
         await user_repository.save(user1)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(UserAlreadyExistsException):
             await user_repository.save(user2)
 
     @pytest.mark.asyncio
@@ -139,7 +143,7 @@ class TestSQLAlchemyUserRepositoryAdapter:
         password_hash: str,
         user_repository: SQLAlchemyUserRepositoryAdapter,
     ) -> None:
-        """Test that the save method raises a RuntimeError.
+        """Test that the save method raises a UserRepositoryException.
 
         when a SQLAlchemyError occurs during the database commit.
         """
@@ -155,7 +159,7 @@ class TestSQLAlchemyUserRepositoryAdapter:
                 role=UserRoleEnum.ADMIN,
             )
 
-            with pytest.raises(RuntimeError):
+            with pytest.raises(UserRepositoryException):
                 await user_repository.save(user)
 
     @pytest.mark.asyncio
@@ -188,7 +192,7 @@ class TestSQLAlchemyUserRepositoryAdapter:
                 new=AsyncMock(),
             ) as mock_rollback,
         ):
-            with pytest.raises(RuntimeError):
+            with pytest.raises(UserRepositoryException):
                 await user_repository.save(user)
 
             mock_rollback.assert_awaited_once()

@@ -66,3 +66,29 @@ class AdminAlreadyExistsException(BaseDomainException):
     def __init__(self) -> None:
         """Initializes the AdminAlreadyExistsException."""
         super().__init__("An admin user already exists.")
+
+
+class UserRepositoryException(BaseDomainException):
+    """Exception raised for errors that occur within the UserRepository."""
+
+    def __init__(self, error: str) -> None:
+        """Initializes the UserRepositoryException.
+
+        Args:
+            error (str): A message describing the error that occurred within the UserRepository.
+        """
+        self.errors = error
+        super().__init__("An error occurred in the UserRepository.")
+
+
+class UserAlreadyExistsException(BaseDomainException):
+    """Exception raised when an attempt is made to create a user but one with the same email already exists."""
+
+    def __init__(self, error: str) -> None:
+        """Initializes the UserAlreadyExistsException.
+
+        Args:
+            error (str): A message describing the validation failure for the email address.
+        """
+        self.errors = error
+        super().__init__("A user with the same email already exists.")
