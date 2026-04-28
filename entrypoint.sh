@@ -12,6 +12,10 @@ echo ${GREEN} "Applying migrations..." ${NC}
 alembic upgrade head
 
 
+echo ${GREEN}"Bootstrapping initial first admin if needed..." ${NC}
+python3 -m src.modules.auth.presentation.cli.create_first_admin_cli
+
+
 echo ${GREEN} "Starting application in $ENVIRONMENT mode..." ${NC}
 echo ${GREEN} "Host: 0.0.0.0, Port: $BACKEND_PORT" ${NC}
 
