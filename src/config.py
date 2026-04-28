@@ -21,10 +21,14 @@ class Settings(BaseSettings):
     BACKEND_WORKERS: int = Field(..., validation_alias="BACKEND_WORKERS")
     CORS_ALLOW_ORIGINS: str = Field(..., validation_alias="CORS_ALLOW_ORIGINS")
     CORS_ALLOW_CREDENTIALS: bool = Field(..., validation_alias="CORS_ALLOW_CREDENTIALS")
+    FIRST_ADMIN_NAME: str = Field(..., validation_alias="FIRST_ADMIN_NAME")
+    FIRST_ADMIN_EMAIL: str = Field(..., validation_alias="FIRST_ADMIN_EMAIL")
+    FIRST_ADMIN_PASSWORD: str = Field(..., validation_alias="FIRST_ADMIN_PASSWORD")
 
     # Database configuration
     DATABASE_URL: str = Field(..., validation_alias="DATABASE_URL")
     DATABASE_URL_ALEMBIC: str = Field(..., validation_alias="DATABASE_URL_ALEMBIC")
+    DB_HOST: str = Field(..., validation_alias="DB_HOST")
     DB_PORT: int = Field(..., validation_alias="DB_PORT")
     POSTGRES_USER: str = Field(..., validation_alias="POSTGRES_USER")
     POSTGRES_DB: str = Field(..., validation_alias="POSTGRES_DB")
