@@ -27,6 +27,5 @@ jobs:
       - name: Check code quality
         run: make check
 
-      # Activate this step once you have implemented tests and a defined coverage threshold.
-      # - name: Run tests with coverage
-      #   run: pytest --cov=src --cov-fail-under=70
+      - name: Run tests with coverage
+        run: pytest --cov=src --cov-fail-under=70
