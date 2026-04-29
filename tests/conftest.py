@@ -1,7 +1,9 @@
+import os
 from collections.abc import AsyncGenerator
 
 import pytest
 import pytest_asyncio
+from dotenv import load_dotenv
 from faker import Faker
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -18,8 +20,15 @@ from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapte
 )
 from src.shared.infrastructure.persistence.base_model import Base
 
-TEST_DATABASE_URL = (
-    "postgresql+asyncpg://test-postgres:password@localhost:5433/test_silver_enigma"
+
+def pytest_configure() -> None:
+    """Pytest configuration hook to load environment variables."""
+    load_dotenv(".env.test", override=True)
+
+
+TEST_DATABASE_URL: str = os.getenv(
+    "DATABASE_URL",
+    "postgresql+asyncpg://test-postgres:password@localhost:5433/test_silver_enigma",
 )
 
 
