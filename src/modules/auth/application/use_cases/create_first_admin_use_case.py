@@ -18,6 +18,10 @@ from src.modules.auth.domain.ports.repositories.user_repository_port import (
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.plain_password_vo import PlainPasswordVO
+from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
+    LoggerFactoryOutboundPort,
+)
+from src.shared.domain.ports.outbound.logger_outbound_port import LoggerOutboundPort
 
 
 class CreateFirstAdminUseCase:
@@ -31,15 +35,18 @@ class CreateFirstAdminUseCase:
         self,
         user_repository: UserRepositoryPort,
         password_hash_outbound: PasswordHashOutboundPort,
+        logger_factory_outbound: LoggerFactoryOutboundPort,
     ) -> None:
         """Initializes the CreateFirstAdminUseCase with the required dependencies.
 
         Args:
             user_repository (UserRepositoryPort): The user repository for data operations.
             password_hash_outbound (PasswordHashOutboundPort): The service for hashing passwords.
+            logger_factory_outbound (LoggerFactoryOutboundPort): The factory for creating loggers.
         """
         self.user_repository = user_repository
         self.password_hash_outbound = password_hash_outbound
+        self._logger: LoggerOutboundPort = logger_factory_outbound.get_logger(__name__)
 
     async def execute(
         self, command: CreateFirstAdminCommand
@@ -60,7 +67,10 @@ class CreateFirstAdminUseCase:
         Raises:
             AdminAlreadyExistsException: If an admin user already exists in the system.
         """
+        self._logger.info("create first admin use case attempt")
+
         if await self.user_repository.exists_by_role(UserRoleEnum.ADMIN):
+            self._logger.warning("admin user already exists, cannot create another one")
             raise AdminAlreadyExistsException()
 
         password_hash = self.password_hash_outbound.hash(
@@ -75,6 +85,8 @@ class CreateFirstAdminUseCase:
         )
 
         user = await self.user_repository.save(user)
+
+        self._logger.info(f"admin user created with id: {user.id}")
 
         return CreateFirstAdminResponse(
             id=user.id,
