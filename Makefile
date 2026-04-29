@@ -36,7 +36,7 @@ test: ## Run tests with pytest
 # but it will increase as more tests are added until it reaches 70% or more.
 test-coverage: ## Run tests with coverage report
 	@echo "$(BLUE)Running tests with coverage...$(NC)"
-	pytest --cov=src/ --cov-fail-under=25
+	poetry run pytest --cov=src/ --cov-fail-under=25
 
 format: ## Format and auto-fix code
 	@echo "$(BLUE)Fixing lint issues...$(NC)"
