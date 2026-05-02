@@ -19,10 +19,11 @@
 6. [Shared Module](#10-shared-module)
 7. [Module Communication](#11-module-communication)
 8. [Request Flow (End-to-End)](#12-request-flow-end-to-end)
-9. [Key Benefits](#13-key-benefits)
-10. [Architectural Decisions](#14-architectural-decisions)
-11. [When to Extract Microservices](#15-when-to-extract-microservices)
-12. [Summary](#16-summary)
+9. [Unit of Work Pattern](#13-unit-of-work-pattern)
+10. [Key Benefits](#14-key-benefits)
+11. [Architectural Decisions](#15-architectural-decisions)
+12. [When to Extract Microservices](#16-when-to-extract-microservices)
+13. [Summary](#17-summary)
 
 ---
 
@@ -33,6 +34,7 @@
 - **Domain-Driven Design (DDD)**
 - **Clean Architecture (Ports & Adapters)**
 - **Modular Monolith (domain-based)**
+- **Unit of Work (transaction boundary management)**
 
 The system is organized into **independent domain-based modules**, where each module encapsulates its own business logic, infrastructure, and exposure.
 
@@ -57,6 +59,7 @@ shared/
 - **Low coupling between modules**
 - **Dependencies point inward (domain-first)**
 - **The domain does not depend on frameworks**
+- **Transactions are managed at the application layer via Unit of Work**
 
 ---
 
@@ -86,6 +89,7 @@ presentation/
 - **Ports (Interfaces):**
 
   - Repositories
+  - Unit of Work (transaction boundary)
   - External services (outbound)
 - **Exceptions** → Domain rules
 
@@ -109,7 +113,7 @@ presentation/
 #### Responsibilities:
 
 - Coordinate domain entities and services
-- Handle transactions (via repositories)
+- **Manage transaction boundaries through the Unit of Work port**
 - Emit events
 - Apply application rules (not business rules)
 
@@ -119,6 +123,17 @@ presentation/
 ConfirmOrderUseCase
 CancelOrderUseCase
 ReserveStockUseCase
+```
+
+#### Transaction pattern:
+
+```python
+async with self.unit_of_work as uow:
+    # All reads and writes share the same session/transaction
+    entity = await uow.repository.find(...)
+    entity.do_something()
+    await uow.repository.save(entity)
+    await uow.commit()
 ```
 
 ---
@@ -131,12 +146,14 @@ ReserveStockUseCase
 
 - **ORM Models**
 - **Repository Implementations**
+- **Unit of Work Adapters** → Concrete transaction managers
 - **External Services (APIs, queues, email, etc.)**
 - **Mappers (Domain ↔ Persistence)**
 
 #### Example:
 
 ```
+SQLAlchemyUserUnitOfWorkAdapter
 SQLAlchemyOrderRepository
 CeleryNotificationService
 Postgres models
@@ -146,6 +163,7 @@ Postgres models
 
 - Depends on `domain` (implements its interfaces)
 - Never contains business logic
+- The Unit of Work adapter owns the session lifecycle
 
 ---
 
@@ -186,13 +204,15 @@ orders/
 │   ├── exceptions/
 │   └── ports/
 │       ├── repositories/
+│       ├── unit_of_work/
 │       └── outbound/
 │
 ├── infrastructure/
 │   ├── persistence/
 │   │   ├── models/
 │   │   ├── mappers/
-│   │   └── repositories/
+│   │   ├── repositories/
+│   │   └── unit_of_work/
 │   └── outbound/
 │
 └── presentation/
@@ -206,7 +226,59 @@ orders/
 
 ---
 
-## 9. Dependency Flow
+## 9. Unit of Work Pattern
+
+### Purpose
+
+The Unit of Work (UoW) pattern centralises transaction control at the **application layer**. A use case opens exactly one UoW, performs all repository interactions through it, and either commits or lets it roll back — guaranteeing atomicity without leaking session management into domain or presentation code.
+
+### Port hierarchy
+
+```
+shared/domain/ports/unit_of_work/unit_of_work_port.py    ← base ABC
+    └── modules/<name>/domain/ports/unit_of_work/<name>_unit_of_work_port.py
+            └── exposes module-specific repositories
+```
+
+### Adapter location
+
+```
+modules/<name>/infrastructure/persistence/unit_of_work/
+    sqlalchemy_<name>_unit_of_work_adapter.py
+```
+
+### Lifecycle
+
+```
+async with unit_of_work as uow:   # __aenter__: new session created, repos initialised
+    ...                            # business operations via uow.repo
+    await uow.commit()             # flush + commit
+                                   # __aexit__: session closed
+                                   # on exception → auto rollback + session closed
+```
+
+### Rules
+
+1. **One UoW per use case execution** — never share a UoW across use cases.
+2. **Domain validation runs before opening the UoW** — Value Object construction raises domain exceptions eagerly, so no session is opened for invalid input.
+3. **No session references leak outside the UoW** — repositories are only accessible inside the `async with` block.
+4. **Commit is explicit** — callers must call `await uow.commit()`. The UoW never auto-commits on clean exit.
+5. **Rollback is automatic on unhandled exception** — `__aexit__` rolls back if `exc_type is not None`.
+
+### Auth module example
+
+```
+UserUnitOfWorkPort (domain/ports/unit_of_work)
+    .users: UserRepositoryPort
+
+SQLAlchemyUserUnitOfWorkAdapter (infrastructure/persistence/unit_of_work)
+    session_factory → AsyncSession
+    .users → SQLAlchemyUserRepositoryAdapter(session)
+```
+
+---
+
+## 10. Dependency Flow
 
 Dependencies always flow **inward**:
 
@@ -225,7 +297,7 @@ presentation → application → domain
 
 ---
 
-## 10. Shared Module
+## 11. Shared Module
 
 ```
 shared/
@@ -245,6 +317,7 @@ shared/
   - Database configuration
   - Event bus
   - Base exceptions
+  - Base Unit of Work port
 
 ### Rule:
 
@@ -252,7 +325,7 @@ shared/
 
 ---
 
-## 11. Module Communication
+## 12. Module Communication
 
 Modules are **not directly coupled**.
 
@@ -260,7 +333,7 @@ Modules are **not directly coupled**.
 
 #### 1. Via Application Layer
 
-- One module uses another module’s use case
+- One module uses another module's use case
 
 #### 2. Via Domain Events
 
@@ -275,24 +348,23 @@ Modules are **not directly coupled**.
 
 ---
 
-## 12. Request Flow (End-to-End)
+## 13. Request Flow (End-to-End)
 
 1. HTTP request reaches **FastAPI (presentation)**
 2. Validation via **Pydantic schema**
 3. Mapper → DTO
 4. **Use Case** is executed
-5. Use Case interacts with:
+5. Use Case opens a **Unit of Work**:
 
-   - Entities
-   - Domain Services
-   - Repositories (ports)
-6. Infrastructure implements repositories
+   - Interacts with repositories through `uow.<repo>`
+   - Calls `await uow.commit()` on success
+6. Infrastructure implements the UoW adapter and its repositories
 7. Persistence / external logic execution
 8. Response → Presentation → HTTP
 
 ---
 
-## 13. Key Benefits
+## 14. Key Benefits
 
 ### 1. Maintainability
 
@@ -301,12 +373,18 @@ Modules are **not directly coupled**.
 ### 2. Testability
 
 - Domain and Application are easily testable (no DB required)
+- Unit tests mock the entire UoW with a simple `MagicMock`
+- Integration tests verify the UoW adapter's commit/rollback guarantees
 
 ### 3. Scalability
 
 - Each module can evolve independently
 
-### 4. Flexibility
+### 4. Atomic transactions
+
+- All writes within a use case are committed or rolled back together
+
+### 5. Flexibility
 
 You can change:
 
@@ -318,16 +396,17 @@ without breaking the core
 
 ---
 
-## 14. Architectural Decisions
+## 15. Architectural Decisions
 
 - Modular Monolith (no microservices initially)
 - Domain-centric design
 - Explicit module boundaries
 - Ports & Adapters for infrastructure decoupling
+- **Unit of Work for transaction boundary management**
 
 ---
 
-## 15. When to Extract Microservices
+## 16. When to Extract Microservices
 
 The system can evolve into microservices when:
 
@@ -337,7 +416,7 @@ The system can evolve into microservices when:
 
 ---
 
-## 16. Summary
+## 17. Summary
 
 Silver Enigma implements an architecture that is:
 
@@ -345,9 +424,11 @@ Silver Enigma implements an architecture that is:
 - **Domain-driven**
 - **Decoupled**
 - **Scalable-ready**
+- **Transactionally safe via Unit of Work**
 
 Where:
 
 - The **domain drives everything**
 - The **infrastructure is replaceable**
 - The **modules are autonomous**
+- The **application layer owns transaction boundaries**
