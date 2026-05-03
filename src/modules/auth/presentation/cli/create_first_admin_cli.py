@@ -40,26 +40,29 @@ async def _run() -> None:
     from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adapter import (
         Argon2PasswordHashOutboundAdapter,
     )
-    from src.modules.auth.infrastructure.persistence.repositories.sqlalchemy_user_repository_adapter import (
-        SQLAlchemyUserRepositoryAdapter,
+    from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
+        SQLAlchemyUserUnitOfWorkAdapter,
     )
     from src.shared.infrastructure.database.database_engine import DatabaseEngine
 
     logger = StructlogLoggerFactoryOutboundAdapter().get_logger(__name__)
 
     engine = DatabaseEngine.get_engine()
-    session = DatabaseEngine.create_session()
 
     try:
         logger.info("Starting first-admin bootstrap process")
 
+        logger_factory = StructlogLoggerFactoryOutboundAdapter()
+
+        unit_of_work = SQLAlchemyUserUnitOfWorkAdapter(
+            session_factory=DatabaseEngine.get_session_factory(),
+            logger_factory_outbound=logger_factory,
+        )
+
         use_case = CreateFirstAdminUseCase(
-            user_repository=SQLAlchemyUserRepositoryAdapter(
-                session,
-                StructlogLoggerFactoryOutboundAdapter(),
-            ),
+            unit_of_work=unit_of_work,
             password_hash_outbound=Argon2PasswordHashOutboundAdapter(),
-            logger_factory_outbound=StructlogLoggerFactoryOutboundAdapter(),
+            logger_factory_outbound=logger_factory,
         )
 
         command = CreateFirstAdminCommand(
@@ -102,10 +105,6 @@ async def _run() -> None:
         sys.exit(1)
 
     finally:
-        # Only close the session — disposing the engine here can deadlock
-        # the threading.Lock inside DatabaseEngine when running in asyncio.
-        # The OS reclaims all connections when the process exits anyway.
-        await session.close()
         await engine.dispose()
 
 

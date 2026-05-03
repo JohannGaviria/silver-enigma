@@ -21,7 +21,13 @@ from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
 
 
 class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
-    """Implements UserRepositoryPort using SQLAlchemy for database operations."""
+    """Implements UserRepositoryPort using SQLAlchemy for database operations.
+
+    This adapter participates in the Unit of Work pattern: it never calls
+    ``session.commit()`` or ``session.rollback()`` directly. Transaction
+    control is the exclusive responsibility of the
+    :class:`SQLAlchemyAuthUnitOfWorkAdapter` that owns the session.
+    """
 
     def __init__(
         self, session: AsyncSession, logger_factory_outbound: LoggerFactoryOutboundPort
@@ -29,8 +35,10 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
         """Initializes the SQLAlchemyUserRepositoryAdapter.
 
         Args:
-            session (AsyncSession): The SQLAlchemy asynchronous session for database operations.
-            logger_factory_outbound (LoggerFactoryOutboundPort): The logger factory for creating loggers.
+            session (AsyncSession): The SQLAlchemy asynchronous session provided
+                by the Unit of Work.
+            logger_factory_outbound (LoggerFactoryOutboundPort): The logger factory
+                for creating loggers.
         """
         self.session = session
         self._logger = logger_factory_outbound.get_logger(__name__)
@@ -60,36 +68,33 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
             ) from e
 
     async def save(self, entity: UserEntity) -> UserEntity:
-        """Saves a UserEntity to the database and returns the saved entity.
+        """Persists a UserEntity within the current transaction and returns it.
 
         Args:
             entity (UserEntity): The user entity to be saved.
 
         Returns:
-            UserEntity: The saved user entity.
+            UserEntity: The flushed user entity, with any server-generated
+                fields (e.g. ``created_at``) populated.
 
         Raises:
-            UserAlreadyExistsException: If a user with the same email already exists
-                or violates constraints.
-            UserRepositoryException: If a database error occurs during the save operation.
+            UserAlreadyExistsException: If a user with the same email already
+                exists or a unique constraint is violated.
+            UserRepositoryException: If any other database error occurs.
         """
         try:
             model = UserMapper.to_model(entity)
-
             self.session.add(model)
-            await self.session.commit()
+            await self.session.flush()
             await self.session.refresh(model)
-
             return UserMapper.to_entity(model)
 
         except IntegrityError as e:
-            await self.session.rollback()
             self._logger.error("Integrity error while saving user", exc_info=str(e))
             raise UserAlreadyExistsException(
                 "User already exists or violates constraints"
             ) from e
 
         except SQLAlchemyError as e:
-            await self.session.rollback()
             self._logger.error("Database error while saving user", exc_info=str(e))
             raise UserRepositoryException("Database error during user creation.") from e

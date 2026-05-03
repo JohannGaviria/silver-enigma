@@ -12,8 +12,8 @@ from src.modules.auth.domain.exceptions.auth_exception import (
 from src.modules.auth.domain.ports.outbound.password_hash_outbound_port import (
     PasswordHashOutboundPort,
 )
-from src.modules.auth.domain.ports.repositories.user_repository_port import (
-    UserRepositoryPort,
+from src.modules.auth.domain.ports.unit_of_work.user_unit_of_work_port import (
+    UserUnitOfWorkPort,
 )
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
@@ -33,18 +33,19 @@ class CreateFirstAdminUseCase:
 
     def __init__(
         self,
-        user_repository: UserRepositoryPort,
+        unit_of_work: UserUnitOfWorkPort,
         password_hash_outbound: PasswordHashOutboundPort,
         logger_factory_outbound: LoggerFactoryOutboundPort,
     ) -> None:
         """Initializes the CreateFirstAdminUseCase with the required dependencies.
 
         Args:
-            user_repository (UserRepositoryPort): The user repository for data operations.
+            unit_of_work (UserUnitOfWorkPort): The unit of work that manages
+                the transaction boundary and exposes auth repositories.
             password_hash_outbound (PasswordHashOutboundPort): The service for hashing passwords.
             logger_factory_outbound (LoggerFactoryOutboundPort): The factory for creating loggers.
         """
-        self.user_repository = user_repository
+        self.unit_of_work = unit_of_work
         self.password_hash_outbound = password_hash_outbound
         self._logger: LoggerOutboundPort = logger_factory_outbound.get_logger(__name__)
 
@@ -53,8 +54,8 @@ class CreateFirstAdminUseCase:
     ) -> CreateFirstAdminResponse:
         """Executes the use case to create the first admin user.
 
-        It checks if an admin already exists, and if not,
-        it creates a new admin user with the provided details.
+        Opens a Unit of Work, checks whether an admin already exists, creates
+        and persists the new user, and commits — all within a single transaction.
 
         Args:
             command (CreateFirstAdminCommand): The command containing the details
@@ -66,25 +67,37 @@ class CreateFirstAdminUseCase:
 
         Raises:
             AdminAlreadyExistsException: If an admin user already exists in the system.
+            InvalidNameException: If the provided name does not meet validation rules.
+            InvalidEmailException: If the provided email does not meet validation rules.
+            InvalidPlainPasswordException: If the provided password does not meet
+                security criteria.
         """
         self._logger.info("create first admin use case attempt")
 
-        if await self.user_repository.exists_by_role(UserRoleEnum.ADMIN):
-            self._logger.warning("admin user already exists, cannot create another one")
-            raise AdminAlreadyExistsException()
+        # Value Objects are validated eagerly at construction time, so domain
+        # exceptions will propagate before we open the transaction.
+        name = NameVO(command.name)
+        email = EmailVO(command.email)
+        plain_password = PlainPasswordVO(command.plain_password)
 
-        password_hash = self.password_hash_outbound.hash(
-            PlainPasswordVO(command.plain_password)
-        )
+        async with self.unit_of_work as uow:
+            if await uow.users.exists_by_role(UserRoleEnum.ADMIN):
+                self._logger.warning(
+                    "admin user already exists, cannot create another one"
+                )
+                raise AdminAlreadyExistsException()
 
-        user = UserEntity.create(
-            name=NameVO(command.name),
-            email=EmailVO(command.email),
-            password=password_hash,
-            role=UserRoleEnum.ADMIN,
-        )
+            password_hash = self.password_hash_outbound.hash(plain_password)
 
-        user = await self.user_repository.save(user)
+            user = UserEntity.create(
+                name=name,
+                email=email,
+                password=password_hash,
+                role=UserRoleEnum.ADMIN,
+            )
+
+            user = await uow.users.save(user)
+            await uow.commit()
 
         self._logger.info(f"admin user created with id: {user.id}")
 
