@@ -12,6 +12,9 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adapter import (
+    Argon2PasswordHashOutboundAdapter,
+)
 from src.modules.auth.infrastructure.persistence.repositories.sqlalchemy_user_repository_adapter import (
     SQLAlchemyUserRepositoryAdapter,
 )
@@ -36,9 +39,7 @@ TEST_DATABASE_URL: str = os.getenv(
 async def engine() -> AsyncGenerator[AsyncEngine, None]:
     """Fixture that sets up an asynchronous database engine for testing.
 
-    This fixture creates an asynchronous engine using the specified database URL,
-    initializes the database schema, and yields the engine for use in tests.
-    After the tests are completed, it disposes of the engine to clean up resources.
+    Creates the schema on entry and disposes the engine on exit.
     """
     engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 
@@ -54,26 +55,28 @@ async def engine() -> AsyncGenerator[AsyncEngine, None]:
 async def db_session(engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
     """Fixture that provides an asynchronous database session for testing.
 
-    This fixture creates a new asynchronous session for each test, using a nested transaction
-    to ensure that any changes made to the database during the test are rolled back afterward.
+    Uses a transaction for each test to ensure isolation and rolls back after the test completes.
     """
     async with engine.connect() as connection:
-        transaction = await connection.begin()
+        await connection.begin()
 
-        Session = async_sessionmaker(
+        session_factory = async_sessionmaker(
             bind=connection,
             class_=AsyncSession,
+            autoflush=False,
             expire_on_commit=False,
+            join_transaction_mode="create_savepoint",
         )
 
-        async with Session() as session:
-            await session.begin_nested()
-
+        async with session_factory() as session:
             yield session
 
-            await session.rollback()
+        await connection.rollback()
 
-        await transaction.rollback()
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 
 @pytest.fixture
@@ -87,15 +90,21 @@ def logger_factory_outbound() -> StructlogLoggerFactoryOutboundAdapter:
     return StructlogLoggerFactoryOutboundAdapter()
 
 
-# ===============================
+# ---------------------------------------------------------------------------
 # Modules: AUTH
-# ===============================
+# ---------------------------------------------------------------------------
 
 
 @pytest.fixture()
 def password_hash() -> str:
     """Fixture that provides a hashed password for testing purposes."""
     return "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYJXRz.HV9K"
+
+
+@pytest.fixture
+def password_hash_outbound() -> Argon2PasswordHashOutboundAdapter:
+    """Fixture for creating an instance of Argon2PasswordHashOutboundAdapter."""
+    return Argon2PasswordHashOutboundAdapter()
 
 
 @pytest.fixture()

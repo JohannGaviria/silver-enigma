@@ -10,9 +10,10 @@ from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adap
 
 
 class TestArgon2PasswordHashOutboundAdapter:
-    # ================================================
+    # ---------------------------------------------------------------------------
     # Method: hash
-    # ================================================
+    # ---------------------------------------------------------------------------
+
     def test_should_return_password_hash_when_plain_password_is_provided(
         self, faker: Faker, password_hash_outbound: Argon2PasswordHashOutboundAdapter
     ) -> None:

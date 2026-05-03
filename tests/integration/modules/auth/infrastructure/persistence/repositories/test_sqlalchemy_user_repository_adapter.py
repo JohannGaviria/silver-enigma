@@ -19,18 +19,15 @@ from src.modules.auth.infrastructure.persistence.repositories.sqlalchemy_user_re
 
 
 class TestSQLAlchemyUserRepositoryAdapter:
-    # ================================================
+    # ---------------------------------------------------------------------------
     # Method: exists_by_role
-    # ================================================
+    # ---------------------------------------------------------------------------
 
     @pytest.mark.asyncio
     async def test_should_return_false_when_no_user_with_role_exists(
         self, user_repository: SQLAlchemyUserRepositoryAdapter
     ) -> None:
-        """Test that the exists_by_role method returns False when no user.
-
-        with the specified role exists in the database.
-        """
+        """exists_by_role returns False when no user with the given role is in the DB."""
         result = await user_repository.exists_by_role(UserRoleEnum.ADMIN)
 
         assert not result
@@ -42,10 +39,7 @@ class TestSQLAlchemyUserRepositoryAdapter:
         password_hash: str,
         user_repository: SQLAlchemyUserRepositoryAdapter,
     ) -> None:
-        """Test that the exists_by_role method returns True when a user.
-
-        with the specified role exists in the database.
-        """
+        """exists_by_role returns True after a user with that role is flushed."""
         user = UserEntity.create(
             name=NameVO(faker.name()),
             email=EmailVO(faker.email()),
@@ -59,13 +53,10 @@ class TestSQLAlchemyUserRepositoryAdapter:
         assert result
 
     @pytest.mark.asyncio
-    async def test_should_raise_runtime_error_when_sqlalchemy_error_occurs_in_exists_by_role(
+    async def test_should_raise_user_repository_exception_when_sqlalchemy_error_occurs_in_exists_by_role(
         self, user_repository: SQLAlchemyUserRepositoryAdapter
     ) -> None:
-        """Test that the exists_by_role method raises a UserRepositoryException.
-
-        when a SQLAlchemyError occurs during the database query.
-        """
+        """UserRepositoryException must propagate when the DB query fails."""
         with patch.object(
             user_repository.session,
             "execute",
@@ -74,9 +65,9 @@ class TestSQLAlchemyUserRepositoryAdapter:
             with pytest.raises(UserRepositoryException):
                 await user_repository.exists_by_role(UserRoleEnum.ADMIN)
 
-    # ================================================
+    # ---------------------------------------------------------------------------
     # Method: save
-    # ================================================
+    # ---------------------------------------------------------------------------
 
     @pytest.mark.asyncio
     async def test_should_save_user_and_return_user_entity(
@@ -85,10 +76,7 @@ class TestSQLAlchemyUserRepositoryAdapter:
         user_repository: SQLAlchemyUserRepositoryAdapter,
         password_hash: str,
     ) -> None:
-        """Test that the save method successfully saves a UserEntity.
-
-        to the database and returns the saved UserEntity with an assigned ID.
-        """
+        """save() must flush the entity and return it with all fields intact."""
         user = UserEntity.create(
             name=NameVO(faker.name()),
             email=EmailVO(faker.email()),
@@ -104,17 +92,13 @@ class TestSQLAlchemyUserRepositoryAdapter:
         assert result.role == user.role
 
     @pytest.mark.asyncio
-    async def test_should_raise_value_error_when_saving_user_with_duplicate_email(
+    async def test_should_raise_user_already_exists_exception_when_saving_duplicate_email(
         self,
         faker: Faker,
         password_hash: str,
         user_repository: SQLAlchemyUserRepositoryAdapter,
     ) -> None:
-        """Test that the save method raises a UserAlreadyExistsException.
-
-        when attempting to save a UserEntity with an
-        email that already exists in the database.
-        """
+        """UserAlreadyExistsException must be raised on a duplicate-email flush."""
         email = EmailVO(faker.email())
 
         user1 = UserEntity.create(
@@ -123,7 +107,6 @@ class TestSQLAlchemyUserRepositoryAdapter:
             password=PasswordHashVO(password_hash),
             role=UserRoleEnum.ADMIN,
         )
-
         user2 = UserEntity.create(
             name=NameVO(faker.name()),
             email=email,
@@ -137,19 +120,20 @@ class TestSQLAlchemyUserRepositoryAdapter:
             await user_repository.save(user2)
 
     @pytest.mark.asyncio
-    async def test_should_raise_runtime_error_when_sqlalchemy_error_occurs_in_save(
+    async def test_should_raise_user_repository_exception_when_flush_fails_in_save(
         self,
         faker: Faker,
         password_hash: str,
         user_repository: SQLAlchemyUserRepositoryAdapter,
     ) -> None:
-        """Test that the save method raises a UserRepositoryException.
+        """UserRepositoryException must be raised when ``session.flush`` fails.
 
-        when a SQLAlchemyError occurs during the database commit.
+        The repository calls ``flush`` (not ``commit``) — commit is the UoW's
+        responsibility.  This test patches the right boundary.
         """
         with patch.object(
             user_repository.session,
-            "commit",
+            "flush",
             new=AsyncMock(side_effect=SQLAlchemyError("boom")),
         ):
             user = UserEntity.create(
@@ -163,15 +147,16 @@ class TestSQLAlchemyUserRepositoryAdapter:
                 await user_repository.save(user)
 
     @pytest.mark.asyncio
-    async def test_should_rollback_transaction_when_commit_fails_in_save(
+    async def test_should_never_call_commit_on_save(
         self,
         faker: Faker,
         password_hash: str,
         user_repository: SQLAlchemyUserRepositoryAdapter,
     ) -> None:
-        """Test that the save method rolls back the transaction.
+        """The repository must NEVER call ``session.commit()``.
 
-        when a SQLAlchemyError occurs during the database commit.
+        Transaction control belongs exclusively to the Unit of Work.  Calling
+        commit inside the repository would bypass the UoW and break atomicity.
         """
         user = UserEntity.create(
             name=NameVO(faker.name()),
@@ -180,19 +165,39 @@ class TestSQLAlchemyUserRepositoryAdapter:
             role=UserRoleEnum.ADMIN,
         )
 
-        with (
-            patch.object(
-                user_repository.session,
-                "commit",
-                new=AsyncMock(side_effect=SQLAlchemyError("boom")),
-            ),
-            patch.object(
-                user_repository.session,
-                "rollback",
-                new=AsyncMock(),
-            ) as mock_rollback,
-        ):
-            with pytest.raises(UserRepositoryException):
-                await user_repository.save(user)
+        with patch.object(
+            user_repository.session,
+            "commit",
+            new=AsyncMock(),
+        ) as mock_commit:
+            await user_repository.save(user)
 
-            mock_rollback.assert_awaited_once()
+        mock_commit.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_should_never_call_rollback_on_save(
+        self,
+        faker: Faker,
+        password_hash: str,
+        user_repository: SQLAlchemyUserRepositoryAdapter,
+    ) -> None:
+        """The repository must NEVER call ``session.rollback()``.
+
+        Rollback is also the UoW's responsibility.  The repository only
+        flushes; the UoW decides whether to commit or roll back.
+        """
+        user = UserEntity.create(
+            name=NameVO(faker.name()),
+            email=EmailVO(faker.email()),
+            password=PasswordHashVO(password_hash),
+            role=UserRoleEnum.ADMIN,
+        )
+
+        with patch.object(
+            user_repository.session,
+            "rollback",
+            new=AsyncMock(),
+        ) as mock_rollback:
+            await user_repository.save(user)
+
+        mock_rollback.assert_not_awaited()
