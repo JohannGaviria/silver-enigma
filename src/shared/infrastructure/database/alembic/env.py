@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, pool
 
 from src.shared.infrastructure.persistence.base_model import Base
+from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
 
 load_dotenv()
 
@@ -23,12 +24,12 @@ if config.config_file_name is not None:
 
 
 # Read the database URL from an environment variable
-DATABASE_URL = os.environ.get("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL is not defined in the environment variables")
+DATABASE_URL_ALEMBIC = os.environ.get("DATABASE_URL_ALEMBIC")
+if not DATABASE_URL_ALEMBIC:
+    raise RuntimeError("DATABASE_URL_ALEMBIC is not defined in the environment variables")
 
 # Establish the connection for Alembic
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+config.set_main_option("sqlalchemy.url", DATABASE_URL_ALEMBIC)
 
 
 # add your model's MetaData object here
@@ -73,11 +74,11 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
     """
     # Read the database URL from an environment variable
-    DATABASE_URL = os.environ.get("DATABASE_URL")
-    if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL is not defined in the environment variables")
+    DATABASE_URL_ALEMBIC = os.environ.get("DATABASE_URL_ALEMBIC")
+    if not DATABASE_URL_ALEMBIC:
+        raise RuntimeError("DATABASE_URL_ALEMBIC is not defined in the environment variables")
 
-    connectable = create_engine(DATABASE_URL, poolclass=pool.NullPool)
+    connectable = create_engine(DATABASE_URL_ALEMBIC, poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)

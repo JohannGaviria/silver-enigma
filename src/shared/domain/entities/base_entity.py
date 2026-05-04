@@ -6,19 +6,19 @@ from datetime import datetime
 from uuid import UUID
 
 
-@dataclass
+@dataclass(frozen=True)
 class BaseEntity(ABC):
     """BaseEntity is a base class for entities in the domain layer.
 
     Attributes:
         id (UUID): The unique identifier of the entity.
         created_at (datetime): The date and time when the entity was created.
-        update_at (datetime): The date and time when the entity was last updated.
+        updated_at (datetime): The date and time when the entity was last updated.
     """
 
     id: UUID
     created_at: datetime
-    update_at: datetime
+    updated_at: datetime
 
     def __eq__(self, other: object) -> bool:
         """Check if two entities are equal based on their ID.
