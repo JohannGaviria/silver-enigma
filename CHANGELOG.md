@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/JohannGaviria/silver-enigma/compare/v1.1.0...v1.2.0) (2026-05-04)
+
+
+### Features
+
+* **auth:** bootstrap backend architecture with auth module, async infra, and transactional patterns ([80a5688](https://github.com/JohannGaviria/silver-enigma/commit/80a5688fd202dda33ada7ba791ffea43d0aeafb2))
+
 # [1.1.0](https://github.com/JohannGaviria/silver-enigma/compare/v1.0.0...v1.1.0) (2026-04-23)
 
 
