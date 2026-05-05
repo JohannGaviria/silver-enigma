@@ -10,11 +10,27 @@ from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapte
     StructlogLoggerFactoryOutboundAdapter,
 )
 
+# ---------------------------------------------------------------------------
+# SHARED
+# ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def logger_factory_mock() -> Mock:
     """Fixture that provides a mock logger factory for testing."""
     return Mock()
+
+
+@pytest.fixture()
+def token() -> str:
+    """Fixture that provides a valid token string for testing purposes."""
+    return "valid-token-123"
+
+
+@pytest.fixture()
+def access_token_type() -> list[str]:
+    """Fixture that provides a list of valid access token types for testing."""
+    return ["Bearer"]
 
 
 # ---------------------------------------------------------------------------
