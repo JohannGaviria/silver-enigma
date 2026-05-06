@@ -2,44 +2,52 @@
 
 from abc import ABC, abstractmethod
 
-from src.shared.domain.value_objects.access_token_vo import AccessTokenVO
-from src.shared.domain.value_objects.refresh_token_vo import RefreshTokenVO
-from src.shared.domain.value_objects.token_payload_vo import TokenPayloadVO
+from src.shared.domain.value_objects.access_token_input_vo import AccessTokenInputVO
+from src.shared.domain.value_objects.access_token_payload_vo import AccessTokenPayloadVO
+from src.shared.domain.value_objects.access_token_response_vo import (
+    AccessTokenResponseVO,
+)
+from src.shared.domain.value_objects.refresh_token_response_vo import (
+    RefreshTokenResponseVO,
+)
+from src.shared.domain.value_objects.token_vo import TokenVO
 
 
 class TokenOutboundPort(ABC):
     """Outbound port interface for token-related operations in the authentication domain."""
 
     @abstractmethod
-    def access(self, payload: TokenPayloadVO) -> AccessTokenVO:
-        """Generates an access token based on the provided payload.
+    def generate_access(self, input: AccessTokenInputVO) -> AccessTokenResponseVO:
+        """Generates a signed JWT access token.
 
         Args:
-            payload (TokenPayloadVO): The payload containing the necessary
-                information to generate the access token.
+            input (AccessTokenInputVO): Value object containing sub and role.
 
         Returns:
-            AccessTokenVO: The generated access token value object.
+            AccessTokenResponseVO: Value object containing access_token,
+                token_type and expires_in.
         """
         pass
 
     @abstractmethod
-    def refresh(self) -> RefreshTokenVO:
-        """Generates a refresh token.
+    def generate_refresh(self) -> RefreshTokenResponseVO:
+        """Generates an opaque refresh token.
 
         Returns:
-            RefreshTokenVO: The generated refresh token value object.
+            RefreshTokenResponseVO: Value object containing the opaque
+                refresh_token string and expires_in seconds.
         """
         pass
 
     @abstractmethod
-    def decode(self, token: AccessTokenVO) -> TokenPayloadVO:
-        """Decodes an access token to extract the payload information.
+    def decode(self, token: TokenVO) -> AccessTokenPayloadVO:
+        """Decodes a JWT access token and returns its verified payload.
 
         Args:
-            token (AccessTokenVO): The access token to decode.
+            token (TokenVO): The raw JWT string to decode and verify.
 
         Returns:
-            TokenPayloadVO: The extracted payload information from the access token.
+            AccessTokenPayloadVO: Value object with jti, sub, role and exp
+                extracted from the token claims.
         """
         pass

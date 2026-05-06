@@ -7,28 +7,55 @@ class BaseDomainException(Exception):
     pass
 
 
-class InvalidTokenPayloadException(BaseDomainException):
-    """Exception raised when the token payload is invalid."""
+class InvalidAccessTokenPayloadException(BaseDomainException):
+    """Exception raised when the access token payload is invalid."""
 
     def __init__(self, errors: list[str]) -> None:
-        """Initializes the InvalidTokenPayloadException."""
+        """Initializes the InvalidAccessTokenPayloadException."""
         self.errors = errors
-        super().__init__("Invalid token payload.")
+        super().__init__("Invalid access token payload.")
 
 
-class InvalidAccessTokenException(BaseDomainException):
-    """Exception raised when the access token is invalid."""
+class InvalidAccessTokenInputException(BaseDomainException):
+    """Exception raised when the access token input data is invalid."""
 
     def __init__(self, errors: list[str]) -> None:
-        """Initializes the InvalidAccessTokenException."""
+        """Initializes the InvalidAccessTokenInputException."""
         self.errors = errors
-        super().__init__("Invalid access token.")
+        super().__init__("Invalid access token input.")
 
 
-class InvalidRefreshTokenException(BaseDomainException):
-    """Exception raised when the refresh token is invalid."""
+class InvalidAccessTokenResponseException(BaseDomainException):
+    """Exception raised when the access token response data is invalid."""
 
     def __init__(self, errors: list[str]) -> None:
-        """Initializes the InvalidAccessTokenException."""
+        """Initializes the InvalidAccessTokenResponseException."""
         self.errors = errors
-        super().__init__("Invalid refresh token.")
+        super().__init__("Invalid access token response.")
+
+
+class InvalidRefreshTokenInputException(BaseDomainException):
+    """Exception raised when the refresh token input data is invalid."""
+
+    def __init__(self, errors: list[str]) -> None:
+        """Initializes the InvalidRefreshTokenInputException."""
+        self.errors = errors
+        super().__init__("Invalid refresh token input.")
+
+
+class InvalidRefreshTokenResponseException(BaseDomainException):
+    """Exception raised when the refresh token response data is invalid."""
+
+    def __init__(self, errors: list[str]) -> None:
+        """Initializes the InvalidRefreshTokenResponseException."""
+        self.errors = errors
+        super().__init__("Invalid refresh token response.")
+
+
+class InvalidTokenException(BaseDomainException):
+    """Exception raised when a token is invalid."""
+
+    def __init__(self, error: str) -> None:
+        """Initializes the InvalidTokenException."""
+        self.errors = error
+        super().__init__("Invalid token.")

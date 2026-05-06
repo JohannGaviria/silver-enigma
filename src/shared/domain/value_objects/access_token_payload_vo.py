@@ -1,16 +1,16 @@
-"""This module contains the TokenPayloadVO class."""
+"""This module contains the AccessTokenPayloadVO class."""
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
 
 from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
-from src.shared.domain.exceptions.exception import InvalidTokenPayloadException
+from src.shared.domain.exceptions.exception import InvalidAccessTokenPayloadException
 from src.shared.domain.value_objects.base_value_object import BaseValueObject
 
 
 @dataclass(frozen=True)
-class TokenPayloadVO(BaseValueObject):
+class AccessTokenPayloadVO(BaseValueObject):
     """Value Object representing the payload of a JWT token.
 
     Attributes:
@@ -29,7 +29,7 @@ class TokenPayloadVO(BaseValueObject):
         """Validate the attributes of the TokenPayloadVO.
 
         Raises:
-            InvalidTokenPayloadException: If any of the attributes are invalid.
+            InvalidAccessTokenPayloadException: If any of the attributes are invalid.
         """
         errors: list = []
 
@@ -43,8 +43,10 @@ class TokenPayloadVO(BaseValueObject):
             errors.append("sub must be a valid UUID.")
         if self.role is None:
             errors.append("role cannot be empty.")
+        if not isinstance(self.role, UserRoleEnum):
+            errors.append("role must be a valid UserRoleEnum.")
         if self.exp <= datetime.now(UTC):
             errors.append("exp must be in the future.")
 
         if errors:
-            raise InvalidTokenPayloadException(errors)
+            raise InvalidAccessTokenPayloadException(errors)
