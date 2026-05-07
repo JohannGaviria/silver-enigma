@@ -1,5 +1,4 @@
 import pytest
-from faker import Faker
 
 from src.shared.domain.exceptions.exception import InvalidAccessTokenResponseException
 from src.shared.domain.value_objects.access_token_response_vo import (
@@ -10,7 +9,7 @@ from src.shared.domain.value_objects.token_vo import TokenVO
 
 class TestAccessTokenResponseVO:
     def test_should_create_access_token_response_when_valid_data_is_provided(
-        self, faker: Faker, token: str, access_token_type: list[str]
+        self, token: str, access_token_type: list[str]
     ) -> None:
         """Test that the AccessTokenResponseVO is created successfully when valid data is provided."""
         access_token_vo = AccessTokenResponseVO(

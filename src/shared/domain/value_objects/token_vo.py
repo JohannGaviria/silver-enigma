@@ -25,3 +25,11 @@ class TokenVO(BaseValueObject):
         """
         if self.token is None or not self.token.strip():
             raise InvalidTokenException("Token cannot be empty.")
+
+    def __str__(self) -> str:
+        """Return the string representation of the token.
+
+        Returns:
+            str: The token string.
+        """
+        return self.token

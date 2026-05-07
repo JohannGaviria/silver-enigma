@@ -42,12 +42,15 @@ class CacheKeyVO(BaseValueObject):
         # Example valid keys: cache:user:123, cache:session:abc:def
         CACHE_PATTERN = r"^cache:[a-zA-Z0-9_]+:[a-zA-Z0-9_]+(:[^:]+)?$"
 
-        if self.key is None or not self.key.strip():
-            errors.append("cache_key cannot be empty.")
+        if self.key is None:
+            raise InvalidCacheKeyException(["cache key cannot be empty."])
+
+        if not self.key.strip():
+            errors.append("cache key cannot be empty.")
         if not re.match(CACHE_PATTERN, self.key):
-            errors.append("Invalid cache_key format.")
+            errors.append("Invalid cache key format.")
         if len(self.key) > 250:
-            errors.append("cache_key too long (max 250 characters).")
+            errors.append("cache key too long (max 250 characters).")
 
         if errors:
             raise InvalidCacheKeyException(errors)

@@ -21,3 +21,8 @@ class TestTokenVO:
         """
         with pytest.raises(InvalidTokenException):
             TokenVO(token=token)  # type: ignore
+
+    def test_str_method_should_return_token_string(self, token: str) -> None:
+        """Test that the __str__ method of TokenVO returns the token string."""
+        token_vo = TokenVO(token=token)
+        assert str(token_vo) == token

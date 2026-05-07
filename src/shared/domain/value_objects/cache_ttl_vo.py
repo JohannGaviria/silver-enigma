@@ -25,7 +25,7 @@ class CacheTTLVO(BaseValueObject):
         errors: list[str] = []
 
         if self.seconds is None:
-            errors.append("seconds cannot be empty.")
+            raise InvalidCacheTTLException(["seconds cannot be empty."])
         if self.seconds < 0:
             errors.append("seconds must be positive.")
         if self.seconds > 259200:

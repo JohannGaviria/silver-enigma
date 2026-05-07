@@ -3,8 +3,10 @@ from uuid import UUID
 import pytest
 from faker import Faker
 
-from src.shared.domain.exceptions.exception import InvalidRefreshTokenInputException
-from src.shared.domain.value_objects.refresh_token_cache_value_vo import (
+from src.modules.auth.domain.exceptions.auth_exception import (
+    InvalidRefreshTokenCacheValueException,
+)
+from src.modules.auth.domain.value_objects.refresh_token_cache_value_vo import (
     RefreshTokenCacheValueVO,
 )
 
@@ -45,11 +47,11 @@ class TestRefreshTokenCacheValueVO:
         assert first.jti != second.jti
 
     def test_should_raise_exception_when_jti_is_none(self, faker: Faker) -> None:
-        """Test that the RefreshTokenCacheValueVO raises an InvalidRefreshTokenInputException.
+        """Test that the RefreshTokenCacheValueVO raises an InvalidRefreshTokenCacheValueException.
 
         when the jti is None.
         """
-        with pytest.raises(InvalidRefreshTokenInputException):
+        with pytest.raises(InvalidRefreshTokenCacheValueException):
             RefreshTokenCacheValueVO(
                 jti=None,  # type: ignore
                 sub=UUID(faker.uuid4()),
@@ -59,22 +61,22 @@ class TestRefreshTokenCacheValueVO:
     def test_should_raise_exception_when_jti_is_not_a_uuid(
         self, faker: Faker, jti: str | int
     ) -> None:
-        """Test that the RefreshTokenCacheValueVO raises an InvalidRefreshTokenInputException.
+        """Test that the RefreshTokenCacheValueVO raises an InvalidRefreshTokenCacheValueException.
 
         when the jti is not a valid UUID.
         """
-        with pytest.raises(InvalidRefreshTokenInputException):
+        with pytest.raises(InvalidRefreshTokenCacheValueException):
             RefreshTokenCacheValueVO(
                 jti=jti,  # type: ignore
                 sub=UUID(faker.uuid4()),
             )
 
     def test_should_raise_exception_when_sub_is_none(self, faker: Faker) -> None:
-        """Test that the RefreshTokenCacheValueVO raises an InvalidRefreshTokenInputException.
+        """Test that the RefreshTokenCacheValueVO raises an InvalidRefreshTokenCacheValueException.
 
         when the sub is None.
         """
-        with pytest.raises(InvalidRefreshTokenInputException):
+        with pytest.raises(InvalidRefreshTokenCacheValueException):
             RefreshTokenCacheValueVO(
                 jti=UUID(faker.uuid4()),
                 sub=None,  # type: ignore
@@ -84,11 +86,11 @@ class TestRefreshTokenCacheValueVO:
     def test_should_raise_exception_when_sub_is_not_a_uuid(
         self, faker: Faker, sub: str | int
     ) -> None:
-        """Test that the RefreshTokenCacheValueVO raises an InvalidRefreshTokenInputException.
+        """Test that the RefreshTokenCacheValueVO raises an InvalidRefreshTokenCacheValueException.
 
         when the sub is not a valid UUID.
         """
-        with pytest.raises(InvalidRefreshTokenInputException):
+        with pytest.raises(InvalidRefreshTokenCacheValueException):
             RefreshTokenCacheValueVO(
                 jti=UUID(faker.uuid4()),
                 sub=sub,  # type: ignore

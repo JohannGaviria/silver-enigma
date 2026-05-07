@@ -34,15 +34,16 @@ class CacheEntryVO[CacheValueType: CacheValueVO](BaseValueObject):
         errors: list[str] = []
 
         if self.key is None:
-            errors.append("key cannot be empty.")
+            raise InvalidCacheEntryException(["key cannot be empty."])
+        if self.ttl is None:
+            raise InvalidCacheEntryException(["ttl cannot be empty."])
+        if self.value is None:
+            raise InvalidCacheEntryException(["value cannot be empty."])
+
         if not isinstance(self.key, CacheKeyVO):
             errors.append("key must be a CacheKeyVO instance.")
-        if self.ttl is None:
-            errors.append("ttl cannot be empty.")
         if not isinstance(self.ttl, CacheTTLVO):
             errors.append("ttl must be a CacheTTLVO instance.")
-        if self.value is None:
-            errors.append("value cannot be empty.")
         if not isinstance(self.value, CacheValueVO):
             errors.append("value must be a CacheValueVO instance.")
 

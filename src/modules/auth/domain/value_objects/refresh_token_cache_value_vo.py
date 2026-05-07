@@ -3,13 +3,15 @@
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
-from src.shared.domain.exceptions.exception import InvalidRefreshTokenInputException
-from src.shared.domain.value_objects.base_value_object import BaseValueObject
+from src.modules.auth.domain.exceptions.auth_exception import (
+    InvalidRefreshTokenCacheValueException,
+)
+from src.shared.domain.value_objects.cache_value_vo import CacheValueVO
 
 
 @dataclass(frozen=True)
-class RefreshTokenCacheValueVO(BaseValueObject):
-    """Value Object representing the input data required to generate a refresh token.
+class RefreshTokenCacheValueVO(CacheValueVO):
+    """Value object representing the value stored in cache for a refresh token.
 
     Attributes:
         jti (UUID): The unique identifier for the token (JWT ID) to associate with
@@ -25,7 +27,7 @@ class RefreshTokenCacheValueVO(BaseValueObject):
         """Validate the attributes of the RefreshTokenCacheValueVO.
 
         Raises:
-            InvalidRefreshTokenInputException: If any of the attributes are invalid.
+            InvalidRefreshTokenCacheValueException: If any of the attributes are invalid.
         """
         errors: list = []
 
@@ -39,7 +41,7 @@ class RefreshTokenCacheValueVO(BaseValueObject):
             errors.append("sub must be a valid UUID.")
 
         if errors:
-            raise InvalidRefreshTokenInputException(errors)
+            raise InvalidRefreshTokenCacheValueException(errors)
 
     @classmethod
     def create(cls, sub: UUID) -> "RefreshTokenCacheValueVO":
