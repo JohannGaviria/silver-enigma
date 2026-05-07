@@ -107,31 +107,34 @@ Copy `.env.example` to `.env` and edit as needed, or set the variables directly 
 cp .env.example .env
 ```
 
-| Category               | Key                    | Description                    | Example                                                                                                        |
-| ---------------------- | ---------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| Application Metadata   | APP_NAME               | Application name               | Silver Enigma                                                                                                  |
-| Application Metadata   | APP_SUMMARY            | Application summary            | B2B order management engine                                                                                    |
-| Application Metadata   | APP_DESCRIPTION        | Application description        | State-driven fulfillment engine                                                                                |
-| Backend Configuration  | DEBUG                  | Debug mode                     | True                                                                                                           |
-| Backend Configuration  | ENVIRONMENT            | Environment                    | development                                                                                                    |
-| Backend Configuration  | BACKEND_PORT           | Backend port                   | 8000                                                                                                           |
-| Backend Configuration  | BACKEND_WORKERS        | Backend workers                | 4                                                                                                              |
-| Backend Configuration  | CORS_ALLOW_ORIGINS     | Allowed frontend origins       | [https://app.midominio.com,https://admin.midominio.com](https://app.midominio.com,https://admin.midominio.com) |
-| Backend Configuration  | CORS_ALLOW_CREDENTIALS | Allow cookies/auth credentials | True                                                                                                           |
-| Backend Configuration  | FIRST_ADMIN_NAME       | Initial admin user name        | admin                                                                                                          |
-| Backend Configuration  | FIRST_ADMIN_EMAIL      | Initial admin email            | [admin@example.com](mailto:admin@example.com)                                                                  |
-| Backend Configuration  | FIRST_ADMIN_PASSWORD   | Initial admin password         | SecurePass!23                                                                                                  |
-| Database Configuration | DATABASE_URL           | Database URL                   | postgresql+asyncpg://postgres:password@postgres:5432/silver_enigma                                             |
-| Database Configuration | DATABASE_URL_ALEMBIC   | Database URL for alembic       | postgresql+psycopg2://postgres:password@postgres:5432/silver_enigma                                            |
-| Database Configuration | DB_HOST                | Database host                  | postgres                                                                                                       |
-| Database Configuration | DB_PORT                | Database port                  | 5432                                                                                                           |
-| Database Configuration | POSTGRES_USER          | PostgreSQL user                | postgres                                                                                                       |
-| Database Configuration | POSTGRES_DB            | PostgreSQL database            | silver_enigma                                                                                                  |
-| Database Configuration | POSTGRES_PASSWORD      | PostgreSQL password            | password                                                                                                       |
-| Redis Configuration    | REDIS_PORT             | Redis port                     | 6379                                                                                                           |
-| Redis Configuration    | REDIS_PASSWORD         | Redis password                 | password                                                                                                       |
-| Redis Configuration    | REDIS_HOST             | Redis host                     | redis                                                                                                          |
-| Redis Configuration    | REDIS_DB               | Redis database                 | 0                                                                                                              |
+| Category                       | Key                    | Description                    | Example                                                             |
+| ------------------------------ | ---------------------- | ------------------------------ | ------------------------------------------------------------------- |
+| Application Metadata           | APP_NAME               | Application name               | Silver Enigma                                                       |
+| Application Metadata           | APP_SUMMARY            | Application summary            | B2B order management engine                                         |
+| Application Metadata           | APP_DESCRIPTION        | Application description        | State-driven fulfillment engine                                     |
+| Backend Configuration          | DEBUG                  | Debug mode                     | True                                                                |
+| Backend Configuration          | ENVIRONMENT            | Environment                    | development                                                         |
+| Backend Configuration          | BACKEND_PORT           | Backend port                   | 8000                                                                |
+| Backend Configuration          | BACKEND_WORKERS        | Backend workers                | 4                                                                   |
+| Backend Configuration          | CORS_ALLOW_ORIGINS     | Allowed frontend origins       | [http://localhost:8000](http://localhost:8000)                      |
+| Backend Configuration          | CORS_ALLOW_CREDENTIALS | Allow cookies/auth credentials | True                                                                |
+| Backend Configuration          | FIRST_ADMIN_NAME       | Initial admin user name        | John Doe                                                            |
+| Backend Configuration          | FIRST_ADMIN_EMAIL      | Initial admin email            | [john.doe@admin.com](mailto:john.doe@admin.com)                     |
+| Backend Configuration          | FIRST_ADMIN_PASSWORD   | Initial admin password         | SecurePass!23                                                       |
+| Password Hashing Configuration | TIME_COST              | Argon2 time cost               | 3                                                                   |
+| Password Hashing Configuration | MEMORY_COST            | Argon2 memory cost             | 65536                                                               |
+| Password Hashing Configuration | PARALLELISM            | Argon2 parallelism factor      | 4                                                                   |
+| Database Configuration         | DATABASE_URL           | Database URL                   | postgresql+asyncpg://postgres:password@postgres:5432/silver_enigma  |
+| Database Configuration         | DATABASE_URL_ALEMBIC   | Database URL for alembic       | postgresql+psycopg2://postgres:password@postgres:5432/silver_enigma |
+| Database Configuration         | DB_HOST                | Database host                  | postgres                                                            |
+| Database Configuration         | DB_PORT                | Database port                  | 5432                                                                |
+| Database Configuration         | POSTGRES_USER          | PostgreSQL user                | postgres                                                            |
+| Database Configuration         | POSTGRES_DB            | PostgreSQL database            | silver_enigma                                                       |
+| Database Configuration         | POSTGRES_PASSWORD      | PostgreSQL password            | password                                                            |
+| Redis Configuration            | REDIS_PORT             | Redis port                     | 6379                                                                |
+| Redis Configuration            | REDIS_PASSWORD         | Redis password                 | password                                                            |
+| Redis Configuration            | REDIS_HOST             | Redis host                     | redis                                                               |
+| Redis Configuration            | REDIS_DB               | Redis database                 | 0                                                                   |
 
 ---
 

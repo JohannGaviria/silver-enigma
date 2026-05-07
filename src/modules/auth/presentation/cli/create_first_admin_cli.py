@@ -59,9 +59,15 @@ async def _run() -> None:
             logger_factory_outbound=logger_factory,
         )
 
+        password_hash_outbound = Argon2PasswordHashOutboundAdapter(
+            time_cost=settings.TIME_COST,
+            memory_cost=settings.MEMORY_COST,
+            parallelism=settings.PARALLELISM,
+        )
+
         use_case = CreateFirstAdminUseCase(
             unit_of_work=unit_of_work,
-            password_hash_outbound=Argon2PasswordHashOutboundAdapter(),
+            password_hash_outbound=password_hash_outbound,
             logger_factory_outbound=logger_factory,
         )
 
