@@ -59,3 +59,30 @@ class InvalidTokenException(BaseDomainException):
         """Initializes the InvalidTokenException."""
         self.errors = error
         super().__init__("Invalid token.")
+
+
+class InvalidCacheKeyException(BaseDomainException):
+    """Exception raised when a cache key is invalid."""
+
+    def __init__(self, errors: list[str]) -> None:
+        """Initializes the InvalidCacheKeyException."""
+        self.errors = errors
+        super().__init__("Invalid cache key.")
+
+
+class InvalidCacheTTLException(BaseDomainException):
+    """Exception raised when a cache TTL value is invalid."""
+
+    def __init__(self, errors: list[str]) -> None:
+        """Initializes the InvalidCacheTTLException."""
+        self.errors = errors
+        super().__init__("Invalid cache TTL.")
+
+
+class InvalidCacheEntryException(BaseDomainException):
+    """Exception raised when a cache entry is invalid."""
+
+    def __init__(self, errors: list[str]) -> None:
+        """Initializes the InvalidCacheEntryException."""
+        self.errors = errors
+        super().__init__("Invalid cache entry.")
