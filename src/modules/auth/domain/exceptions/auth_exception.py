@@ -106,3 +106,11 @@ class InvalidRefreshTokenCacheValueException(BaseDomainException):
         """
         self.errors = errors
         super().__init__("Invalid refresh token cache value.")
+
+
+class AuthenticationFailedException(BaseDomainException):
+    """Exception raised when user authentication fails due to invalid credentials."""
+
+    def __init__(self) -> None:
+        """Initializes the AuthenticationFailedException."""
+        super().__init__("Authentication failed due to invalid credentials.")
