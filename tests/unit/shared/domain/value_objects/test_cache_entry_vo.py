@@ -18,6 +18,9 @@ class FakeCacheValueVO(CacheValueVO):
     def _validate(self) -> None:
         pass
 
+    def to_dict(self) -> dict:
+        return {"value": self.value}
+
 
 class TestCacheEntryVO:
     def test_should_create_cache_entry_when_valid_data_is_provided(

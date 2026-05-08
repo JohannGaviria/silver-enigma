@@ -43,6 +43,14 @@ class RefreshTokenCacheValueVO(CacheValueVO):
         if errors:
             raise InvalidRefreshTokenCacheValueException(errors)
 
+    def to_dict(self) -> dict:
+        """Convert to dictionary for serialization.
+
+        Returns:
+            dict: dictionary representation of the cache value.
+        """
+        return {"jti": str(self.jti), "sub": str(self.sub)}
+
     @classmethod
     def create(cls, sub: UUID) -> "RefreshTokenCacheValueVO":
         """Factory method to create a RefreshTokenCacheValueVO with an auto-generated jti.

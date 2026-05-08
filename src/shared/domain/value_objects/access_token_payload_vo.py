@@ -50,3 +50,16 @@ class AccessTokenPayloadVO(BaseValueObject):
 
         if errors:
             raise InvalidAccessTokenPayloadException(errors)
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary for serialization.
+
+        Returns:
+            dict: dictionary representation of the access token payload.
+        """
+        return {
+            "jti": str(self.jti),
+            "sub": str(self.sub),
+            "role": self.role.value,
+            "exp": self.exp,
+        }

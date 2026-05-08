@@ -89,3 +89,8 @@ class TestCacheKeyVO:
 
         with pytest.raises(InvalidCacheKeyException):
             CacheKeyVO(key=key)
+
+    def test_str_method_should_return_key_string(self) -> None:
+        """Test that the __str__ method of CacheKeyVO returns the token string."""
+        cache_key_vo = CacheKeyVO("cache:user:123")
+        assert str(cache_key_vo) == "cache:user:123"

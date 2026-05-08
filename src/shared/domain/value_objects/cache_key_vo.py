@@ -54,3 +54,11 @@ class CacheKeyVO(BaseValueObject):
 
         if errors:
             raise InvalidCacheKeyException(errors)
+
+    def __str__(self) -> str:
+        """Returns the string representation of the key.
+
+        Returns:
+            str: The cache key string.
+        """
+        return self.key

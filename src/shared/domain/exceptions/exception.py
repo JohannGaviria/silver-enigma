@@ -86,3 +86,30 @@ class InvalidCacheEntryException(BaseDomainException):
         """Initializes the InvalidCacheEntryException."""
         self.errors = errors
         super().__init__("Invalid cache entry.")
+
+
+class CacheRetrievalException(BaseDomainException):
+    """Exception raised when there is an error retrieving data from the cache."""
+
+    def __init__(self, error: str) -> None:
+        """Initializes the CacheRetrievalException."""
+        self.errors = error
+        super().__init__("Error retrieving data from cache.")
+
+
+class CacheStorageException(BaseDomainException):
+    """Exception raised when there is an error storing data in the cache."""
+
+    def __init__(self, error: str) -> None:
+        """Initializes the CacheStorageException."""
+        self.errors = error
+        super().__init__("Error storing data in cache.")
+
+
+class CacheDeletionException(BaseDomainException):
+    """Exception raised when there is an error deleting data from the cache."""
+
+    def __init__(self, error: str) -> None:
+        """Initializes the CacheDeletionException."""
+        self.errors = error
+        super().__init__("Error deleting data from cache.")
