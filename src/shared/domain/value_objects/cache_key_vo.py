@@ -40,7 +40,7 @@ class CacheKeyVO(BaseValueObject):
 
         # Regex pattern:
         # Example valid keys: cache:user:123, cache:session:abc:def
-        CACHE_PATTERN = r"^cache:[a-zA-Z0-9_]+:[a-zA-Z0-9_]+(:[^:]+)?$"
+        CACHE_PATTERN = r"^cache:[^:\s]+:[^:\s]+(:[^:\s]+)?$"
 
         if self.key is None:
             raise InvalidCacheKeyException(["cache key cannot be empty."])

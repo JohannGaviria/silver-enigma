@@ -7,7 +7,11 @@ from uuid import UUID
 import jwt
 
 from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
-from src.shared.domain.exceptions.exception import InvalidAccessTokenPayloadException
+from src.shared.domain.exceptions.exception import (
+    ExpiredTokenException,
+    InvalidAccessTokenPayloadException,
+    InvalidTokenException,
+)
 from src.shared.domain.ports.outbound.token_outbound_port import TokenOutboundPort
 from src.shared.domain.value_objects.access_token_input_vo import AccessTokenInputVO
 from src.shared.domain.value_objects.access_token_payload_vo import AccessTokenPayloadVO
@@ -68,16 +72,16 @@ class PyJWTTokenOutboundAdapter(TokenOutboundPort):
 
         return value
 
-    def _generate(self, payload: AccessTokenInputVO | None = None) -> TokenVO:
-        """Generates a JWT token based on the provided payload.
+    def _generate(self, input: AccessTokenInputVO | None = None) -> TokenVO:
+        """Generates a JWT token based on the provided input.
 
         Args:
-            payload (AccessTokenInputVO | None): The input data used to generate the token.
-                If None, a token with an empty payload will be generated.
+            input (AccessTokenInputVO | None): The input data used to generate the token.
+                If None, a token with an empty input will be generated.
         """
-        # If no payload is provided, generate a token with an empty payload.
+        # If no input is provided, generate a token with an empty input.
         # This can be used for generating refresh tokens that do not require specific claims.
-        if payload is None:
+        if input is None:
             return TokenVO(
                 jwt.encode(
                     payload={},
@@ -86,13 +90,13 @@ class PyJWTTokenOutboundAdapter(TokenOutboundPort):
                 )
             )
 
-        # Generate the access token payload with the provided
+        # Generate the access token input with the provided
         # input data and set the expiration time.
         access_token_payload = AccessTokenPayloadVO(
-            jti=payload.jti,
-            sub=payload.sub,
-            role=payload.role,
-            exp=datetime.now(UTC) - timedelta(seconds=self.access_expires_in),
+            jti=input.jti,
+            sub=input.sub,
+            role=input.role,
+            exp=datetime.now(UTC) + timedelta(seconds=self.access_expires_in),
         )
         return TokenVO(
             jwt.encode(
@@ -140,7 +144,17 @@ class PyJWTTokenOutboundAdapter(TokenOutboundPort):
         Returns:
             AccessTokenPayloadVO: The decoded payload of the JWT token.
         """
-        payload = jwt.decode(str(token), self.token_secret_key, self.token_algorithm)
+        try:
+            payload = jwt.decode(
+                str(token), self.token_secret_key, self.token_algorithm
+            )
+        except jwt.ExpiredSignatureError as e:
+            raise ExpiredTokenException() from e
+
+        except jwt.InvalidTokenError as e:
+            raise InvalidTokenException(
+                "The provided token is invalid or malformed."
+            ) from e
 
         jti = self._get_required_claim(payload, "jti")
         sub = self._get_required_claim(payload, "sub")

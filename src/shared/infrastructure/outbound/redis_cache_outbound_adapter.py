@@ -3,7 +3,7 @@
 import json
 from collections.abc import Callable
 
-from redis import Redis, RedisError
+from redis.asyncio import Redis, RedisError
 
 from src.shared.domain.exceptions.exception import (
     CacheDeletionException,

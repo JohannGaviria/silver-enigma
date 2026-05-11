@@ -61,6 +61,14 @@ class InvalidTokenException(BaseDomainException):
         super().__init__("Invalid token.")
 
 
+class ExpiredTokenException(BaseDomainException):
+    """Exception raised when a token expired."""
+
+    def __init__(self) -> None:
+        """Initializes the ExpiredTokenException."""
+        super().__init__("The access token has expired. Please authenticate again.")
+
+
 class InvalidCacheKeyException(BaseDomainException):
     """Exception raised when a cache key is invalid."""
 

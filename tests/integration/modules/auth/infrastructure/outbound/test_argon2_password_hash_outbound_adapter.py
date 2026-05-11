@@ -43,9 +43,13 @@ class TestArgon2PasswordHashOutboundAdapter:
     # Method: verify
     # ---------------------------------------------------------------------------
 
-    def test_should_a(
+    def test_should_return_true_when_password_matches_hash(
         self, faker: Faker, password_hash_outbound: Argon2PasswordHashOutboundAdapter
     ) -> None:
+        """Test that the verify method returns True.
+
+        when the plain password matches the password hash.
+        """
         plain_password = PlainPasswordVO(faker.password())
 
         password_hash = password_hash_outbound.hash(plain_password)
@@ -56,9 +60,13 @@ class TestArgon2PasswordHashOutboundAdapter:
 
         assert result
 
-    def test_should_b(
+    def test_should_return_false_when_password_does_not_match_hash(
         self, faker: Faker, password_hash_outbound: Argon2PasswordHashOutboundAdapter
     ) -> None:
+        """Test that the verify method returns False.
+
+        when the plain password does not match the password hash.
+        """
         original_plain_password = PlainPasswordVO(faker.password())
         wrong_plain_password = PlainPasswordVO(faker.password())
 

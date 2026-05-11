@@ -1,6 +1,5 @@
 # tests/unit/shared/domain/value_objects/test_cache_entry_vo.py
 
-from dataclasses import dataclass
 
 import pytest
 
@@ -8,18 +7,7 @@ from src.shared.domain.exceptions.exception import InvalidCacheEntryException
 from src.shared.domain.value_objects.cache_entry_vo import CacheEntryVO
 from src.shared.domain.value_objects.cache_key_vo import CacheKeyVO
 from src.shared.domain.value_objects.cache_ttl_vo import CacheTTLVO
-from src.shared.domain.value_objects.cache_value_vo import CacheValueVO
-
-
-@dataclass(frozen=True)
-class FakeCacheValueVO(CacheValueVO):
-    value: str
-
-    def _validate(self) -> None:
-        pass
-
-    def to_dict(self) -> dict:
-        return {"value": self.value}
+from tests.conftest import FakeCacheValueVO
 
 
 class TestCacheEntryVO:
