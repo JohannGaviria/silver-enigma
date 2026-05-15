@@ -47,15 +47,17 @@ async def _run() -> None:
 
     logger = StructlogLoggerFactoryOutboundAdapter().get_logger(__name__)
 
-    engine = DatabaseEngine.get_engine()
+    engine = await DatabaseEngine.get_engine()
 
     try:
         logger.info("Starting first-admin bootstrap process")
 
+        session_factory = await DatabaseEngine.get_session_factory()
+
         logger_factory = StructlogLoggerFactoryOutboundAdapter()
 
         unit_of_work = SQLAlchemyUserUnitOfWorkAdapter(
-            session_factory=DatabaseEngine.get_session_factory(),
+            session_factory=session_factory,
             logger_factory_outbound=logger_factory,
         )
 

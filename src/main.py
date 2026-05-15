@@ -68,7 +68,7 @@ async def health_check() -> JSONResponse:
         dict: A dictionary containing the health status of the services.
     """
     db_status = await DatabaseEngine.health_check()
-    redis_status = RedisConnection.health_check()
+    redis_status = await RedisConnection.health_check()
 
     payload = {
         "status": "healthy" if db_status and redis_status else "unhealthy",
