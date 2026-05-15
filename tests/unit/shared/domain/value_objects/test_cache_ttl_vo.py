@@ -60,9 +60,9 @@ class TestCacheTTLVO:
     @pytest.mark.parametrize(
         "seconds",
         [
-            259201,
-            300000,
-            999999,
+            2592001,
+            3000000,
+            9999999,
         ],
     )
     def test_should_raise_exception_when_seconds_exceed_max_limit(

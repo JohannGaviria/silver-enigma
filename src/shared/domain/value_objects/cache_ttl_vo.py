@@ -28,7 +28,7 @@ class CacheTTLVO(BaseValueObject):
             raise InvalidCacheTTLException(["seconds cannot be empty."])
         if self.seconds < 0:
             errors.append("seconds must be positive.")
-        if self.seconds > 259200:
+        if self.seconds > 2592000:
             errors.append("seconds to long (max 30 days).")
 
         if errors:
