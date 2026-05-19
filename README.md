@@ -135,8 +135,8 @@ cp .env.example .env
 | Redis Configuration            | REDIS_PORT             | Redis port                            | 6379                                                                |
 | Redis Configuration            | REDIS_PASSWORD         | Redis password                        | password                                                            |
 | Redis Configuration            | REDIS_DB               | Redis logical database index          | 0                                                                   |
-| Token Configuration            | ACCESS_EXPIRES_IN      | Access token expiration time seconds  | 3600                                                                |
-| Token Configuration            | REFRESH_EXPIRES_IN     | Refresh token expiration time seconds | 2592000                                                             |
+| Token Configuration            | ACCESS_EXPIRES_IN      | Access token expiration time seconds  | 600                                                                 |
+| Token Configuration            | REFRESH_EXPIRES_IN     | Refresh token expiration time seconds | 259200                                                        |
 | Token Configuration            | TOKEN_SECRET_KEY       | JWT secret signing key                | secret_key                                                          |
 | Token Configuration            | TOKEN_ALGORITHM        | JWT signing algorithm                 | HS256                                                               |
 
