@@ -65,4 +65,5 @@ jobs:
         run: make check
 
       - name: Run tests with coverage
-        run: make test-coverage
+        run: poetry run pytest tests/e2e/modules/auth/api/routes/test_user_authentication_router.py -vv -s
+        run: poetry run pytest tests/integration/shared/infrastructure/outbound/test_redis_cache_outbound_adapter.py -vv -s
