@@ -13,6 +13,7 @@ from src.modules.auth.domain.exceptions.auth_exception import (
 from src.modules.auth.domain.ports.repositories.user_repository_port import (
     UserRepositoryPort,
 )
+from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.infrastructure.persistence.mappers.user_mapper import UserMapper
 from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
 from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
@@ -42,6 +43,35 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
         """
         self.session = session
         self._logger = logger_factory_outbound.get_logger(__name__)
+
+    async def find_by_email(self, email: EmailVO) -> UserEntity | None:
+        """Finds a user by email.
+
+        Args:
+            email (EmailVO): The email to search for.
+
+        Returns:
+            UserEntity | None: The user entity if found, otherwise None.
+
+        Raises:
+            UserRepositoryException: If a database error occurs during the query.
+        """
+        try:
+            stmt = select(UserModel).where(UserModel.email == str(email))
+            result = await self.session.execute(stmt)
+            model = result.scalar_one_or_none()
+
+            return UserMapper.to_entity(model) if model else None
+
+        except SQLAlchemyError as e:
+            self._logger.error(
+                "Database error while finding user by email",
+                exc_info=e,
+            )
+
+            raise UserRepositoryException(
+                "Database error while finding user by email."
+            ) from e
 
     async def exists_by_role(self, role: UserRoleEnum) -> bool:
         """Checks if a user with the specified role exists in the database.

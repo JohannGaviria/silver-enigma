@@ -47,21 +47,29 @@ async def _run() -> None:
 
     logger = StructlogLoggerFactoryOutboundAdapter().get_logger(__name__)
 
-    engine = DatabaseEngine.get_engine()
+    engine = await DatabaseEngine.get_engine()
 
     try:
         logger.info("Starting first-admin bootstrap process")
 
+        session_factory = await DatabaseEngine.get_session_factory()
+
         logger_factory = StructlogLoggerFactoryOutboundAdapter()
 
         unit_of_work = SQLAlchemyUserUnitOfWorkAdapter(
-            session_factory=DatabaseEngine.get_session_factory(),
+            session_factory=session_factory,
             logger_factory_outbound=logger_factory,
+        )
+
+        password_hash_outbound = Argon2PasswordHashOutboundAdapter(
+            time_cost=settings.TIME_COST,
+            memory_cost=settings.MEMORY_COST,
+            parallelism=settings.PARALLELISM,
         )
 
         use_case = CreateFirstAdminUseCase(
             unit_of_work=unit_of_work,
-            password_hash_outbound=Argon2PasswordHashOutboundAdapter(),
+            password_hash_outbound=password_hash_outbound,
             logger_factory_outbound=logger_factory,
         )
 

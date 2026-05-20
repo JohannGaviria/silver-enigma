@@ -26,8 +26,25 @@ jobs:
           --health-retries 5
           --health-start-period 15s
 
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli -a password ping"
+          --health-interval 10s
+          --health-timeout 3s
+          --health-retries 5
+          --health-start-period 5s
+        command: redis-server --requirepass password
+
     env:
       DATABASE_URL: postgresql+asyncpg://test-postgres:password@localhost:5432/test_silver_enigma
+
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_PASSWORD: password
 
     steps:
       - name: Checkout code
@@ -36,7 +53,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |

@@ -25,6 +25,17 @@ class Settings(BaseSettings):
     FIRST_ADMIN_EMAIL: str = Field(..., validation_alias="FIRST_ADMIN_EMAIL")
     FIRST_ADMIN_PASSWORD: str = Field(..., validation_alias="FIRST_ADMIN_PASSWORD")
 
+    # Password hashing configuration
+    TIME_COST: int = Field(..., validation_alias="TIME_COST")
+    MEMORY_COST: int = Field(..., validation_alias="MEMORY_COST")
+    PARALLELISM: int = Field(..., validation_alias="PARALLELISM")
+
+    # Token configuration
+    ACCESS_EXPIRES_IN: int = Field(..., validation_alias="ACCESS_EXPIRES_IN")
+    REFRESH_EXPIRES_IN: int = Field(..., validation_alias="REFRESH_EXPIRES_IN")
+    TOKEN_SECRET_KEY: str = Field(..., validation_alias="TOKEN_SECRET_KEY")
+    TOKEN_ALGORITHM: str = Field(..., validation_alias="TOKEN_ALGORITHM")
+
     # Database configuration
     DATABASE_URL: str = Field(..., validation_alias="DATABASE_URL")
     DATABASE_URL_ALEMBIC: str = Field(..., validation_alias="DATABASE_URL_ALEMBIC")
