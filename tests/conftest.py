@@ -1,12 +1,13 @@
 import os
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import pytest
 import pytest_asyncio
 from dotenv import load_dotenv
 from faker import Faker
+from httpx import ASGITransport, AsyncClient
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -15,14 +16,18 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from src.main import app
 from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adapter import (
     Argon2PasswordHashOutboundAdapter,
 )
 from src.modules.auth.infrastructure.persistence.repositories.sqlalchemy_user_repository_adapter import (
     SQLAlchemyUserRepositoryAdapter,
 )
+from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
+    SQLAlchemyUserUnitOfWorkAdapter,
+)
 from src.shared.domain.value_objects.cache_value_vo import CacheValueVO
-from src.shared.infrastructure.cache.redis_connection import RedisConnection
+from src.shared.infrastructure.database.database_engine import DatabaseEngine
 from src.shared.infrastructure.outbound.pyjwt_token_outbound_adapter import (
     PyJWTTokenOutboundAdapter,
 )
@@ -88,15 +93,42 @@ async def db_session(engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
 @pytest_asyncio.fixture()
 async def redis_client() -> AsyncGenerator[Redis, None]:
     """Fixture that provides a real async Redis client for integration tests."""
-    client = await RedisConnection.get_client()
+    client = Redis(
+        host="localhost",
+        port=6379,
+        db=0,
+        password="password",
+        decode_responses=True,
+    )
 
     await client.flushdb()
 
     yield client
 
     await client.flushdb()
+    await client.aclose()
 
-    await RedisConnection.close()
+
+@pytest_asyncio.fixture()
+async def async_client(
+    db_session: AsyncSession,
+) -> AsyncGenerator[AsyncClient, None]:
+    """Fixture that provides an AsyncClient instance."""
+    DatabaseEngine._session_factory = cast(
+        async_sessionmaker[AsyncSession],
+        lambda: db_session,
+    )
+
+    transport = ASGITransport(app=app)
+
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+    ) as client:
+        yield client
+
+    DatabaseEngine._session_factory = None
+    DatabaseEngine._engine = None
 
 
 # ---------------------------------------------------------------------------
@@ -183,4 +215,32 @@ def user_repository(
     """Fixture that provides an instance of SQLAlchemyUserRepositoryAdapter for testing."""
     return SQLAlchemyUserRepositoryAdapter(
         session=db_session, logger_factory_outbound=logger_factory_outbound
+    )
+
+
+@pytest.fixture()
+def pinned_uow(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyUserUnitOfWorkAdapter:
+    """Provide a UoW pinned to the test ``db_session``.
+
+    All writes go through the same connection that the conftest transaction
+    controls, so they are rolled back automatically at teardown.
+
+    Args:
+        db_session: The ``AsyncSession`` provided by the root conftest fixture.
+        logger_factory_outbound: Structlog logger factory.
+
+    Returns:
+        SQLAlchemyUserUnitOfWorkAdapter: A UoW ready for integration assertions.
+    """
+
+    class _FixedSessionMaker:
+        def __call__(self) -> AsyncSession:
+            return db_session
+
+    return SQLAlchemyUserUnitOfWorkAdapter(
+        session_factory=_FixedSessionMaker(),  # type: ignore[arg-type]
+        logger_factory_outbound=logger_factory_outbound,
     )
