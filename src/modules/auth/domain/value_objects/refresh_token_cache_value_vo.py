@@ -18,10 +18,12 @@ class RefreshTokenCacheValueVO(CacheValueVO):
             the refresh token.
         sub (UUID): The subject identifier (user ID) to associate with the
             refresh token.
+        expires_in (int): The number of seconds until the refresh token expires.
     """
 
     jti: UUID
     sub: UUID
+    expires_in: int
 
     def _validate(self) -> None:
         """Validate the attributes of the RefreshTokenCacheValueVO.
@@ -32,13 +34,22 @@ class RefreshTokenCacheValueVO(CacheValueVO):
         errors: list = []
 
         if self.jti is None:
-            errors.append("jti cannot be empty.")
+            raise InvalidRefreshTokenCacheValueException(["jti cannot be empty."])
+        if self.sub is None:
+            raise InvalidRefreshTokenCacheValueException(["sub cannot be empty."])
+        if self.expires_in is None:
+            raise InvalidRefreshTokenCacheValueException(
+                ["expires_in cannot be empty."]
+            )
+
         if not isinstance(self.jti, UUID):
             errors.append("jti must be a valid UUID.")
-        if self.sub is None:
-            errors.append("sub cannot be empty.")
         if not isinstance(self.sub, UUID):
             errors.append("sub must be a valid UUID.")
+        if not isinstance(self.expires_in, int):
+            errors.append("expires_in must be an integer.")
+        if self.expires_in <= 0:
+            errors.append("expires_in must be greater than 0.")
 
         if errors:
             raise InvalidRefreshTokenCacheValueException(errors)
@@ -49,13 +60,21 @@ class RefreshTokenCacheValueVO(CacheValueVO):
         Returns:
             dict: dictionary representation of the cache value.
         """
-        return {"jti": str(self.jti), "sub": str(self.sub)}
+        return {
+            "jti": str(self.jti),
+            "sub": str(self.sub),
+            "expires_in": self.expires_in,
+        }
 
     @classmethod
-    def create(cls, sub: UUID) -> "RefreshTokenCacheValueVO":
-        """Factory method to create a RefreshTokenCacheValueVO with an auto-generated jti.
+    def create(cls, sub: UUID, expires_in: int) -> "RefreshTokenCacheValueVO":
+        """Factory method to create a RefreshTokenCacheValueVO.
 
         Args:
             sub (UUID): The subject identifier (user ID) to associate with the refresh token.
+            expires_in (int): The number of seconds until the refresh token expires.
+
+        Returns:
+            RefreshTokenCacheValueVO: The RefreshTokenCacheValueVO instance.
         """
-        return cls(jti=uuid4(), sub=sub)
+        return cls(jti=uuid4(), sub=sub, expires_in=expires_in)

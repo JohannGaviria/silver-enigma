@@ -115,7 +115,9 @@ class UserAuthenticationUseCase:
                 refresh_token_response.refresh_token
             )
             ttl = CacheTTLVO(refresh_token_response.expires_in)
-            value = RefreshTokenCacheValueVO.create(user.id)
+            value = RefreshTokenCacheValueVO.create(
+                user.id, refresh_token_response.expires_in
+            )
 
             # Store the refresh token in cache with the associated user ID and jti
             entry = CacheEntryVO(key, ttl, value)
