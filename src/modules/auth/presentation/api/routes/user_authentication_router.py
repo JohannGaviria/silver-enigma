@@ -18,6 +18,7 @@ from src.modules.auth.presentation.api.mappers.user_authentication_mapper import
 )
 from src.modules.auth.presentation.api.schemas.user_authentication_schema import (
     UserAuthenticationRequestSchema,
+    UserAuthenticationResponseSchema,
 )
 from src.shared.presentation.api.schemas.schema import (
     ErrorsResponseSchema,
@@ -37,7 +38,7 @@ router = APIRouter()
     ),
     responses={
         status.HTTP_200_OK: {
-            "model": SuccessResponseSchema,
+            "model": SuccessResponseSchema[UserAuthenticationResponseSchema],
             "description": "User authentication successful.",
         },
         status.HTTP_400_BAD_REQUEST: {

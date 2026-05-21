@@ -1,7 +1,7 @@
 """This module defines standardized response schemas for API endpoints."""
 
 from enum import StrEnum
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from pydantic import BaseModel, field_validator
 
@@ -18,22 +18,21 @@ class StatusEnum(StrEnum):
     ERROR = "error"
 
 
-# Define a generic type variable for the data payload
-T = TypeVar("T")
+ResponseSchemaTypeVar = TypeVar("ResponseSchemaTypeVar", bound=BaseModel)
 
 
-class SuccessResponseSchema(BaseModel, Generic[T]):  # noqa: UP046
+class SuccessResponseSchema[ResponseSchemaTypeVar](BaseModel):
     """Schema for successful responses.
 
     Attributes:
         status (StatusEnum): The status of the response, default is 'success'.
         message (str): A descriptive success message.
-        data (T | None): The payload of the response, can be of any type.
+        data
     """
 
     status: StatusEnum = StatusEnum.SUCCESS
     message: str
-    data: T | None = None
+    data: ResponseSchemaTypeVar | None = None
 
 
 class ErrorsResponseSchema(BaseModel):
