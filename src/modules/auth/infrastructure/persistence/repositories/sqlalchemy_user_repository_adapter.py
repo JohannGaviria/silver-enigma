@@ -5,7 +5,6 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.exceptions.auth_exception import (
     UserAlreadyExistsException,
     UserRepositoryException,
@@ -16,6 +15,7 @@ from src.modules.auth.domain.ports.repositories.user_repository_port import (
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.infrastructure.persistence.mappers.user_mapper import UserMapper
 from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
     LoggerFactoryOutboundPort,
 )

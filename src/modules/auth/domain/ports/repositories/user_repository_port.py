@@ -3,8 +3,8 @@
 from abc import ABC, abstractmethod
 
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
 class UserRepositoryPort(ABC):

@@ -9,7 +9,6 @@ from src.modules.auth.application.use_cases.create_first_admin_use_case import (
     CreateFirstAdminUseCase,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.plain_password_vo import PlainPasswordVO
@@ -19,6 +18,7 @@ from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adap
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
 )
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapter import (
     StructlogLoggerFactoryOutboundAdapter,
 )

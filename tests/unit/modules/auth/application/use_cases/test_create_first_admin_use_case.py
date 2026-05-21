@@ -9,13 +9,13 @@ from src.modules.auth.application.dtos.create_first_admin_dto import (
 from src.modules.auth.application.use_cases.create_first_admin_use_case import (
     CreateFirstAdminUseCase,
 )
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.exceptions.auth_exception import (
     AdminAlreadyExistsException,
     InvalidEmailException,
     InvalidNameException,
     InvalidPlainPasswordException,
 )
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
 class TestCreateFirstAdminUseCase:

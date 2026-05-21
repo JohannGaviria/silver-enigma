@@ -5,7 +5,6 @@ from src.modules.auth.application.dtos.create_first_admin_dto import (
     CreateFirstAdminResponse,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.exceptions.auth_exception import (
     AdminAlreadyExistsException,
 )
@@ -18,6 +17,7 @@ from src.modules.auth.domain.ports.unit_of_work.user_unit_of_work_port import (
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.plain_password_vo import PlainPasswordVO
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
     LoggerFactoryOutboundPort,
 )

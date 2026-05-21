@@ -9,7 +9,6 @@ from src.modules.auth.application.dtos.create_first_admin_dto import (
 from src.modules.auth.application.use_cases.create_first_admin_use_case import (
     CreateFirstAdminUseCase,
 )
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.exceptions.auth_exception import (
     AdminAlreadyExistsException,
     InvalidEmailException,
@@ -20,6 +19,7 @@ from src.modules.auth.infrastructure.persistence.models.user_model import UserMo
 from src.modules.auth.infrastructure.persistence.repositories.sqlalchemy_user_repository_adapter import (
     SQLAlchemyUserRepositoryAdapter,
 )
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
 async def _count_admins(session: AsyncSession) -> int:

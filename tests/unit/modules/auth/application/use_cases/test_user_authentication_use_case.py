@@ -10,7 +10,6 @@ from src.modules.auth.application.use_cases.user_authentication_use_case import 
     UserAuthenticationUseCase,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.exceptions.auth_exception import (
     AuthenticationFailedException,
     InvalidEmailException,
@@ -21,6 +20,7 @@ from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.password_hash_vo import (
     PasswordHashVO,
 )
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.value_objects.access_token_response_vo import (
     AccessTokenResponseVO,
 )
