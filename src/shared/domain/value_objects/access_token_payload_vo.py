@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
 
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.exceptions.exception import InvalidAccessTokenPayloadException
 from src.shared.domain.value_objects.base_value_object import BaseValueObject
 

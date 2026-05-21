@@ -4,10 +4,10 @@ import pytest
 from faker import Faker
 
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.password_hash_vo import PasswordHashVO
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
 class TestUserEntity:

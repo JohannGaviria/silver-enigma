@@ -5,7 +5,6 @@ from faker import Faker
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.exceptions.auth_exception import (
     UserAlreadyExistsException,
     UserRepositoryException,
@@ -16,6 +15,7 @@ from src.modules.auth.domain.value_objects.password_hash_vo import PasswordHashV
 from src.modules.auth.infrastructure.persistence.repositories.sqlalchemy_user_repository_adapter import (
     SQLAlchemyUserRepositoryAdapter,
 )
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
 class TestSQLAlchemyUserRepositoryAdapter:

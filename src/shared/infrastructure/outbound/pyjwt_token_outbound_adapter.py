@@ -6,7 +6,7 @@ from uuid import UUID
 
 import jwt
 
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.exceptions.exception import (
     ExpiredTokenException,
     InvalidAccessTokenPayloadException,

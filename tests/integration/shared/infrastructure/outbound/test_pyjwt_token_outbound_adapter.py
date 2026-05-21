@@ -5,7 +5,7 @@ import jwt
 import pytest
 from faker import Faker
 
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.exceptions.exception import (
     ExpiredTokenException,
     InvalidAccessTokenPayloadException,
