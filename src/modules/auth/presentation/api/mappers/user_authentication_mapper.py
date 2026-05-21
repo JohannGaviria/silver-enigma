@@ -7,20 +7,22 @@ from src.modules.auth.application.dtos.user_authentication_dto import (
 from src.modules.auth.presentation.api.schemas.user_authentication_schema import (
     AccessTokenSchema,
     RefreshTokenSchema,
-    UserAuthenticationRequest,
+    UserAuthenticationRequestSchema,
     UserAuthenticationResponseSchema,
 )
 
 
 class UserAuthenticationMapper:
-    """Mapper for the UserAuthenticationRequest and UserAuthenticationResponseSchema."""
+    """Mapper for the UserAuthenticationRequestSchema and UserAuthenticationResponseSchema."""
 
     @staticmethod
-    def to_command(request: UserAuthenticationRequest) -> UserAuthenticationCommand:
-        """Convert a UserAuthenticationRequest to a UserAuthenticationCommand.
+    def to_command(
+        request: UserAuthenticationRequestSchema,
+    ) -> UserAuthenticationCommand:
+        """Convert a UserAuthenticationRequestSchema to a UserAuthenticationCommand.
 
         Args:
-            request (UserAuthenticationRequest): The UserAuthenticationRequest instance.
+            request (UserAuthenticationRequestSchema): The UserAuthenticationRequestSchema instance.
 
         Returns:
             UserAuthenticationCommand: The UserAuthenticationCommand instance.

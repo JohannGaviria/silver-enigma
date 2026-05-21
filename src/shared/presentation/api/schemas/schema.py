@@ -22,7 +22,7 @@ class StatusEnum(StrEnum):
 T = TypeVar("T")
 
 
-class SuccessResponse(BaseModel, Generic[T]):  # noqa: UP046
+class SuccessResponseSchema(BaseModel, Generic[T]):  # noqa: UP046
     """Schema for successful responses.
 
     Attributes:
@@ -36,7 +36,7 @@ class SuccessResponse(BaseModel, Generic[T]):  # noqa: UP046
     data: T | None = None
 
 
-class ErrorsResponse(BaseModel):
+class ErrorsResponseSchema(BaseModel):
     """Schema for error responses.
 
     Attributes:

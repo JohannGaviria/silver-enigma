@@ -4,7 +4,7 @@ import pytest
 from faker import Faker
 
 from src.modules.auth.application.dtos.create_first_admin_dto import (
-    CreateFirstAdminCommand,
+    CreateFirstAdminCommandDto,
 )
 from src.modules.auth.application.use_cases.create_first_admin_use_case import (
     CreateFirstAdminUseCase,
@@ -31,7 +31,7 @@ class TestCreateFirstAdminUseCase:
         """Use case returns a valid response when no admin exists yet."""
         password_hash_outbound_mock.hash.return_value = password_hash
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=faker.name(),
             email=faker.email(),
             plain_password="Secure@123",
@@ -63,7 +63,7 @@ class TestCreateFirstAdminUseCase:
         """UoW.commit() must be called exactly once on the happy path."""
         password_hash_outbound_mock.hash.return_value = password_hash
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=faker.name(),
             email=faker.email(),
             plain_password="Secure@123",
@@ -93,7 +93,7 @@ class TestCreateFirstAdminUseCase:
 
         password_hash_outbound_mock.hash.return_value = password_hash
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=faker.name(),
             email=faker.email(),
             plain_password="Secure@123",
@@ -134,7 +134,7 @@ class TestCreateFirstAdminUseCase:
         uow_mock.commit = AsyncMock()
         uow_mock.rollback = AsyncMock()
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=faker.name(),
             email=faker.email(),
             plain_password="Secure@123",
@@ -171,7 +171,7 @@ class TestCreateFirstAdminUseCase:
         uow_mock.commit = AsyncMock()
         uow_mock.rollback = AsyncMock()
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=faker.name(),
             email=faker.email(),
             plain_password="Secure@123",
@@ -210,7 +210,7 @@ class TestCreateFirstAdminUseCase:
         uow_mock.commit = AsyncMock()
         uow_mock.rollback = AsyncMock()
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=faker.name(),
             email=faker.email(),
             plain_password="Secure@123",
@@ -239,7 +239,7 @@ class TestCreateFirstAdminUseCase:
         """InvalidNameException must be raised before the UoW is entered."""
         password_hash_outbound_mock.hash.return_value = password_hash
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name="OneWordOnly",
             email=faker.email(),
             plain_password="Secure@123",
@@ -268,7 +268,7 @@ class TestCreateFirstAdminUseCase:
         """A name with more than 4 words must raise InvalidNameException."""
         password_hash_outbound_mock.hash.return_value = password_hash
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name="One Two Three Four Five",
             email=faker.email(),
             plain_password="Secure@123",
@@ -297,7 +297,7 @@ class TestCreateFirstAdminUseCase:
         """InvalidEmailException must be raised before the UoW is entered."""
         password_hash_outbound_mock.hash.return_value = password_hash
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=faker.name(),
             email="not-an-email",
             plain_password="Secure@123",
@@ -326,7 +326,7 @@ class TestCreateFirstAdminUseCase:
         """InvalidPlainPasswordException must be raised before the UoW is entered."""
         password_hash_outbound_mock.hash.return_value = password_hash
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=faker.name(),
             email=faker.email(),
             plain_password="weak",

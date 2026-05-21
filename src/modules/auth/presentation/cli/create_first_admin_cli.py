@@ -26,7 +26,7 @@ async def _run() -> None:
     """
     from src.config import settings
     from src.modules.auth.application.dtos.create_first_admin_dto import (
-        CreateFirstAdminCommand,
+        CreateFirstAdminCommandDto,
     )
     from src.modules.auth.application.use_cases.create_first_admin_use_case import (
         CreateFirstAdminUseCase,
@@ -73,7 +73,7 @@ async def _run() -> None:
             logger_factory_outbound=logger_factory,
         )
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=settings.FIRST_ADMIN_NAME,
             email=settings.FIRST_ADMIN_EMAIL,
             plain_password=settings.FIRST_ADMIN_PASSWORD,

@@ -10,7 +10,7 @@ from src.modules.auth.domain.exceptions.auth_exception import (
 from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapter import (
     StructlogLoggerFactoryOutboundAdapter,
 )
-from src.shared.presentation.api.schemas.schema import ErrorsResponse
+from src.shared.presentation.api.schemas.schema import ErrorsResponseSchema
 
 logger = StructlogLoggerFactoryOutboundAdapter()
 _logger = logger.get_logger(__name__)
@@ -45,6 +45,6 @@ def user_authentication_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content=jsonable_encoder(
-                ErrorsResponse(message=str(exc)), exclude_none=True
+                ErrorsResponseSchema(message=str(exc)), exclude_none=True
             ),
         )

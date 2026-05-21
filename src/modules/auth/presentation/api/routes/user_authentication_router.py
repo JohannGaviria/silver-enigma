@@ -17,9 +17,12 @@ from src.modules.auth.presentation.api.mappers.user_authentication_mapper import
     UserAuthenticationMapper,
 )
 from src.modules.auth.presentation.api.schemas.user_authentication_schema import (
-    UserAuthenticationRequest,
+    UserAuthenticationRequestSchema,
 )
-from src.shared.presentation.api.schemas.schema import ErrorsResponse, SuccessResponse
+from src.shared.presentation.api.schemas.schema import (
+    ErrorsResponseSchema,
+    SuccessResponseSchema,
+)
 
 router = APIRouter()
 
@@ -34,29 +37,29 @@ router = APIRouter()
     ),
     responses={
         status.HTTP_200_OK: {
-            "model": SuccessResponse,
+            "model": SuccessResponseSchema,
             "description": "User authentication successful.",
         },
         status.HTTP_400_BAD_REQUEST: {
-            "model": ErrorsResponse,
+            "model": ErrorsResponseSchema,
             "description": "User authentication failed due to invalid credentials.",
         },
         status.HTTP_422_UNPROCESSABLE_CONTENT: {
-            "model": ErrorsResponse,
+            "model": ErrorsResponseSchema,
             "description": "User authentication failed due to unexpected input.",
         },
         status.HTTP_401_UNAUTHORIZED: {
-            "model": ErrorsResponse,
+            "model": ErrorsResponseSchema,
             "description": "User authentication failed due to unauthorized access.",
         },
         status.HTTP_500_INTERNAL_SERVER_ERROR: {
-            "model": ErrorsResponse,
+            "model": ErrorsResponseSchema,
             "description": "User authentication failed due to an internal error.",
         },
     },
 )
 async def user_authentication(
-    request: UserAuthenticationRequest,
+    request: UserAuthenticationRequestSchema,
     use_case: UserAuthenticationUseCase = Depends(get_user_authentication_use_case),
 ) -> JSONResponse:
     """Authenticate a user and issue access + refresh tokens.
@@ -66,7 +69,7 @@ async def user_authentication(
     in Redis.
 
     Args:
-        request (UserAuthenticationRequest): Parsed and validated request body.
+        request (UserAuthenticationRequestSchema): Parsed and validated request body.
         use_case (UserAuthenticationUseCase): Injected use case instance.
 
     Returns:
@@ -79,7 +82,7 @@ async def user_authentication(
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=jsonable_encoder(
-            SuccessResponse(
+            SuccessResponseSchema(
                 message="User authentication successful.",
                 data=UserAuthenticationMapper.to_response(result),
             )

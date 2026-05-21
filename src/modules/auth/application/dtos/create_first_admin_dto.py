@@ -6,7 +6,7 @@ from uuid import UUID
 
 
 @dataclass(frozen=True)
-class BaseCreateFirstAdmin:
+class BaseCreateFirstAdminDto:
     """Base DTO for the CreateFirstAdminUseCase.
 
     Containing common attributes for both command and response DTOs.
@@ -21,7 +21,7 @@ class BaseCreateFirstAdmin:
 
 
 @dataclass(frozen=True)
-class CreateFirstAdminCommand(BaseCreateFirstAdmin):
+class CreateFirstAdminCommandDto(BaseCreateFirstAdminDto):
     """Command DTO for the CreateFirstAdminUseCase.
 
     Containing the details required to create the first admin user.
@@ -36,7 +36,7 @@ class CreateFirstAdminCommand(BaseCreateFirstAdmin):
 
 
 @dataclass(frozen=True)
-class CreateFirstAdminResponse(BaseCreateFirstAdmin):
+class CreateFirstAdminResponseDto(BaseCreateFirstAdminDto):
     """Response DTO for the CreateFirstAdminUseCase.
 
     Containing the details of the created admin user.

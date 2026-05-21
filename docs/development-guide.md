@@ -453,14 +453,14 @@ The following rules ensure consistency across the entire codebase.
 | Domain Event            | `<Action><Aggregate>Event`           | `ConfirmOrderService`              |
 | Exception               | `<Aggregate>Exception`               | `OrderException`                   |
 | Use Case                | `<Action><Aggregate>UseCase`         | `ConfirmOrderUseCase`              |
-| Command (DTO in)        | `<Action><Aggregate>Command`         | `ConfirmOrderCommand`              |
-| Response (DTO out)      | `<Action><Aggregate>Response`        | `ConfirmOrderResponse`             |
+| Command (DTO in)        | `<Action><Aggregate>CommandDto`      | `ConfirmOrderCommandDto`           |
+| Response (DTO out)      | `<Action><Aggregate>ResponseDto`     | `ConfirmOrderResponseDto`          |
 | ORM Model               | `<Aggregate>Model`                   | `OrderModel`                       |
 | Persistence Mapper      | `<Aggregate>PersistenceMapper`       | `OrderPersistenceMapper`           |
 | Repo Adapter            | `<Tech><Aggregate>RepositoryAdapter` | `SQLAlchemyOrderRepositoryAdapter` |
 | External Adapter        | `<Tech><Purpose>Adapter`             | `SMTPNotificationEmailAdapter`     |
-| Schema Request          | `<Action><Aggregate>Request`         | `ConfirmOrderRequest`              |
-| Schema Response         | `<Action><Aggregate>Response`        | `ConfirmOrderResponse`             |
+| Schema Request          | `<Action><Aggregate>RequestSchema`   | `ConfirmOrderRequestSchema`        |
+| Schema Response         | `<Action><Aggregate>ResponseSchema`  | `ConfirmOrderResponseSchema`       |
 | Router                  | `<Aggregate>Router`                  | `OrderRouter`                      |
 | API Mapper              | `<Aggregate>APIMapper`               | `OrderAPIMapper`                   |
 | Exception Handler       | `<Aggregate>ExceptionHandler`        | `OrderExceptionHandler`            |
