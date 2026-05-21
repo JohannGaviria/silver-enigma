@@ -3,7 +3,7 @@ from faker import Faker
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from src.modules.auth.application.dtos.create_first_admin_dto import (
-    CreateFirstAdminCommand,
+    CreateFirstAdminCommandDto,
 )
 from src.modules.auth.application.use_cases.create_first_admin_use_case import (
     CreateFirstAdminUseCase,
@@ -78,13 +78,13 @@ def create_first_admin_use_case(
 
 
 @pytest.fixture()
-def valid_admin_command(faker: Faker) -> CreateFirstAdminCommand:
-    """Provide a valid CreateFirstAdminCommand with randomised data.
+def valid_admin_command(faker: Faker) -> CreateFirstAdminCommandDto:
+    """Provide a valid CreateFirstAdminCommandDto with randomised data.
 
     Returns:
-        CreateFirstAdminCommand: A command instance ready to be executed.
+        CreateFirstAdminCommandDto: A command instance ready to be executed.
     """
-    return CreateFirstAdminCommand(
+    return CreateFirstAdminCommandDto(
         name=faker.name(),
         email=faker.email(),
         plain_password=faker.password(),

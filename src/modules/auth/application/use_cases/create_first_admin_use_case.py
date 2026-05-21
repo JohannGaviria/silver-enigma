@@ -1,8 +1,8 @@
 """This module contains the CreateFirstAdminUseCase class."""
 
 from src.modules.auth.application.dtos.create_first_admin_dto import (
-    CreateFirstAdminCommand,
-    CreateFirstAdminResponse,
+    CreateFirstAdminCommandDto,
+    CreateFirstAdminResponseDto,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
 from src.modules.auth.domain.exceptions.auth_exception import (
@@ -50,19 +50,19 @@ class CreateFirstAdminUseCase:
         self._logger: LoggerOutboundPort = logger_factory_outbound.get_logger(__name__)
 
     async def execute(
-        self, command: CreateFirstAdminCommand
-    ) -> CreateFirstAdminResponse:
+        self, command: CreateFirstAdminCommandDto
+    ) -> CreateFirstAdminResponseDto:
         """Executes the use case to create the first admin user.
 
         Opens a Unit of Work, checks whether an admin already exists, creates
         and persists the new user, and commits — all within a single transaction.
 
         Args:
-            command (CreateFirstAdminCommand): The command containing the details
+            command (CreateFirstAdminCommandDto): The command containing the details
                 for the new admin user.
 
         Returns:
-            CreateFirstAdminResponse: The response containing the details
+            CreateFirstAdminResponseDto: The response containing the details
                 of the created admin user.
 
         Raises:
@@ -101,7 +101,7 @@ class CreateFirstAdminUseCase:
 
         self._logger.info(f"admin user created with id: {user.id}")
 
-        return CreateFirstAdminResponse(
+        return CreateFirstAdminResponseDto(
             id=user.id,
             name=str(user.name),
             email=str(user.email),

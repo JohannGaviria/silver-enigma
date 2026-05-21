@@ -3,7 +3,7 @@
 from pydantic import BaseModel
 
 
-class UserAuthenticationRequest(BaseModel):
+class UserAuthenticationRequestSchema(BaseModel):
     """Schema for the user authentication request body.
 
     Attributes:
