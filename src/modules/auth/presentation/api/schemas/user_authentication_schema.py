@@ -14,6 +14,15 @@ class UserAuthenticationRequestSchema(BaseModel):
     email: str
     password: str
 
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "email": "john.doe@example.com",
+                "password": "SecurePass!23",
+            }
+        }
+    }
+
 
 class AccessTokenSchema(BaseModel):
     """Nested schema for the access token portion of the response.
@@ -51,3 +60,19 @@ class UserAuthenticationResponseSchema(BaseModel):
 
     access: AccessTokenSchema
     refresh: RefreshTokenSchema
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "access": {
+                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                    "token_type": "Bearer",
+                    "expires_in": 3600,
+                },
+                "refresh": {
+                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                    "expires_in": 3600,
+                },
+            }
+        }
+    }
