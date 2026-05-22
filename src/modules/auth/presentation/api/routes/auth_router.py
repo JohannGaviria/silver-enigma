@@ -2,8 +2,9 @@
 
 from fastapi import APIRouter
 
-from src.modules.auth.presentation.api.routes.user_authentication_router import (
-    router as user_authentication_router,
+from src.modules.auth.presentation.api.routes import (
+    admin_user_registration_router,
+    user_authentication_router,
 )
 
 router = APIRouter(
@@ -11,4 +12,5 @@ router = APIRouter(
     tags=["Authentication and Users"],
 )
 
-router.include_router(user_authentication_router)
+router.include_router(user_authentication_router.router)
+router.include_router(admin_user_registration_router.router)
