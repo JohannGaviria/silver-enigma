@@ -11,6 +11,7 @@ from src.modules.auth.application.use_cases.admin_user_registration_use_case imp
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
 from src.modules.auth.domain.exceptions.auth_exception import (
+    InsufficientPermissionsException,
     InvalidEmailException,
     InvalidNameException,
     InvalidPasswordHashException,
@@ -46,6 +47,7 @@ class TestAdminUserRegistrationUseCase:
             email=faker.email(),
             password=faker.password(),
             role=UserRoleEnum.ADMIN,
+            actor_role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -102,6 +104,7 @@ class TestAdminUserRegistrationUseCase:
             email=faker.email(),
             password=faker.password(),
             role=UserRoleEnum.ADMIN,
+            actor_role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -115,6 +118,41 @@ class TestAdminUserRegistrationUseCase:
 
         user_uow_mock.users.save.assert_not_awaited()
         user_uow_mock.commit.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_should_raise_exception_when_actor_is_not_admin(
+        self,
+        faker: Faker,
+        logger_factory_mock: Mock,
+        user_uow_mock: MagicMock,
+        password_hash_outbound_mock: Mock,
+    ) -> None:
+        """Test that the execute method raises an.
+
+        InsufficientPermissionsException when the actor is not an admin.
+        """
+        command = AdminUserRegistrationCommandDto(
+            name=faker.name(),
+            email=faker.email(),
+            password=faker.password(),
+            role=UserRoleEnum.BUYER,
+            actor_role=UserRoleEnum.SUPPLIER,
+        )
+
+        use_case = AdminUserRegistrationUseCase(
+            logger_factory_outbound=logger_factory_mock,
+            user_unit_of_work=user_uow_mock,
+            password_hash_outbound=password_hash_outbound_mock,
+        )
+
+        with pytest.raises(InsufficientPermissionsException):
+            await use_case.execute(command)
+
+        user_uow_mock.users.find_by_email.assert_not_awaited()
+        user_uow_mock.users.save.assert_not_awaited()
+        user_uow_mock.commit.assert_not_awaited()
+
+        password_hash_outbound_mock.hash.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_should_raise_exception_when_email_is_invalid(
@@ -133,6 +171,7 @@ class TestAdminUserRegistrationUseCase:
             email="invalid-email",
             password=faker.password(),
             role=UserRoleEnum.ADMIN,
+            actor_role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -161,6 +200,7 @@ class TestAdminUserRegistrationUseCase:
             email=faker.email(),
             password="123",
             role=UserRoleEnum.ADMIN,
+            actor_role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -189,6 +229,7 @@ class TestAdminUserRegistrationUseCase:
             email=faker.email(),
             password=faker.password(),
             role=UserRoleEnum.ADMIN,
+            actor_role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -223,6 +264,7 @@ class TestAdminUserRegistrationUseCase:
             email=faker.email(),
             password=faker.password(),
             role=UserRoleEnum.ADMIN,
+            actor_role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(

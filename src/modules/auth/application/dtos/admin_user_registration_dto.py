@@ -31,9 +31,11 @@ class AdminUserRegistrationCommandDto(BaseAdminUserRegistrationDto):
         email (str): The email of the user to be registered.
         password (str): The plain password of the user to be registered.
         role (UserRoleEnum): The role of the user to be registered.
+        actor_role (UserRoleEnum): The role of the user performing the registration.
     """
 
     password: str
+    actor_role: UserRoleEnum
 
 
 @dataclass(frozen=True)

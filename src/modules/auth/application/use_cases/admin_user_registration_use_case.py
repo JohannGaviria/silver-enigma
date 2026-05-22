@@ -5,7 +5,10 @@ from src.modules.auth.application.dtos.admin_user_registration_dto import (
     AdminUserRegistrationResponseDto,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.exceptions.auth_exception import UserAlreadyExistsException
+from src.modules.auth.domain.exceptions.auth_exception import (
+    InsufficientPermissionsException,
+    UserAlreadyExistsException,
+)
 from src.modules.auth.domain.ports.outbound.password_hash_outbound_port import (
     PasswordHashOutboundPort,
 )
@@ -15,6 +18,7 @@ from src.modules.auth.domain.ports.unit_of_work.user_unit_of_work_port import (
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.plain_password_vo import PlainPasswordVO
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
     LoggerFactoryOutboundPort,
 )
@@ -67,6 +71,16 @@ class AdminUserRegistrationUseCase:
         self._logger.info(
             "Executing admin user registration use case", email=command.email
         )
+
+        # Authorization check
+        if command.actor_role != UserRoleEnum.ADMIN:
+            self._logger.warning(
+                "Unauthorized registration attempt",
+                actor_role=command.actor_role,
+            )
+            raise InsufficientPermissionsException(
+                "Only administrators can register users."
+            )
 
         # Value Objects are validated eagerly at construction time, so domain
         # exceptions will propagate before we open the transaction.

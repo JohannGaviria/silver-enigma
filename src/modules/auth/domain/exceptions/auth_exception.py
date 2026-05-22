@@ -114,3 +114,16 @@ class AuthenticationFailedException(BaseDomainException):
     def __init__(self) -> None:
         """Initializes the AuthenticationFailedException."""
         super().__init__("Authentication failed due to invalid credentials.")
+
+
+class InsufficientPermissionsException(BaseDomainException):
+    """Exception raised when user authentication fails due to insufficient permissions."""
+
+    def __init__(self, error: str) -> None:
+        """Initializes the InsufficientPermissionsException.
+
+        Args:
+            error (str): A message describing the validation failure for the email address.
+        """
+        self.errors = error
+        super().__init__("Insufficient permissions.")
