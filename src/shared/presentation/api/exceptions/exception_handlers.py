@@ -5,6 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from src.shared.domain.exceptions.exception import (
+    AuthenticationTokenMissingException,
     CacheDeletionException,
     CacheRetrievalException,
     CacheStorageException,
@@ -244,6 +245,35 @@ def exception_handlers(app: FastAPI) -> None:
         """
         _logger.error(
             "expired token exception occurred while processing request",
+            request_method=request.method,
+            request_url=request.url.path,
+            exception_message=exc,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content=jsonable_encoder(
+                ErrorsResponseSchema(
+                    message=str(exc),
+                ),
+                exclude_none=True,
+            ),
+        )
+
+    @app.exception_handler(AuthenticationTokenMissingException)
+    async def authentication_token_missing_exception(
+        request: Request, exc: AuthenticationTokenMissingException
+    ) -> JSONResponse:
+        """Handle AuthenticationTokenMissingException.
+
+        Args:
+            request (Request): The FastAPI request object.
+            exc (AuthenticationTokenMissingException): The exception instance.
+
+        Returns:
+            JSONResponse with error details.
+        """
+        _logger.error(
+            "authentication token missing exception occurred while processing request",
             request_method=request.method,
             request_url=request.url.path,
             exception_message=exc,
