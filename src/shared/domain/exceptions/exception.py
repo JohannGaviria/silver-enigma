@@ -52,21 +52,29 @@ class InvalidRefreshTokenResponseException(BaseDomainException):
         super().__init__("Invalid refresh token response.")
 
 
+class AuthenticationTokenMissingException(BaseDomainException):
+    """Exception raised when no authentication token is provided."""
+
+    def __init__(self) -> None:
+        """Initializes the AuthenticationTokenMissingException."""
+        super().__init__("Authentication credentials were not provided.")
+
+
+class ExpiredTokenException(BaseDomainException):
+    """Exception raised when the access token has expired."""
+
+    def __init__(self) -> None:
+        """Initializes the ExpiredTokenException."""
+        super().__init__("Your session has expired. Please authenticate again.")
+
+
 class InvalidTokenException(BaseDomainException):
-    """Exception raised when a token is invalid."""
+    """Exception raised when the access token is invalid."""
 
     def __init__(self, error: str) -> None:
         """Initializes the InvalidTokenException."""
         self.errors = error
-        super().__init__("Invalid token.")
-
-
-class ExpiredTokenException(BaseDomainException):
-    """Exception raised when a token expired."""
-
-    def __init__(self) -> None:
-        """Initializes the ExpiredTokenException."""
-        super().__init__("The access token has expired. Please authenticate again.")
+        super().__init__("Authentication failed due to an invalid access token.")
 
 
 class InvalidCacheKeyException(BaseDomainException):

@@ -13,6 +13,9 @@ from src.modules.auth.domain.exceptions.auth_exception import (
     UserAlreadyExistsException,
     UserRepositoryException,
 )
+from src.modules.auth.presentation.api.exceptions.admin_user_registration_exception_handler import (
+    admin_user_registration_exception_handlers,
+)
 from src.modules.auth.presentation.api.exceptions.user_authentication_exception_handler import (
     user_authentication_exception_handlers,
 )
@@ -32,6 +35,7 @@ def auth_exception_handlers(app: FastAPI) -> None:
         app: The FastAPI application instance.
     """
     user_authentication_exception_handlers(app)
+    admin_user_registration_exception_handlers(app)
 
     @app.exception_handler(InvalidNameException)
     async def invalid_name_exception_handler(

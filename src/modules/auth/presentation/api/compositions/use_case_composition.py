@@ -2,6 +2,9 @@
 
 from fastapi import Depends
 
+from src.modules.auth.application.use_cases.admin_user_registration_use_case import (
+    AdminUserRegistrationUseCase,
+)
 from src.modules.auth.application.use_cases.user_authentication_use_case import (
     UserAuthenticationUseCase,
 )
@@ -68,4 +71,32 @@ def get_user_authentication_use_case(
         password_hash_outbound=password_hash_outbound,
         token_outbound=token_outbound,
         cache_outbound=cache_outbound,
+    )
+
+
+def get_admin_user_registration_use_case(
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+    user_unit_of_work: SQLAlchemyUserUnitOfWorkAdapter = Depends(get_user_uow),
+    password_hash_outbound: Argon2PasswordHashOutboundAdapter = Depends(
+        get_password_hash_outbound
+    ),
+) -> AdminUserRegistrationUseCase:
+    """Get the AdminUserRegistrationUseCase instance.
+
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory
+            for creating loggers.
+        user_unit_of_work (SQLAlchemyUserUnitOfWorkAdapter): The SQLAlchemy user unit of work adapter.
+        password_hash_outbound (Argon2PasswordHashOutboundAdapter): The password hash
+            outbound adapter.
+
+    Returns:
+        AdminUserRegistrationUseCase: The AdminUserRegistrationUseCase instance.
+    """
+    return AdminUserRegistrationUseCase(
+        logger_factory_outbound=logger_factory_outbound,
+        user_unit_of_work=user_unit_of_work,
+        password_hash_outbound=password_hash_outbound,
     )

@@ -1,5 +1,9 @@
+from collections.abc import Awaitable, Callable
+
 import pytest
 from faker import Faker
+from fastapi import status
+from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from src.modules.auth.application.dtos.create_first_admin_dto import (
@@ -121,3 +125,26 @@ async def created_user(
         await uow.commit()
 
     return user
+
+
+@pytest.fixture()
+def access_token_factory(
+    async_client: AsyncClient,
+) -> Callable[[str, str], Awaitable[str]]:
+
+    async def _factory(email: str, password: str) -> str:
+        response = await async_client.post(
+            url="/api/v1/auth/login",
+            json={
+                "email": email,
+                "password": password,
+            },
+        )
+
+        body = response.json()
+
+        assert response.status_code == status.HTTP_200_OK, body
+
+        return body["data"]["access"]["token"]
+
+    return _factory

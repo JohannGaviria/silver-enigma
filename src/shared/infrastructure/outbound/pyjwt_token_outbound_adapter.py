@@ -146,7 +146,9 @@ class PyJWTTokenOutboundAdapter(TokenOutboundPort):
         """
         try:
             payload = jwt.decode(
-                str(token), self.token_secret_key, self.token_algorithm
+                jwt=str(token),
+                key=self.token_secret_key,
+                algorithms=[self.token_algorithm],
             )
         except jwt.ExpiredSignatureError as e:
             raise ExpiredTokenException() from e
