@@ -99,7 +99,8 @@ async def admin_user_registration(
         status_code=status.HTTP_201_CREATED,
         content=jsonable_encoder(
             SuccessResponseSchema(
-                message="", data=AdminUserRegistrationMapper.to_response(result)
+                message="User registration successful.",
+                data=AdminUserRegistrationMapper.to_response(result),
             )
         ),
     )

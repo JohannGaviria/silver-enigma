@@ -27,6 +27,7 @@ from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_un
     SQLAlchemyUserUnitOfWorkAdapter,
 )
 from src.shared.domain.value_objects.cache_value_vo import CacheValueVO
+from src.shared.infrastructure.cache.redis_connection import RedisConnection
 from src.shared.infrastructure.database.database_engine import DatabaseEngine
 from src.shared.infrastructure.outbound.pyjwt_token_outbound_adapter import (
     PyJWTTokenOutboundAdapter,
@@ -107,6 +108,18 @@ async def redis_client() -> AsyncGenerator[Redis, None]:
 
     await client.flushdb()
     await client.aclose()
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def reset_redis_connection() -> AsyncGenerator[None, None]:
+    """Reset Redis singleton between tests."""
+    await RedisConnection.close()
+    RedisConnection._client = None
+
+    yield
+
+    await RedisConnection.close()
+    RedisConnection._client = None
 
 
 @pytest_asyncio.fixture()
