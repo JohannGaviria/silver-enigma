@@ -1,6 +1,7 @@
 """This module contains the UserRepositoryPort interface."""
 
 from abc import ABC, abstractmethod
+from uuid import UUID
 
 from src.modules.auth.domain.entities.user_entity import UserEntity
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
@@ -9,6 +10,19 @@ from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 class UserRepositoryPort(ABC):
     """Interface for the User Repository, defining the contract for user-related data operations."""
+
+    @abstractmethod
+    async def find_by_id(self, id: UUID) -> UserEntity | None:
+        """Finds a user by their ID.
+
+        Args:
+            id (UUID): The ID to check for existence.
+
+        Returns:
+            UserEntity | None: The user entity if found, or None if no user
+                with the specified ID exists.
+        """
+        pass
 
     @abstractmethod
     async def find_by_email(self, email: EmailVO) -> UserEntity | None:
