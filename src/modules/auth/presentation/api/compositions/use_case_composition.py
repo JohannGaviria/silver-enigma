@@ -5,6 +5,7 @@ from fastapi import Depends
 from src.modules.auth.application.use_cases.admin_user_registration_use_case import (
     AdminUserRegistrationUseCase,
 )
+from src.modules.auth.application.use_cases.logout_use_case import LogoutUseCase
 from src.modules.auth.application.use_cases.reissue_session_credentials_use_case import (
     ReissueSessionCredentialsUseCase,
 )
@@ -137,4 +138,28 @@ def get_reissue_session_credentials_use_case(
         cache_outbound=cache_outbound,
         token_outbound=token_outbound,
         user_repository=user_repository,
+    )
+
+
+def get_logout_use_case(
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+    cache_outbound: RedisCacheOutboundAdapter[RefreshTokenCacheValueVO] = Depends(
+        get_refresh_token_cache_outbound
+    ),
+) -> LogoutUseCase:
+    """Get the LogoutUseCase instance.
+
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory
+            for creating loggers.
+        cache_outbound (RedisCacheOutboundAdapter[RefreshTokenCacheValueVO]): The cache outbound
+            adapter.
+
+    Returns:
+        LogoutUseCase: The LogoutUseCase instance.
+    """
+    return LogoutUseCase(
+        logger_factory_outbound=logger_factory_outbound, cache_outbound=cache_outbound
     )
