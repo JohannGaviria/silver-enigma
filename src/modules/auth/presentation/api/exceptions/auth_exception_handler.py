@@ -11,10 +11,14 @@ from src.modules.auth.domain.exceptions.auth_exception import (
     InvalidPlainPasswordException,
     InvalidRefreshTokenCacheValueException,
     UserAlreadyExistsException,
+    UserNotFoundException,
     UserRepositoryException,
 )
 from src.modules.auth.presentation.api.exceptions.admin_user_registration_exception_handler import (
     admin_user_registration_exception_handlers,
+)
+from src.modules.auth.presentation.api.exceptions.reissue_session_credentials_exception_handler import (
+    reissue_session_credentials_exception_handlers,
 )
 from src.modules.auth.presentation.api.exceptions.user_authentication_exception_handler import (
     user_authentication_exception_handlers,
@@ -36,6 +40,7 @@ def auth_exception_handlers(app: FastAPI) -> None:
     """
     user_authentication_exception_handlers(app)
     admin_user_registration_exception_handlers(app)
+    reissue_session_credentials_exception_handlers(app)
 
     @app.exception_handler(InvalidNameException)
     async def invalid_name_exception_handler(
@@ -233,6 +238,33 @@ def auth_exception_handlers(app: FastAPI) -> None:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(
                 ErrorsResponseSchema(message=str(exc), details=exc.errors),
+                exclude_none=True,
+            ),
+        )
+
+    @app.exception_handler(UserNotFoundException)
+    async def user_not_found_exception_handler(
+        request: Request, exc: UserNotFoundException
+    ) -> JSONResponse:
+        """Handle UserNotFoundException.
+
+        Args:
+            request: The FastAPI request object.
+            exc: The exception instance.
+
+        Returns:
+            JSONResponse with error details.
+        """
+        _logger.error(
+            "user not found exception occurred while processing request",
+            request_method=request.method,
+            request_url=request.url.path,
+            exception_message=exc,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(
+                ErrorsResponseSchema(message=str(exc)),
                 exclude_none=True,
             ),
         )

@@ -1,5 +1,6 @@
 """This module contains the PyJWTTokenOutboundAdapter class."""
 
+import secrets
 from datetime import UTC, datetime, timedelta
 from typing import cast
 from uuid import UUID
@@ -130,7 +131,7 @@ class PyJWTTokenOutboundAdapter(TokenOutboundPort):
             RefreshTokenResponseVO: An object containing the generated
                 refresh token and its expiration time.
         """
-        refresh_token = self._generate()
+        refresh_token = TokenVO(secrets.token_urlsafe(64))
         return RefreshTokenResponseVO(
             refresh_token=refresh_token, expires_in=self.refresh_expires_in
         )
