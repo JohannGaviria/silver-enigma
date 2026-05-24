@@ -15,7 +15,9 @@ from src.modules.auth.domain.ports.repositories.user_repository_port import (
     UserRepositoryPort,
 )
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
-from src.modules.auth.infrastructure.persistence.mappers.user_mapper import UserMapper
+from src.modules.auth.infrastructure.persistence.mappers.user_mapper import (
+    UserPersistenceMapper,
+)
 from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
@@ -63,7 +65,7 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
             result = await self.session.execute(stmt)
             model = result.scalar_one_or_none()
 
-            return UserMapper.to_entity(model) if model else None
+            return UserPersistenceMapper.to_entity(model) if model else None
 
         except SQLAlchemyError as e:
             self._logger.error("Database error while finding user by ID", exc_info=e)
@@ -89,7 +91,7 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
             result = await self.session.execute(stmt)
             model = result.scalar_one_or_none()
 
-            return UserMapper.to_entity(model) if model else None
+            return UserPersistenceMapper.to_entity(model) if model else None
 
         except SQLAlchemyError as e:
             self._logger.error(
@@ -141,11 +143,11 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
             UserRepositoryException: If any other database error occurs.
         """
         try:
-            model = UserMapper.to_model(entity)
+            model = UserPersistenceMapper.to_model(entity)
             self.session.add(model)
             await self.session.flush()
             await self.session.refresh(model)
-            return UserMapper.to_entity(model)
+            return UserPersistenceMapper.to_entity(model)
 
         except IntegrityError as e:
             self._logger.error("Integrity error while saving user", exc_info=str(e))

@@ -14,7 +14,7 @@ from src.modules.auth.presentation.api.compositions.use_case_composition import 
     get_admin_user_registration_use_case,
 )
 from src.modules.auth.presentation.api.mappers.admin_user_registration_mapper import (
-    AdminUserRegistrationMapper,
+    AdminUserRegistrationApiMapper,
 )
 from src.modules.auth.presentation.api.schemas.admin_user_registration_schema import (
     AdminUserRegistrationRequestSchema,
@@ -92,7 +92,7 @@ async def admin_user_registration(
         JSONResponse: HTTP 201 with user registration response payload.
     """
     result: AdminUserRegistrationResponseDto = await use_case.execute(
-        AdminUserRegistrationMapper.to_command(request, current_user.role)
+        AdminUserRegistrationApiMapper.to_command(request, current_user.role)
     )
 
     return JSONResponse(
@@ -100,7 +100,7 @@ async def admin_user_registration(
         content=jsonable_encoder(
             SuccessResponseSchema(
                 message="User registration successful.",
-                data=AdminUserRegistrationMapper.to_response(result),
+                data=AdminUserRegistrationApiMapper.to_response(result),
             )
         ),
     )

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class UserAuthenticationCommand:
+class UserAuthenticationCommandDto:
     """Base DTO for the UserAuthenticationUseCase.
 
     Attributes:
@@ -17,7 +17,7 @@ class UserAuthenticationCommand:
 
 
 @dataclass(frozen=True)
-class AccessTokenResponse:
+class AccessTokenDto:
     """DTO representing the response for an access token.
 
     Attributes:
@@ -32,7 +32,7 @@ class AccessTokenResponse:
 
 
 @dataclass(frozen=True)
-class RefreshTokenResponse:
+class RefreshTokenDto:
     """DTO representing the response for a refresh token.
 
     Attributes:
@@ -45,18 +45,18 @@ class RefreshTokenResponse:
 
 
 @dataclass(frozen=True)
-class UserAuthenticationResponse:
+class UserAuthenticationResponseDto:
     """DTO representing the response of a successful user authentication.
 
     Attributes:
-        access (AccessTokenResponse): The access token response
+        access (AccessTokenDto): The access token response
             containing the token,type, and expiration.
-        refresh (RefreshTokenResponse): The refresh token response
+        refresh (RefreshTokenDto): The refresh token response
             containing the token and expiration.
     """
 
-    access: AccessTokenResponse
-    refresh: RefreshTokenResponse
+    access: AccessTokenDto
+    refresh: RefreshTokenDto
 
     @classmethod
     def response(
@@ -66,8 +66,8 @@ class UserAuthenticationResponse:
         access_expires_in: int,
         refresh_token: str,
         refresh_expires_in: int,
-    ) -> "UserAuthenticationResponse":
-        """Factory method to create a UserAuthenticationResponse from token values.
+    ) -> "UserAuthenticationResponseDto":
+        """Factory method to create a UserAuthenticationResponseDto from token values.
 
         Args:
             access_token (str): The access token string.
@@ -77,15 +77,13 @@ class UserAuthenticationResponse:
             refresh_expires_in (int): The expiration time in seconds for the refresh token.
 
         Returns:
-            UserAuthenticationResponse: An instance of UserAuthenticationResponse
+            UserAuthenticationResponseDto: An instance of UserAuthenticationResponseDto
                 containing the access and refresh token responses.
         """
-        access = AccessTokenResponse(
+        access = AccessTokenDto(
             token=access_token,
             token_type=access_token_type,
             expires_in=access_expires_in,
         )
-        refresh = RefreshTokenResponse(
-            token=refresh_token, expires_in=refresh_expires_in
-        )
+        refresh = RefreshTokenDto(token=refresh_token, expires_in=refresh_expires_in)
         return cls(access=access, refresh=refresh)

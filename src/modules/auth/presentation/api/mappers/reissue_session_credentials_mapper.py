@@ -12,8 +12,8 @@ from src.modules.auth.presentation.api.schemas.reissue_session_credentials_schem
 )
 
 
-class ReissueSessionCredentialsMapper:
-    """Mapper for the ReissueSessionCredentialsRequestSchema and ReissueSessionCredentialsResponseSchema."""
+class ReissueSessionCredentialsApiMapper:
+    """Mapper for the ReissueSessionCredentialsSchema to ReissueSessionCredentialsDto."""
 
     @staticmethod
     def to_command(

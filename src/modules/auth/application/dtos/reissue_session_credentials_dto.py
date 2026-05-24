@@ -15,7 +15,7 @@ class ReissueSessionCredentialsCommandDto:
 
 
 @dataclass(frozen=True)
-class AccessTokenResponseDto:
+class AccessTokenDto:
     """DTO representing the response for an access token.
 
     Attributes:
@@ -30,7 +30,7 @@ class AccessTokenResponseDto:
 
 
 @dataclass(frozen=True)
-class RefreshTokenResponseDto:
+class RefreshTokenDto:
     """DTO representing the response for a refresh token.
 
     Attributes:
@@ -47,14 +47,14 @@ class ReissueSessionCredentialsResponseDto:
     """DTO representing the response of a successful reissue session credentials.
 
     Attributes:
-        access (AccessTokenResponseDto): The access token response
+        access (AccessTokenDto): The access token response
             containing the token,type, and expiration.
-        refresh (RefreshTokenResponseDto): The refresh token response
+        refresh (RefreshTokenDto): The refresh token response
             containing the token and expiration.
     """
 
-    access: AccessTokenResponseDto
-    refresh: RefreshTokenResponseDto
+    access: AccessTokenDto
+    refresh: RefreshTokenDto
 
     @classmethod
     def response(
@@ -78,12 +78,10 @@ class ReissueSessionCredentialsResponseDto:
             ReissueSessionCredentialsDto: An instance of ReissueSessionCredentialsDto
                 containing the access and refresh token responses.
         """
-        access = AccessTokenResponseDto(
+        access = AccessTokenDto(
             token=access_token,
             token_type=access_token_type,
             expires_in=access_expires_in,
         )
-        refresh = RefreshTokenResponseDto(
-            token=refresh_token, expires_in=refresh_expires_in
-        )
+        refresh = RefreshTokenDto(token=refresh_token, expires_in=refresh_expires_in)
         return cls(access=access, refresh=refresh)

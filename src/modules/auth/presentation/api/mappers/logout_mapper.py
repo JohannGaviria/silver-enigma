@@ -1,11 +1,11 @@
-"""This module contains the LogoutAPIMapper class."""
+"""This module contains the Logout class."""
 
 from src.modules.auth.application.dtos.logout_dto import LogoutCommandDto
 from src.modules.auth.presentation.api.schemas.logout_schema import LogoutRequestSchema
 
 
-class LogoutAPIMapper:
-    """Mapper for the LogoutRequestSchema and LogoutCommandDto."""
+class LogoutApiMapper:
+    """Mapper for the LogoutSchema to LogoutDto."""
 
     @staticmethod
     def to_command(request: LogoutRequestSchema) -> LogoutCommandDto:
