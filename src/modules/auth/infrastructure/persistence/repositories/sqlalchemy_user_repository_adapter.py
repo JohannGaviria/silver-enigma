@@ -1,5 +1,7 @@
 """This module contains the SQLAlchemyUserRepositoryAdapter class."""
 
+from uuid import UUID
+
 from sqlalchemy import exists, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -43,6 +45,32 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
         """
         self.session = session
         self._logger = logger_factory_outbound.get_logger(__name__)
+
+    async def find_by_id(self, user_id: UUID) -> UserEntity | None:
+        """Finds a user by ID.
+
+        Args:
+            user_id (UUID): The ID of the user to search for.
+
+        Returns:
+            UserEntity | None: The user entity if found, otherwise None.
+
+        Raises:
+            UserRepositoryException: If a database error occurs during the query.
+        """
+        try:
+            stmt = select(UserModel).where(UserModel.id == user_id)
+            result = await self.session.execute(stmt)
+            model = result.scalar_one_or_none()
+
+            return UserMapper.to_entity(model) if model else None
+
+        except SQLAlchemyError as e:
+            self._logger.error("Database error while finding user by ID", exc_info=e)
+
+            raise UserRepositoryException(
+                "Database error while finding user by ID."
+            ) from e
 
     async def find_by_email(self, email: EmailVO) -> UserEntity | None:
         """Finds a user by email.
