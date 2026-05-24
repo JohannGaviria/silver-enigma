@@ -2,11 +2,15 @@
 
 from collections.abc import AsyncGenerator
 from typing import Any
+from uuid import UUID
 
 from fastapi import Depends
 from redis.asyncio import Redis
 
 from src.config import settings
+from src.modules.auth.domain.ports.repositories.user_repository_port import (
+    UserRepositoryPort,
+)
 from src.modules.auth.domain.value_objects.refresh_token_cache_value_vo import (
     RefreshTokenCacheValueVO,
 )
@@ -53,7 +57,11 @@ def refresh_token_cache_value_factory(
     Returns:
         RefreshTokenCacheValueVO: The RefreshTokenCacheValueVO instance.
     """
-    return RefreshTokenCacheValueVO(**data)
+    return RefreshTokenCacheValueVO(
+        jti=UUID(data["jti"]),
+        sub=UUID(data["sub"]),
+        expires_in=data["expires_in"],
+    )
 
 
 def get_refresh_token_cache_outbound(
@@ -102,3 +110,17 @@ async def get_user_uow(
         logger_factory_outbound=logger_factory_outbound,
     ) as uow:
         yield uow
+
+
+async def get_user_repository(
+    uow: SQLAlchemyUserUnitOfWorkAdapter = Depends(get_user_uow),
+) -> UserRepositoryPort:
+    """Get the SQLAlchemy user repository adapter.
+
+    Args:
+        uow (SQLAlchemyUserUnitOfWorkAdapter): The user unit of work.
+
+    Returns:
+        UserRepositoryPort: The user repository port.
+    """
+    return uow.users

@@ -5,6 +5,9 @@ from fastapi import Depends
 from src.modules.auth.application.use_cases.admin_user_registration_use_case import (
     AdminUserRegistrationUseCase,
 )
+from src.modules.auth.application.use_cases.reissue_session_credentials_use_case import (
+    ReissueSessionCredentialsUseCase,
+)
 from src.modules.auth.application.use_cases.user_authentication_use_case import (
     UserAuthenticationUseCase,
 )
@@ -14,12 +17,16 @@ from src.modules.auth.domain.value_objects.refresh_token_cache_value_vo import (
 from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adapter import (
     Argon2PasswordHashOutboundAdapter,
 )
+from src.modules.auth.infrastructure.persistence.repositories.sqlalchemy_user_repository_adapter import (
+    SQLAlchemyUserRepositoryAdapter,
+)
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
 )
 from src.modules.auth.presentation.api.compositions.infrastructure_composition import (
     get_password_hash_outbound,
     get_refresh_token_cache_outbound,
+    get_user_repository,
     get_user_uow,
 )
 from src.shared.infrastructure.outbound.pyjwt_token_outbound_adapter import (
@@ -99,4 +106,35 @@ def get_admin_user_registration_use_case(
         logger_factory_outbound=logger_factory_outbound,
         user_unit_of_work=user_unit_of_work,
         password_hash_outbound=password_hash_outbound,
+    )
+
+
+def get_reissue_session_credentials_use_case(
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+    cache_outbound: RedisCacheOutboundAdapter[RefreshTokenCacheValueVO] = Depends(
+        get_refresh_token_cache_outbound
+    ),
+    token_outbound: PyJWTTokenOutboundAdapter = Depends(get_token_outbound),
+    user_repository: SQLAlchemyUserRepositoryAdapter = Depends(get_user_repository),
+) -> ReissueSessionCredentialsUseCase:
+    """Get the ReissueSessionCredentialsUseCase instance.
+
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory
+            for creating loggers.
+        cache_outbound (RedisCacheOutboundAdapter[RefreshTokenCacheValueVO]): The cache outbound
+            adapter.
+        token_outbound (PyJWTTokenOutboundAdapter): The token outbound adapter.
+        user_repository (SQLAlchemyUserRepositoryAdapter): The repository for user data.
+
+    Returns:
+        ReissueSessionCredentialsUseCase: The ReissueSessionCredentialsUseCase instance.
+    """
+    return ReissueSessionCredentialsUseCase(
+        logger_factory_outbound=logger_factory_outbound,
+        cache_outbound=cache_outbound,
+        token_outbound=token_outbound,
+        user_repository=user_repository,
     )

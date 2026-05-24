@@ -127,3 +127,19 @@ class InsufficientPermissionsException(BaseDomainException):
         """
         self.errors = error
         super().__init__("Insufficient permissions.")
+
+
+class SessionNotFoundException(BaseDomainException):
+    """Exception raised when a session is not found in the cache."""
+
+    def __init__(self) -> None:
+        """Initializes the SessionNotFoundException."""
+        super().__init__("Session not found.")
+
+
+class UserNotFoundException(BaseDomainException):
+    """Exception raised when a user is not found in the database."""
+
+    def __init__(self) -> None:
+        """Initializes the UserNotFoundException."""
+        super().__init__("User not found.")

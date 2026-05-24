@@ -1,4 +1,5 @@
 from unittest.mock import AsyncMock, patch
+from uuid import UUID
 
 import pytest
 from faker import Faker
@@ -19,6 +20,61 @@ from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
 class TestSQLAlchemyUserRepositoryAdapter:
+    # ---------------------------------------------------------------------------
+    # Method: find_by_id
+    # ---------------------------------------------------------------------------
+
+    @pytest.mark.asyncio
+    async def test_should_return_user_when_user_with_id_exists(
+        self,
+        faker: Faker,
+        password_hash: str,
+        user_repository: SQLAlchemyUserRepositoryAdapter,
+    ) -> None:
+        """find_by_id returns the user entity when the ID exists."""
+        user = UserEntity.create(
+            name=NameVO(faker.name()),
+            email=EmailVO(faker.email()),
+            password=PasswordHashVO(password_hash),
+            role=UserRoleEnum.ADMIN,
+        )
+
+        await user_repository.save(user)
+
+        result = await user_repository.find_by_id(user.id)
+
+        assert result is not None
+        assert result.id == user.id
+        assert result.name == user.name
+        assert result.email == user.email
+        assert result.role == user.role
+
+    @pytest.mark.asyncio
+    async def test_should_return_none_when_user_with_id_does_not_exist(
+        self,
+        faker: Faker,
+        user_repository: SQLAlchemyUserRepositoryAdapter,
+    ) -> None:
+        """find_by_id returns None when no user exists with the given ID."""
+        result = await user_repository.find_by_id(UUID(faker.uuid4()))
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_should_raise_user_repository_exception_when_sqlalchemy_error_occurs_in_find_by_id(
+        self,
+        faker: Faker,
+        user_repository: SQLAlchemyUserRepositoryAdapter,
+    ) -> None:
+        """UserRepositoryException must propagate when the DB query fails."""
+        with patch.object(
+            user_repository.session,
+            "execute",
+            new=AsyncMock(side_effect=SQLAlchemyError("boom")),
+        ):
+            with pytest.raises(UserRepositoryException):
+                await user_repository.find_by_id(UUID(faker.uuid4()))
+
     # ---------------------------------------------------------------------------
     # Method: find_by_email
     # ---------------------------------------------------------------------------
