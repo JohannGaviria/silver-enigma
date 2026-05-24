@@ -462,7 +462,7 @@ The following rules ensure consistency across the entire codebase.
 | Schema Request          | `<Action><Aggregate>RequestSchema`   | `ConfirmOrderRequestSchema`        |
 | Schema Response         | `<Action><Aggregate>ResponseSchema`  | `ConfirmOrderResponseSchema`       |
 | Router                  | `<Aggregate>Router`                  | `OrderRouter`                      |
-| API Mapper              | `<Aggregate>APIMapper`               | `OrderAPIMapper`                   |
+| API Mapper              | `<Aggregate>ApiMapper`               | `OrderApiMapper`                   |
 | Exception Handler       | `<Aggregate>ExceptionHandler`        | `OrderExceptionHandler`            |
 | Use Case Composition    | `<Action><Aggregate>Composition`     | `ConfirmOrderComposition`          |
 

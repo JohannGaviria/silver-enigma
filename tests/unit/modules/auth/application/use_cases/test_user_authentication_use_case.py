@@ -4,7 +4,7 @@ import pytest
 from faker import Faker
 
 from src.modules.auth.application.dtos.user_authentication_dto import (
-    UserAuthenticationCommand,
+    UserAuthenticationCommandDto,
 )
 from src.modules.auth.application.use_cases.user_authentication_use_case import (
     UserAuthenticationUseCase,
@@ -66,7 +66,7 @@ class TestUserAuthenticationUseCase:
             expires_in=86400,
         )
 
-        command = UserAuthenticationCommand(
+        command = UserAuthenticationCommandDto(
             email=str(user.email),
             password=faker.password(),
         )
@@ -121,7 +121,7 @@ class TestUserAuthenticationUseCase:
             expires_in=86400,
         )
 
-        command = UserAuthenticationCommand(
+        command = UserAuthenticationCommandDto(
             email=str(user.email),
             password=faker.password(),
         )
@@ -175,7 +175,7 @@ class TestUserAuthenticationUseCase:
             expires_in=86400,
         )
 
-        command = UserAuthenticationCommand(
+        command = UserAuthenticationCommandDto(
             email=str(user.email),
             password=faker.password(),
         )
@@ -227,7 +227,7 @@ class TestUserAuthenticationUseCase:
             expires_in=86400,
         )
 
-        command = UserAuthenticationCommand(
+        command = UserAuthenticationCommandDto(
             email=str(user.email),
             password=faker.password(),
         )
@@ -260,7 +260,7 @@ class TestUserAuthenticationUseCase:
         """AuthenticationFailedException must be raised when user does not exist."""
         user_uow_mock.users.find_by_email.return_value = None
 
-        command = UserAuthenticationCommand(
+        command = UserAuthenticationCommandDto(
             email=faker.email(),
             password=faker.password(),
         )
@@ -299,7 +299,7 @@ class TestUserAuthenticationUseCase:
 
         password_hash_outbound_mock.verify.return_value = False
 
-        command = UserAuthenticationCommand(
+        command = UserAuthenticationCommandDto(
             email=str(user.email),
             password="WrongPassword@123",
         )
@@ -338,7 +338,7 @@ class TestUserAuthenticationUseCase:
 
         password_hash_outbound_mock.verify.return_value = False
 
-        command = UserAuthenticationCommand(
+        command = UserAuthenticationCommandDto(
             email=str(user.email),
             password="WrongPassword@123",
         )
@@ -380,7 +380,7 @@ class TestUserAuthenticationUseCase:
 
         password_hash_outbound_mock.verify.return_value = False
 
-        command = UserAuthenticationCommand(
+        command = UserAuthenticationCommandDto(
             email=str(user.email),
             password="WrongPassword@123",
         )
@@ -409,7 +409,7 @@ class TestUserAuthenticationUseCase:
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """InvalidEmailException must be raised before the UoW is entered."""
-        command = UserAuthenticationCommand(
+        command = UserAuthenticationCommandDto(
             email="not-an-email",
             password=faker.password(),
         )
@@ -438,7 +438,7 @@ class TestUserAuthenticationUseCase:
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """InvalidPlainPasswordException must be raised before the UoW is entered."""
-        command = UserAuthenticationCommand(
+        command = UserAuthenticationCommandDto(
             email=faker.email(),
             password="weak",
         )

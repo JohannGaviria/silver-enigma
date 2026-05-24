@@ -11,3 +11,11 @@ class LogoutRequestSchema(BaseModel):
     """
 
     refresh_token: str
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "refresh_token": "EZQv-uaV8XEGEbrbh_RwEWUrsg8yQsI423fBulcwBDhuy5tVQpXZGhqrceMYJRdHEJclmE-KaLR5qDDbH5ZTeA",
+            }
+        }
+    }

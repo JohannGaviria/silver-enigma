@@ -11,8 +11,8 @@ from src.modules.auth.presentation.api.schemas.admin_user_registration_schema im
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
-class AdminUserRegistrationMapper:
-    """Mapper for the AdminUserRegistrationRequestSchema and AdminUserRegistrationResponseSchema."""
+class AdminUserRegistrationApiMapper:
+    """Mapper for the AdminUserRegistrationSchema to AdminUserRegistrationDto."""
 
     @staticmethod
     def to_command(

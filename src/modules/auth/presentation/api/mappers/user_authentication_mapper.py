@@ -1,8 +1,8 @@
 """This module contains mappers for the UserAuthentication class."""
 
 from src.modules.auth.application.dtos.user_authentication_dto import (
-    UserAuthenticationCommand,
-    UserAuthenticationResponse,
+    UserAuthenticationCommandDto,
+    UserAuthenticationResponseDto,
 )
 from src.modules.auth.presentation.api.schemas.user_authentication_schema import (
     AccessTokenSchema,
@@ -12,31 +12,33 @@ from src.modules.auth.presentation.api.schemas.user_authentication_schema import
 )
 
 
-class UserAuthenticationMapper:
-    """Mapper for the UserAuthenticationRequestSchema and UserAuthenticationResponseSchema."""
+class UserAuthenticationApiMapper:
+    """Mapper for the UserAuthenticationSchema to UserAuthenticationDto."""
 
     @staticmethod
     def to_command(
         request: UserAuthenticationRequestSchema,
-    ) -> UserAuthenticationCommand:
-        """Convert a UserAuthenticationRequestSchema to a UserAuthenticationCommand.
+    ) -> UserAuthenticationCommandDto:
+        """Convert a UserAuthenticationRequestSchema to a UserAuthenticationCommandDto.
 
         Args:
             request (UserAuthenticationRequestSchema): The UserAuthenticationRequestSchema instance.
 
         Returns:
-            UserAuthenticationCommand: The UserAuthenticationCommand instance.
+            UserAuthenticationCommandDto: The UserAuthenticationCommandDto instance.
         """
-        return UserAuthenticationCommand(email=request.email, password=request.password)
+        return UserAuthenticationCommandDto(
+            email=request.email, password=request.password
+        )
 
     @staticmethod
     def to_response(
-        command: UserAuthenticationResponse,
+        command: UserAuthenticationResponseDto,
     ) -> UserAuthenticationResponseSchema:
-        """Convert a UserAuthenticationResponse to a UserAuthenticationResponseSchema.
+        """Convert a UserAuthenticationResponseDto to a UserAuthenticationResponseSchema.
 
         Args:
-            command (UserAuthenticationResponse): The UserAuthenticationResponse instance.
+            command (UserAuthenticationResponseDto): The UserAuthenticationResponseDto instance.
 
         Returns:
             UserAuthenticationResponseSchema: The UserAuthenticationResponseSchema instance.

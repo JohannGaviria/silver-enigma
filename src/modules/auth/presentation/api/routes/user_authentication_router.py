@@ -5,7 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from src.modules.auth.application.dtos.user_authentication_dto import (
-    UserAuthenticationResponse,
+    UserAuthenticationResponseDto,
 )
 from src.modules.auth.application.use_cases.user_authentication_use_case import (
     UserAuthenticationUseCase,
@@ -14,7 +14,7 @@ from src.modules.auth.presentation.api.compositions.use_case_composition import 
     get_user_authentication_use_case,
 )
 from src.modules.auth.presentation.api.mappers.user_authentication_mapper import (
-    UserAuthenticationMapper,
+    UserAuthenticationApiMapper,
 )
 from src.modules.auth.presentation.api.schemas.user_authentication_schema import (
     UserAuthenticationRequestSchema,
@@ -76,8 +76,8 @@ async def user_authentication(
     Returns:
         JSONResponse: HTTP 200 with access and refresh token payloads.
     """
-    result: UserAuthenticationResponse = await use_case.execute(
-        UserAuthenticationMapper.to_command(request)
+    result: UserAuthenticationResponseDto = await use_case.execute(
+        UserAuthenticationApiMapper.to_command(request)
     )
 
     return JSONResponse(
@@ -85,7 +85,7 @@ async def user_authentication(
         content=jsonable_encoder(
             SuccessResponseSchema(
                 message="User authentication successful.",
-                data=UserAuthenticationMapper.to_response(result),
+                data=UserAuthenticationApiMapper.to_response(result),
             )
         ),
     )

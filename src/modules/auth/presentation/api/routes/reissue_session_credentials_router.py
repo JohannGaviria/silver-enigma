@@ -14,7 +14,7 @@ from src.modules.auth.presentation.api.compositions.use_case_composition import 
     get_reissue_session_credentials_use_case,
 )
 from src.modules.auth.presentation.api.mappers.reissue_session_credentials_mapper import (
-    ReissueSessionCredentialsMapper,
+    ReissueSessionCredentialsApiMapper,
 )
 from src.modules.auth.presentation.api.schemas.reissue_session_credentials_schema import (
     ReissueSessionCredentialsRequestSchema,
@@ -72,7 +72,7 @@ async def reissue_session_credentials(
         JSONResponse: A JSON response containing the reissued session credentials.
     """
     result: ReissueSessionCredentialsResponseDto = await use_case.execute(
-        ReissueSessionCredentialsMapper.to_command(request)
+        ReissueSessionCredentialsApiMapper.to_command(request)
     )
 
     return JSONResponse(
@@ -80,7 +80,7 @@ async def reissue_session_credentials(
         content=jsonable_encoder(
             SuccessResponseSchema(
                 message="Successfully reissued session credentials.",
-                data=ReissueSessionCredentialsMapper.to_response(result),
+                data=ReissueSessionCredentialsApiMapper.to_response(result),
             )
         ),
     )

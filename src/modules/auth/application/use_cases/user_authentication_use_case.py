@@ -1,8 +1,8 @@
 """This module contains the UserAuthenticationUseCase class."""
 
 from src.modules.auth.application.dtos.user_authentication_dto import (
-    UserAuthenticationCommand,
-    UserAuthenticationResponse,
+    UserAuthenticationCommandDto,
+    UserAuthenticationResponseDto,
 )
 from src.modules.auth.domain.exceptions.auth_exception import (
     AuthenticationFailedException,
@@ -68,8 +68,8 @@ class UserAuthenticationUseCase:
         self.cache_outbound = cache_outbound
 
     async def execute(
-        self, command: UserAuthenticationCommand
-    ) -> UserAuthenticationResponse:
+        self, command: UserAuthenticationCommandDto
+    ) -> UserAuthenticationResponseDto:
         """Execute the use case to use authentication.
 
         Opens a Unit of Work, checks whether the user exists, verifies the password,
@@ -77,11 +77,11 @@ class UserAuthenticationUseCase:
         commits — all within a single transaction.
 
         Args:
-            command (UserAuthenticationCommand): The command containing the email
+            command (UserAuthenticationCommandDto): The command containing the email
                 and password for authentication.
 
         Returns:
-            UserAuthenticationResponse: The response containing the access and refresh tokens.
+            UserAuthenticationResponseDto: The response containing the access and refresh tokens.
         """
         self._logger.info("Executing user authentication use case", email=command.email)
 
@@ -125,7 +125,7 @@ class UserAuthenticationUseCase:
 
         self._logger.info("User authenticated successfully", user_id=str(user.id))
 
-        return UserAuthenticationResponse.response(
+        return UserAuthenticationResponseDto.response(
             access_token=str(access_token_response.access_token),
             access_token_type=access_token_response.token_type,
             access_expires_in=access_token_response.expires_in,

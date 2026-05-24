@@ -6,7 +6,7 @@ from src.modules.auth.application.use_cases.logout_use_case import LogoutUseCase
 from src.modules.auth.presentation.api.compositions.use_case_composition import (
     get_logout_use_case,
 )
-from src.modules.auth.presentation.api.mappers.logout_mapper import LogoutAPIMapper
+from src.modules.auth.presentation.api.mappers.logout_mapper import LogoutApiMapper
 from src.modules.auth.presentation.api.schemas.logout_schema import LogoutRequestSchema
 from src.shared.domain.value_objects.access_token_payload_vo import AccessTokenPayloadVO
 from src.shared.presentation.api.compositions.security_composition import (
@@ -59,4 +59,4 @@ async def logout(
     Returns:
         None
     """
-    await use_case.execute(LogoutAPIMapper.to_command(request))
+    await use_case.execute(LogoutApiMapper.to_command(request))
