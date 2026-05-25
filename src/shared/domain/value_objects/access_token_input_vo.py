@@ -4,7 +4,9 @@ from dataclasses import dataclass
 from uuid import UUID, uuid4
 
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
-from src.shared.domain.exceptions.exception import InvalidAccessTokenInputException
+from src.shared.domain.exceptions.token_exception import (
+    InvalidAccessTokenInputException,
+)
 from src.shared.domain.value_objects.base_value_object import BaseValueObject
 
 

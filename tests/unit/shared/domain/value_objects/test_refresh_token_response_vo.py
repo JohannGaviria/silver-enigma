@@ -1,6 +1,8 @@
 import pytest
 
-from src.shared.domain.exceptions.exception import InvalidRefreshTokenResponseException
+from src.shared.domain.exceptions.token_exception import (
+    InvalidRefreshTokenResponseException,
+)
 from src.shared.domain.value_objects.refresh_token_response_vo import (
     RefreshTokenResponseVO,
 )

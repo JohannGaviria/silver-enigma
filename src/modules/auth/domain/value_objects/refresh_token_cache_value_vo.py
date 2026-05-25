@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.session_exception import (
     InvalidRefreshTokenCacheValueException,
 )
 from src.shared.domain.value_objects.cache_value_vo import CacheValueVO

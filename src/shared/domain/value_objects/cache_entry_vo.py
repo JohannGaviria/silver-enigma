@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from src.shared.domain.exceptions.exception import InvalidCacheEntryException
+from src.shared.domain.exceptions.cache_exception import InvalidCacheEntryException
 from src.shared.domain.value_objects.base_value_object import BaseValueObject
 from src.shared.domain.value_objects.cache_key_vo import CacheKeyVO
 from src.shared.domain.value_objects.cache_ttl_vo import CacheTTLVO

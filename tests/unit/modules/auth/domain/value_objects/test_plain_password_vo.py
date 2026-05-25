@@ -3,7 +3,7 @@ from dataclasses import FrozenInstanceError
 import pytest
 from faker import Faker
 
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.credentials_exception import (
     InvalidPlainPasswordException,
 )
 from src.modules.auth.domain.value_objects.plain_password_vo import PlainPasswordVO

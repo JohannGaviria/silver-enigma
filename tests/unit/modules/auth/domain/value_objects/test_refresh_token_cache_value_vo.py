@@ -3,7 +3,7 @@ from uuid import UUID
 import pytest
 from faker import Faker
 
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.session_exception import (
     InvalidRefreshTokenCacheValueException,
 )
 from src.modules.auth.domain.value_objects.refresh_token_cache_value_vo import (

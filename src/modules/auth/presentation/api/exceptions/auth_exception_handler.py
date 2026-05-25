@@ -4,12 +4,16 @@ from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.credentials_exception import (
     InvalidEmailException,
     InvalidNameException,
     InvalidPasswordHashException,
     InvalidPlainPasswordException,
+)
+from src.modules.auth.domain.exceptions.session_exception import (
     InvalidRefreshTokenCacheValueException,
+)
+from src.modules.auth.domain.exceptions.user_exception import (
     UserAlreadyExistsException,
     UserNotFoundException,
     UserRepositoryException,

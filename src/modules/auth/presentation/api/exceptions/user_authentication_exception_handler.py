@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.session_exception import (
     AuthenticationFailedException,
 )
 from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapter import (

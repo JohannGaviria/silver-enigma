@@ -4,7 +4,7 @@ import pytest
 
 from src.modules.auth.application.dtos.logout_dto import LogoutCommandDto
 from src.modules.auth.application.use_cases.logout_use_case import LogoutUseCase
-from src.shared.domain.exceptions.exception import InvalidTokenException
+from src.shared.domain.exceptions.token_exception import InvalidTokenException
 
 
 class TestLogoutUserUseCase:

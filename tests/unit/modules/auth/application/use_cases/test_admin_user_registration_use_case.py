@@ -10,12 +10,16 @@ from src.modules.auth.application.use_cases.admin_user_registration_use_case imp
     AdminUserRegistrationUseCase,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.exceptions.auth_exception import (
-    InsufficientPermissionsException,
+from src.modules.auth.domain.exceptions.credentials_exception import (
     InvalidEmailException,
     InvalidNameException,
     InvalidPasswordHashException,
     InvalidPlainPasswordException,
+)
+from src.modules.auth.domain.exceptions.session_exception import (
+    InsufficientPermissionsException,
+)
+from src.modules.auth.domain.exceptions.user_exception import (
     UserAlreadyExistsException,
 )
 from src.modules.auth.domain.value_objects.email_vo import EmailVO

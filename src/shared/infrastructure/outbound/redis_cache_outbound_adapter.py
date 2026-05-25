@@ -5,7 +5,7 @@ from collections.abc import Callable
 
 from redis.asyncio import Redis, RedisError
 
-from src.shared.domain.exceptions.exception import (
+from src.shared.domain.exceptions.cache_exception import (
     CacheDeletionException,
     CacheRetrievalException,
     CacheStorageException,

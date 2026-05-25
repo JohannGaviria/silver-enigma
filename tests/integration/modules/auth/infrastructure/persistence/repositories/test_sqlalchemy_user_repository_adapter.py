@@ -6,7 +6,7 @@ from faker import Faker
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.user_exception import (
     UserAlreadyExistsException,
     UserRepositoryException,
 )

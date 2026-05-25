@@ -4,7 +4,7 @@ from src.modules.auth.application.dtos.user_authentication_dto import (
     UserAuthenticationCommandDto,
     UserAuthenticationResponseDto,
 )
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.session_exception import (
     AuthenticationFailedException,
 )
 from src.modules.auth.domain.ports.outbound.password_hash_outbound_port import (
