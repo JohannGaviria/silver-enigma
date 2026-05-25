@@ -32,11 +32,9 @@ test: ## Run tests with pytest
 	@echo "$(BLUE)Running tests...$(NC)"
 	pytest -v
 
-# For now, 25% coverage is acceptable, as the project is in its early stages,
-# but it will increase as more tests are added until it reaches 70% or more.
 test-coverage: ## Run tests with coverage report
 	@echo "$(BLUE)Running tests with coverage...$(NC)"
-	poetry run pytest --cov=src/ --cov-fail-under=25
+	poetry run pytest --cov=src/ --cov-fail-under=70
 
 format: ## Format and auto-fix code
 	@echo "$(BLUE)Fixing lint issues...$(NC)"
