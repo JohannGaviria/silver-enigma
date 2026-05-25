@@ -1,6 +1,6 @@
 """This module contains custom exceptions related to authentication domain logic."""
 
-from src.shared.domain.exceptions.exception import BaseDomainException
+from src.shared.domain.exceptions.base_exception import BaseDomainException
 
 
 class InvalidNameException(BaseDomainException):

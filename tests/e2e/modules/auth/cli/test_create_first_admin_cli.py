@@ -4,22 +4,24 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.auth.application.dtos.create_first_admin_dto import (
-    CreateFirstAdminCommand,
+    CreateFirstAdminCommandDto,
 )
 from src.modules.auth.application.use_cases.create_first_admin_use_case import (
     CreateFirstAdminUseCase,
 )
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
-from src.modules.auth.domain.exceptions.auth_exception import (
-    AdminAlreadyExistsException,
+from src.modules.auth.domain.exceptions.credentials_exception import (
     InvalidEmailException,
     InvalidNameException,
     InvalidPlainPasswordException,
+)
+from src.modules.auth.domain.exceptions.user_exception import (
+    AdminAlreadyExistsException,
 )
 from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
 from src.modules.auth.infrastructure.persistence.repositories.sqlalchemy_user_repository_adapter import (
     SQLAlchemyUserRepositoryAdapter,
 )
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
 async def _count_admins(session: AsyncSession) -> int:
@@ -40,7 +42,7 @@ class TestCreateFirstAdminCLI:
     async def test_should_create_admin_when_no_admin_exists(
         self,
         create_first_admin_use_case: CreateFirstAdminUseCase,
-        valid_admin_command: CreateFirstAdminCommand,
+        valid_admin_command: CreateFirstAdminCommandDto,
     ) -> None:
         """Full flow: creates an ADMIN row and returns the expected response."""
         result = await create_first_admin_use_case.execute(valid_admin_command)
@@ -56,7 +58,7 @@ class TestCreateFirstAdminCLI:
         self,
         db_session: AsyncSession,
         create_first_admin_use_case: CreateFirstAdminUseCase,
-        valid_admin_command: CreateFirstAdminCommand,
+        valid_admin_command: CreateFirstAdminCommandDto,
     ) -> None:
         """Only one ADMIN row must exist after the use case runs once."""
         await create_first_admin_use_case.execute(valid_admin_command)
@@ -68,7 +70,7 @@ class TestCreateFirstAdminCLI:
         self,
         db_session: AsyncSession,
         create_first_admin_use_case: CreateFirstAdminUseCase,
-        valid_admin_command: CreateFirstAdminCommand,
+        valid_admin_command: CreateFirstAdminCommandDto,
     ) -> None:
         """The password stored in the DB must never equal the plain-text input."""
         await create_first_admin_use_case.execute(valid_admin_command)
@@ -86,7 +88,7 @@ class TestCreateFirstAdminCLI:
     async def test_should_raise_admin_already_exists_when_called_twice(
         self,
         create_first_admin_use_case: CreateFirstAdminUseCase,
-        valid_admin_command: CreateFirstAdminCommand,
+        valid_admin_command: CreateFirstAdminCommandDto,
     ) -> None:
         """Running the use case a second time must raise AdminAlreadyExistsException."""
         await create_first_admin_use_case.execute(valid_admin_command)
@@ -98,7 +100,7 @@ class TestCreateFirstAdminCLI:
     async def test_should_not_attempt_save_on_second_run(
         self,
         create_first_admin_use_case: CreateFirstAdminUseCase,
-        valid_admin_command: CreateFirstAdminCommand,
+        valid_admin_command: CreateFirstAdminCommandDto,
     ) -> None:
         """The second execution must be short-circuited by the exists_by_role guard."""
         save_calls: list[str] = []
@@ -128,7 +130,7 @@ class TestCreateFirstAdminCLI:
         create_first_admin_use_case: CreateFirstAdminUseCase,
     ) -> None:
         """A single-word name must be rejected before hitting the DB."""
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name="John",
             email=faker.email(),
             plain_password="Secure@123",
@@ -147,7 +149,7 @@ class TestCreateFirstAdminCLI:
         create_first_admin_use_case: CreateFirstAdminUseCase,
     ) -> None:
         """A name with more than 4 words must be rejected before hitting the DB."""
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name="One Two Three Four Five",
             email=faker.email(),
             plain_password="Secure@123",
@@ -166,7 +168,7 @@ class TestCreateFirstAdminCLI:
         create_first_admin_use_case: CreateFirstAdminUseCase,
     ) -> None:
         """A malformed email must be rejected before hitting the DB."""
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=faker.name(),
             email="not-an-email",
             plain_password="Secure@123",
@@ -185,7 +187,7 @@ class TestCreateFirstAdminCLI:
         create_first_admin_use_case: CreateFirstAdminUseCase,
     ) -> None:
         """A weak password must be rejected before hitting the DB."""
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=faker.name(),
             email=faker.email(),
             plain_password="weak",
