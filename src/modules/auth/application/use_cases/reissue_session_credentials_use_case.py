@@ -4,10 +4,10 @@ from src.modules.auth.application.dtos.reissue_session_credentials_dto import (
     ReissueSessionCredentialsCommandDto,
     ReissueSessionCredentialsResponseDto,
 )
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.session_exception import (
     SessionNotFoundException,
-    UserNotFoundException,
 )
+from src.modules.auth.domain.exceptions.user_exception import UserNotFoundException
 from src.modules.auth.domain.ports.repositories.user_repository_port import (
     UserRepositoryPort,
 )

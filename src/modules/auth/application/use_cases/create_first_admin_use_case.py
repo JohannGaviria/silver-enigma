@@ -5,7 +5,7 @@ from src.modules.auth.application.dtos.create_first_admin_dto import (
     CreateFirstAdminResponseDto,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.user_exception import (
     AdminAlreadyExistsException,
 )
 from src.modules.auth.domain.ports.outbound.password_hash_outbound_port import (

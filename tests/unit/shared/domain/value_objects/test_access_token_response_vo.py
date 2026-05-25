@@ -1,6 +1,8 @@
 import pytest
 
-from src.shared.domain.exceptions.exception import InvalidAccessTokenResponseException
+from src.shared.domain.exceptions.token_exception import (
+    InvalidAccessTokenResponseException,
+)
 from src.shared.domain.value_objects.access_token_response_vo import (
     AccessTokenResponseVO,
 )

@@ -31,11 +31,13 @@ async def _run() -> None:
     from src.modules.auth.application.use_cases.create_first_admin_use_case import (
         CreateFirstAdminUseCase,
     )
-    from src.modules.auth.domain.exceptions.auth_exception import (
-        AdminAlreadyExistsException,
+    from src.modules.auth.domain.exceptions.credentials_exception import (
         InvalidEmailException,
         InvalidNameException,
         InvalidPlainPasswordException,
+    )
+    from src.modules.auth.domain.exceptions.user_exception import (
+        AdminAlreadyExistsException,
     )
     from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adapter import (
         Argon2PasswordHashOutboundAdapter,

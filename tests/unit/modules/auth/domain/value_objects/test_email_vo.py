@@ -3,7 +3,9 @@ from dataclasses import FrozenInstanceError
 import pytest
 from faker import Faker
 
-from src.modules.auth.domain.exceptions.auth_exception import InvalidEmailException
+from src.modules.auth.domain.exceptions.credentials_exception import (
+    InvalidEmailException,
+)
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 
 

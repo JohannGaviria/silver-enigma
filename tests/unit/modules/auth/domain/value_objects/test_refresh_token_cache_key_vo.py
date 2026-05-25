@@ -6,7 +6,7 @@ from faker import Faker
 from src.modules.auth.domain.value_objects.refresh_token_cache_key_vo import (
     RefreshTokenCacheKeyVO,
 )
-from src.shared.domain.exceptions.exception import InvalidCacheKeyException
+from src.shared.domain.exceptions.cache_exception import InvalidCacheKeyException
 from src.shared.domain.value_objects.token_vo import TokenVO
 
 

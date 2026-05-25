@@ -12,8 +12,10 @@ from src.modules.auth.application.use_cases.reissue_session_credentials_use_case
     ReissueSessionCredentialsUseCase,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.session_exception import (
     SessionNotFoundException,
+)
+from src.modules.auth.domain.exceptions.user_exception import (
     UserNotFoundException,
 )
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
@@ -23,7 +25,7 @@ from src.modules.auth.domain.value_objects.refresh_token_cache_value_vo import (
     RefreshTokenCacheValueVO,
 )
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
-from src.shared.domain.exceptions.exception import InvalidTokenException
+from src.shared.domain.exceptions.token_exception import InvalidTokenException
 from src.shared.domain.value_objects.access_token_response_vo import (
     AccessTokenResponseVO,
 )

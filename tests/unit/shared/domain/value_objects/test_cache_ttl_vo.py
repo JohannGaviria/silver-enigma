@@ -1,8 +1,6 @@
-# tests/unit/shared/domain/value_objects/test_cache_ttl_vo.py
-
 import pytest
 
-from src.shared.domain.exceptions.exception import InvalidCacheTTLException
+from src.shared.domain.exceptions.cache_exception import InvalidCacheTTLException
 from src.shared.domain.value_objects.cache_ttl_vo import CacheTTLVO
 
 

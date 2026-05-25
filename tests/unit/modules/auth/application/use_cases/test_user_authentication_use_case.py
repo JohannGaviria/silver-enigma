@@ -10,10 +10,12 @@ from src.modules.auth.application.use_cases.user_authentication_use_case import 
     UserAuthenticationUseCase,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.exceptions.auth_exception import (
-    AuthenticationFailedException,
+from src.modules.auth.domain.exceptions.credentials_exception import (
     InvalidEmailException,
     InvalidPlainPasswordException,
+)
+from src.modules.auth.domain.exceptions.session_exception import (
+    AuthenticationFailedException,
 )
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO

@@ -1,6 +1,6 @@
 import pytest
 
-from src.shared.domain.exceptions.exception import InvalidTokenException
+from src.shared.domain.exceptions.token_exception import InvalidTokenException
 from src.shared.domain.value_objects.token_vo import TokenVO
 
 

@@ -1,9 +1,6 @@
-# tests/unit/shared/domain/value_objects/test_cache_entry_vo.py
-
-
 import pytest
 
-from src.shared.domain.exceptions.exception import InvalidCacheEntryException
+from src.shared.domain.exceptions.cache_exception import InvalidCacheEntryException
 from src.shared.domain.value_objects.cache_entry_vo import CacheEntryVO
 from src.shared.domain.value_objects.cache_key_vo import CacheKeyVO
 from src.shared.domain.value_objects.cache_ttl_vo import CacheTTLVO

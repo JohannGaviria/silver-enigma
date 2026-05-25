@@ -4,7 +4,7 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import ExpiredSignatureError, PyJWTError
 
-from src.shared.domain.exceptions.exception import (
+from src.shared.domain.exceptions.token_exception import (
     AuthenticationTokenMissingException,
     ExpiredTokenException,
     InvalidTokenException,

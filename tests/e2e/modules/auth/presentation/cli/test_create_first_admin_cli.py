@@ -9,11 +9,13 @@ from src.modules.auth.application.dtos.create_first_admin_dto import (
 from src.modules.auth.application.use_cases.create_first_admin_use_case import (
     CreateFirstAdminUseCase,
 )
-from src.modules.auth.domain.exceptions.auth_exception import (
-    AdminAlreadyExistsException,
+from src.modules.auth.domain.exceptions.credentials_exception import (
     InvalidEmailException,
     InvalidNameException,
     InvalidPlainPasswordException,
+)
+from src.modules.auth.domain.exceptions.user_exception import (
+    AdminAlreadyExistsException,
 )
 from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
 from src.modules.auth.infrastructure.persistence.repositories.sqlalchemy_user_repository_adapter import (

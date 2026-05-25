@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass
 
-from src.shared.domain.exceptions.exception import InvalidAccessTokenResponseException
+from src.shared.domain.exceptions.token_exception import (
+    InvalidAccessTokenResponseException,
+)
 from src.shared.domain.value_objects.base_value_object import BaseValueObject
 from src.shared.domain.value_objects.token_vo import TokenVO
 

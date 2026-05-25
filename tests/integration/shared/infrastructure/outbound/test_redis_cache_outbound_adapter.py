@@ -5,7 +5,7 @@ import pytest
 from faker import Faker
 from redis import RedisError
 
-from src.shared.domain.exceptions.exception import (
+from src.shared.domain.exceptions.cache_exception import (
     CacheDeletionException,
     CacheRetrievalException,
     CacheStorageException,

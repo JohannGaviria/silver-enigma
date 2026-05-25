@@ -5,8 +5,10 @@ from src.modules.auth.application.dtos.admin_user_registration_dto import (
     AdminUserRegistrationResponseDto,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.session_exception import (
     InsufficientPermissionsException,
+)
+from src.modules.auth.domain.exceptions.user_exception import (
     UserAlreadyExistsException,
 )
 from src.modules.auth.domain.ports.outbound.password_hash_outbound_port import (

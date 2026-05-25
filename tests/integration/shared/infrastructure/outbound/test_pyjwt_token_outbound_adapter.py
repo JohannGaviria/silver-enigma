@@ -6,7 +6,7 @@ import pytest
 from faker import Faker
 
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
-from src.shared.domain.exceptions.exception import (
+from src.shared.domain.exceptions.token_exception import (
     ExpiredTokenException,
     InvalidAccessTokenPayloadException,
     InvalidTokenException,
