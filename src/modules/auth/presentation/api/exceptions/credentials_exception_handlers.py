@@ -104,12 +104,12 @@ def credentials_exception_handlers(app: FastAPI) -> None:
             request_method=request.method,
             request_url=request.url.path,
             exception_message=exc,
-            errors=exc.errors,
+            error=exc.error,
         )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(
-                ErrorsResponseSchema(message=str(exc), details=[exc.errors]),
+                ErrorsResponseSchema(message=str(exc), details=[exc.error]),
                 exclude_none=True,
             ),
         )

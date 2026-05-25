@@ -34,7 +34,7 @@ class InsufficientPermissionsException(BaseDomainException):
         Args:
             error (str): A message describing the validation failure for the email address.
         """
-        self.errors = error
+        self.error = error
         super().__init__("Insufficient permissions.")
 
 

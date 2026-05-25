@@ -93,5 +93,5 @@ class InvalidTokenException(BaseDomainException):
         Args:
             error (str): A list of error messages.
         """
-        self.errors = error
+        self.error = error
         super().__init__("Authentication failed due to an invalid access token.")

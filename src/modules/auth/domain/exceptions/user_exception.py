@@ -20,7 +20,7 @@ class UserAlreadyExistsException(BaseDomainException):
         Args:
             error (str): A message describing the validation failure for the email address.
         """
-        self.errors = error
+        self.error = error
         super().__init__("A user with the same email already exists.")
 
 
@@ -41,5 +41,5 @@ class UserRepositoryException(BaseDomainException):
         Args:
             error (str): A message describing the error that occurred within the UserRepository.
         """
-        self.errors = error
+        self.error = error
         super().__init__("An error occurred in the UserRepository.")

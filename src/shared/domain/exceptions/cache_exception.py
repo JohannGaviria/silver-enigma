@@ -51,7 +51,7 @@ class CacheRetrievalException(BaseDomainException):
         Args:
             error (str): A list of error messages.
         """
-        self.errors = error
+        self.error = error
         super().__init__("Error retrieving data from cache.")
 
 
@@ -64,7 +64,7 @@ class CacheStorageException(BaseDomainException):
         Args:
             error (str): A list of error messages.
         """
-        self.errors = error
+        self.error = error
         super().__init__("Error storing data in cache.")
 
 
@@ -77,5 +77,5 @@ class CacheDeletionException(BaseDomainException):
         Args:
             error (str): A list of error messages.
         """
-        self.errors = error
+        self.error = error
         super().__init__("Error deleting data from cache.")

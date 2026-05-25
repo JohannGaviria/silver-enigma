@@ -22,15 +22,15 @@ class InvalidNameException(BaseDomainException):
 class InvalidEmailException(BaseDomainException):
     """Exception raised when an email address is invalid."""
 
-    def __init__(self, email: str, error: list[str]) -> None:
+    def __init__(self, email: str, errors: list[str]) -> None:
         """Initializes the InvalidEmailException.
 
         Args:
             email (str): The email address that failed validation.
-            error (list[str]): A list of error messages describing the validation failures for the email address.
+            errors (list[str]): A list of error messages describing the validation failures for the email address.
         """
         self.email = email
-        self.errors = error
+        self.errors = errors
         super().__init__("Invalid email address provided.")
 
 
@@ -43,7 +43,7 @@ class InvalidPasswordHashException(BaseDomainException):
         Args:
             error (str): A message describing the validation failure for the password hash.
         """
-        self.errors = error
+        self.error = error
         super().__init__("Invalid password hash.")
 
 
