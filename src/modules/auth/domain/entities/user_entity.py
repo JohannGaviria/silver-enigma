@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.password_hash_vo import PasswordHashVO
 from src.shared.domain.entities.base_entity import BaseEntity
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
 @dataclass(frozen=True)

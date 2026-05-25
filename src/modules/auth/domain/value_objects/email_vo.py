@@ -3,7 +3,9 @@
 import re
 from dataclasses import dataclass
 
-from src.modules.auth.domain.exceptions.auth_exception import InvalidEmailException
+from src.modules.auth.domain.exceptions.credentials_exception import (
+    InvalidEmailException,
+)
 from src.shared.domain.value_objects.base_value_object import BaseValueObject
 
 

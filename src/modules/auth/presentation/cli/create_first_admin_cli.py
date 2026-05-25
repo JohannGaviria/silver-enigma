@@ -26,16 +26,18 @@ async def _run() -> None:
     """
     from src.config import settings
     from src.modules.auth.application.dtos.create_first_admin_dto import (
-        CreateFirstAdminCommand,
+        CreateFirstAdminCommandDto,
     )
     from src.modules.auth.application.use_cases.create_first_admin_use_case import (
         CreateFirstAdminUseCase,
     )
-    from src.modules.auth.domain.exceptions.auth_exception import (
-        AdminAlreadyExistsException,
+    from src.modules.auth.domain.exceptions.credentials_exception import (
         InvalidEmailException,
         InvalidNameException,
         InvalidPlainPasswordException,
+    )
+    from src.modules.auth.domain.exceptions.user_exception import (
+        AdminAlreadyExistsException,
     )
     from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adapter import (
         Argon2PasswordHashOutboundAdapter,
@@ -47,25 +49,33 @@ async def _run() -> None:
 
     logger = StructlogLoggerFactoryOutboundAdapter().get_logger(__name__)
 
-    engine = DatabaseEngine.get_engine()
+    engine = await DatabaseEngine.get_engine()
 
     try:
         logger.info("Starting first-admin bootstrap process")
 
+        session_factory = await DatabaseEngine.get_session_factory()
+
         logger_factory = StructlogLoggerFactoryOutboundAdapter()
 
         unit_of_work = SQLAlchemyUserUnitOfWorkAdapter(
-            session_factory=DatabaseEngine.get_session_factory(),
+            session_factory=session_factory,
             logger_factory_outbound=logger_factory,
+        )
+
+        password_hash_outbound = Argon2PasswordHashOutboundAdapter(
+            time_cost=settings.TIME_COST,
+            memory_cost=settings.MEMORY_COST,
+            parallelism=settings.PARALLELISM,
         )
 
         use_case = CreateFirstAdminUseCase(
             unit_of_work=unit_of_work,
-            password_hash_outbound=Argon2PasswordHashOutboundAdapter(),
+            password_hash_outbound=password_hash_outbound,
             logger_factory_outbound=logger_factory,
         )
 
-        command = CreateFirstAdminCommand(
+        command = CreateFirstAdminCommandDto(
             name=settings.FIRST_ADMIN_NAME,
             email=settings.FIRST_ADMIN_EMAIL,
             plain_password=settings.FIRST_ADMIN_PASSWORD,

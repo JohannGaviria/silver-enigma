@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.credentials_exception import (
     InvalidPlainPasswordException,
 )
 from src.shared.domain.value_objects.base_value_object import BaseValueObject

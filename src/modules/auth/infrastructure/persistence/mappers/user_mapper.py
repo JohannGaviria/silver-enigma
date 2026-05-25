@@ -1,14 +1,14 @@
-"""This module contains the UserMapper class."""
+"""This module contains the UserPersistenceMapper class."""
 
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.password_hash_vo import PasswordHashVO
 from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
-class UserMapper:
+class UserPersistenceMapper:
     """Mapper class to convert between UserEntity and UserModel.
 
     This class provides static methods to map a UserModel (database representation)

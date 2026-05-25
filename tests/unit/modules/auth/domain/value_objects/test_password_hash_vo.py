@@ -2,7 +2,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.credentials_exception import (
     InvalidPasswordHashException,
 )
 from src.modules.auth.domain.value_objects.password_hash_vo import PasswordHashVO

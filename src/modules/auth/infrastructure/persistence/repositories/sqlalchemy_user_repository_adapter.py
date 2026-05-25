@@ -1,20 +1,25 @@
 """This module contains the SQLAlchemyUserRepositoryAdapter class."""
 
+from uuid import UUID
+
 from sqlalchemy import exists, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.enums.user_role_enum import UserRoleEnum
-from src.modules.auth.domain.exceptions.auth_exception import (
+from src.modules.auth.domain.exceptions.user_exception import (
     UserAlreadyExistsException,
     UserRepositoryException,
 )
 from src.modules.auth.domain.ports.repositories.user_repository_port import (
     UserRepositoryPort,
 )
-from src.modules.auth.infrastructure.persistence.mappers.user_mapper import UserMapper
+from src.modules.auth.domain.value_objects.email_vo import EmailVO
+from src.modules.auth.infrastructure.persistence.mappers.user_mapper import (
+    UserPersistenceMapper,
+)
 from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
     LoggerFactoryOutboundPort,
 )
@@ -42,6 +47,61 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
         """
         self.session = session
         self._logger = logger_factory_outbound.get_logger(__name__)
+
+    async def find_by_id(self, user_id: UUID) -> UserEntity | None:
+        """Finds a user by ID.
+
+        Args:
+            user_id (UUID): The ID of the user to search for.
+
+        Returns:
+            UserEntity | None: The user entity if found, otherwise None.
+
+        Raises:
+            UserRepositoryException: If a database error occurs during the query.
+        """
+        try:
+            stmt = select(UserModel).where(UserModel.id == user_id)
+            result = await self.session.execute(stmt)
+            model = result.scalar_one_or_none()
+
+            return UserPersistenceMapper.to_entity(model) if model else None
+
+        except SQLAlchemyError as e:
+            self._logger.error("Database error while finding user by ID", exc_info=e)
+
+            raise UserRepositoryException(
+                "Database error while finding user by ID."
+            ) from e
+
+    async def find_by_email(self, email: EmailVO) -> UserEntity | None:
+        """Finds a user by email.
+
+        Args:
+            email (EmailVO): The email to search for.
+
+        Returns:
+            UserEntity | None: The user entity if found, otherwise None.
+
+        Raises:
+            UserRepositoryException: If a database error occurs during the query.
+        """
+        try:
+            stmt = select(UserModel).where(UserModel.email == str(email))
+            result = await self.session.execute(stmt)
+            model = result.scalar_one_or_none()
+
+            return UserPersistenceMapper.to_entity(model) if model else None
+
+        except SQLAlchemyError as e:
+            self._logger.error(
+                "Database error while finding user by email",
+                exc_info=e,
+            )
+
+            raise UserRepositoryException(
+                "Database error while finding user by email."
+            ) from e
 
     async def exists_by_role(self, role: UserRoleEnum) -> bool:
         """Checks if a user with the specified role exists in the database.
@@ -83,11 +143,11 @@ class SQLAlchemyUserRepositoryAdapter(UserRepositoryPort):
             UserRepositoryException: If any other database error occurs.
         """
         try:
-            model = UserMapper.to_model(entity)
+            model = UserPersistenceMapper.to_model(entity)
             self.session.add(model)
             await self.session.flush()
             await self.session.refresh(model)
-            return UserMapper.to_entity(model)
+            return UserPersistenceMapper.to_entity(model)
 
         except IntegrityError as e:
             self._logger.error("Integrity error while saving user", exc_info=str(e))

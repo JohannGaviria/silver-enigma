@@ -1,10 +1,11 @@
-"""This module contains the RedisConnection class."""
+"""Async Redis connection manager."""
 
-import time
-from threading import Lock
+import asyncio
+import inspect
 
-import redis
+import redis.exceptions
 import structlog
+from redis.asyncio import Redis
 
 from src.config import settings
 
@@ -12,50 +13,38 @@ logger = structlog.get_logger(__name__)
 
 
 class RedisConnection:
-    """Manages Redis client lifecycle with retry strategy."""
+    """Manages async Redis client lifecycle with retry strategy."""
 
-    _client: redis.Redis | None = None
-    _lock = Lock()
+    _client: Redis | None = None
+    _lock = asyncio.Lock()
 
     MAX_RETRIES = 3
-    BASE_DELAY = 1.5  # exponential backoff base.
+    BASE_DELAY = 1.5
 
     @classmethod
-    def get_client(cls) -> redis.Redis:
-        """Get or create the Redis client with retry logic.
-
-        Uses double-checked locking to ensure thread-safe lazy initialization
-        with retries and exponential backoff on connection failures.
-
-        Returns:
-            redis.Redis: A connected Redis client instance.
-        """
+    async def get_client(cls) -> Redis:
+        """Get or create async Redis client."""
         if cls._client is None:
-            with cls._lock:
-                if cls._client is None:  # double-check locking.
+            async with cls._lock:
+                if cls._client is None:
                     logger.info(event="redis_client_create")
-                    cls._client = cls._create_client()
+                    cls._client = await cls._create_client()
+
         return cls._client
 
     @classmethod
-    def _create_client(cls) -> redis.Redis:
-        """Create a Redis client with retry logic and exponential backoff.
-
-        Returns:
-            redis.Redis: A connected Redis client instance.
-        """
-        # We capture the last exception to log it after exhausting all retries,
-        # but we log each failure as a warning with the attempt number
-        # for better visibility into transient issues.
+    async def _create_client(cls) -> Redis:
+        """Create Redis client with retry logic."""
         last_error = None
 
         for attempt in range(1, cls.MAX_RETRIES + 1):
             try:
-                logger.debug(event="redis_connect_attempt", attempt=attempt)
+                logger.debug(
+                    event="redis_connect_attempt",
+                    attempt=attempt,
+                )
 
-                # Create a new Redis client instance with a short timeout
-                # to fail fast on connection issues.
-                client = redis.Redis(
+                client = Redis(
                     host=settings.REDIS_HOST,
                     port=settings.REDIS_PORT,
                     db=settings.REDIS_DB,
@@ -66,14 +55,16 @@ class RedisConnection:
                     health_check_interval=30,
                 )
 
-                client.ping()
+                ping_result = client.ping()
+
+                if inspect.isawaitable(ping_result):
+                    await ping_result
 
                 logger.info(event="redis_connected")
+
                 return client
 
-            except redis.RedisError as exc:
-                # Capture the last error to log after exhausting retries,
-                # but log each failure as a warning with the attempt number.
+            except redis.exceptions.RedisError as exc:
                 last_error = exc
 
                 logger.warning(
@@ -82,44 +73,51 @@ class RedisConnection:
                     error=str(exc),
                 )
 
-                time.sleep(cls.BASE_DELAY**attempt)  # exponential backoff.
+                await asyncio.sleep(cls.BASE_DELAY**attempt)
 
-        logger.error(event="redis_connect_exhausted", error=str(last_error))
-        raise redis.RedisError(f"Redis connection failed: {last_error}")
+        logger.error(
+            event="redis_connect_exhausted",
+            error=str(last_error),
+        )
+
+        raise redis.exceptions.RedisError(f"Redis connection failed: {last_error}")
 
     @classmethod
-    def health_check(cls) -> bool:
-        """Perform a health check by pinging the Redis server.
-
-        Returns:
-            bool: True if Redis is healthy, False otherwise.
-        """
+    async def health_check(cls) -> bool:
+        """Perform async health check."""
         try:
-            # Use the existing client if available to avoid unnecessary reconnection's,
-            # but allow it to raise if the connection is broken so we can attempt a retry.
-            client = cls.get_client()
+            client = await cls.get_client()
 
-            client.ping()
+            ping_result = client.ping()
+
+            if inspect.isawaitable(ping_result):
+                await ping_result
 
             logger.debug(event="redis_health_ok")
+
             return True
 
-        except redis.RedisError as exc:
-            # Log the failure and attempt to reset the client in
-            # case of a transient issue.
-            logger.warning(event="redis_health_fail", error=str(exc))
+        except redis.exceptions.RedisError as exc:
+            logger.warning(
+                event="redis_health_fail",
+                error=str(exc),
+            )
 
             try:
-                cls._client = cls._create_client()
+                cls._client = await cls._create_client()
+
                 return True
-            except redis.RedisError:
+
+            except redis.exceptions.RedisError:
                 return False
 
     @classmethod
-    def close(cls) -> None:
-        """Close the Redis client connection and reset state."""
-        with cls._lock:
+    async def close(cls) -> None:
+        """Close Redis connection."""
+        async with cls._lock:
             if cls._client:
                 logger.info(event="redis_close")
-                cls._client.close()
+
+                await cls._client.aclose()
+
             cls._client = None
