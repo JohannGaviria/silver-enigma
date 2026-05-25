@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/JohannGaviria/silver-enigma/compare/v1.3.0...v1.3.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* **auth:** update exception imports and test dependencies ([c659a5b](https://github.com/JohannGaviria/silver-enigma/commit/c659a5b22ed0881426a554377e66d704ebe80912))
+
 # [1.3.0](https://github.com/JohannGaviria/silver-enigma/compare/v1.2.0...v1.3.0) (2026-05-25)
 
 
