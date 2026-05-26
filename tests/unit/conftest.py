@@ -128,3 +128,34 @@ def user_uow_mock() -> MagicMock:
     uow_mock.rollback = AsyncMock()
 
     return uow_mock
+
+
+# ---------------------------------------------------------------------------
+# Modules: WAREHOUSES
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def warehouse_uow_mock() -> MagicMock:
+    """Build a Unit-of-Work mock that behaves as an async context manager.
+
+    The returned mock exposes ``uow.warehouses`` (an ``AsyncMock``) with
+    common repository methods preconfigured for testing.
+
+    Returns:
+        MagicMock: A UoW mock ready to be injected into the use case.
+    """
+    warehouses_mock = AsyncMock()
+
+    warehouses_mock.save.side_effect = lambda entity: entity
+
+    uow_mock = MagicMock()
+    uow_mock.__aenter__ = AsyncMock(return_value=uow_mock)
+    uow_mock.__aexit__ = AsyncMock(return_value=None)
+
+    uow_mock.warehouses = warehouses_mock
+
+    uow_mock.commit = AsyncMock()
+    uow_mock.rollback = AsyncMock()
+
+    return uow_mock

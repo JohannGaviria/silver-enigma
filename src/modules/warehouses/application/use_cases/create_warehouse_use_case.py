@@ -73,6 +73,7 @@ class CreateWarehouseUseCase:
                 supplier_id=command.supplier_id, name=name, address=address
             )
             warehouse = await uow.warehouses.save(entity)
+            await uow.commit()
 
         self._logger.info("Created warehouse", warehouse_id=str(warehouse.id))
 
