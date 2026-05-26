@@ -31,3 +31,16 @@ class InvalidWarehouseAddressException(BaseDomainException):
         self.address = address
         self.errors = errors
         super().__init__("Invalid warehouse address.")
+
+
+class WarehouseRepositoryException(BaseDomainException):
+    """Exception raised for errors that occur within the WarehouseRepository."""
+
+    def __init__(self, error: str) -> None:
+        """Initialize the WarehouseRepositoryException.
+
+        Args:
+            error (str): A message describing the error that occurred within the WarehouseRepository.
+        """
+        self.error = error
+        super().__init__("An error occurred in the WarehouseRepository.")
