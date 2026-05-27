@@ -24,6 +24,9 @@ from src.shared.domain.value_objects.access_token_payload_vo import AccessTokenP
 from src.shared.presentation.api.compositions.security_composition import (
     get_current_user,
 )
+from src.shared.presentation.api.mappers.authenticated_user_mapper import (
+    AuthenticatedUserApiMapper,
+)
 from src.shared.presentation.api.schemas.schema import (
     ErrorsResponseSchema,
     SuccessResponseSchema,
@@ -92,7 +95,10 @@ async def admin_user_registration(
         JSONResponse: HTTP 201 with user registration response payload.
     """
     result: AdminUserRegistrationResponseDto = await use_case.execute(
-        AdminUserRegistrationApiMapper.to_command(request, current_user.role)
+        command=AdminUserRegistrationApiMapper.to_command(request),
+        authenticated_user=AuthenticatedUserApiMapper.to_command(
+            user_id=current_user.sub, role=current_user.role
+        ),
     )
 
     return JSONResponse(

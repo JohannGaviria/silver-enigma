@@ -5,9 +5,6 @@ from src.modules.auth.application.dtos.admin_user_registration_dto import (
     AdminUserRegistrationResponseDto,
 )
 from src.modules.auth.domain.entities.user_entity import UserEntity
-from src.modules.auth.domain.exceptions.session_exception import (
-    InsufficientPermissionsException,
-)
 from src.modules.auth.domain.exceptions.user_exception import (
     UserAlreadyExistsException,
 )
@@ -20,7 +17,13 @@ from src.modules.auth.domain.ports.unit_of_work.user_unit_of_work_port import (
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.plain_password_vo import PlainPasswordVO
+from src.shared.application.dtos.authenticated_user_dto import (
+    AuthenticatedUserCommandDto,
+)
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
+from src.shared.domain.exceptions.session_exception import (
+    InsufficientPermissionsException,
+)
 from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
     LoggerFactoryOutboundPort,
 )
@@ -52,7 +55,9 @@ class AdminUserRegistrationUseCase:
         self.password_hash_outbound = password_hash_outbound
 
     async def execute(
-        self, command: AdminUserRegistrationCommandDto
+        self,
+        command: AdminUserRegistrationCommandDto,
+        authenticated_user: AuthenticatedUserCommandDto,
     ) -> AdminUserRegistrationResponseDto:
         """Execute the use case so that the administrator registers a user.
 
@@ -62,6 +67,8 @@ class AdminUserRegistrationUseCase:
         Args:
             command (AdminUserRegistrationCommandDto): The command containing the
                 details for the new user.
+            authenticated_user (AuthenticatedUserCommandDto): The authenticated user for the
+                current session.
 
         Returns:
             AdminUserRegistrationResponseDto: The response containing the details of
@@ -75,10 +82,10 @@ class AdminUserRegistrationUseCase:
         )
 
         # Authorization check
-        if command.actor_role != UserRoleEnum.ADMIN:
+        if authenticated_user.role != UserRoleEnum.ADMIN:
             self._logger.warning(
                 "Unauthorized registration attempt",
-                actor_role=command.actor_role,
+                actor_role=authenticated_user.role,
             )
             raise InsufficientPermissionsException(
                 "Only administrators can register users."
