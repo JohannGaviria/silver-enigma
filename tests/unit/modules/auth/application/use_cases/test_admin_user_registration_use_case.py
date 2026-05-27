@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, Mock
+from uuid import UUID
 
 import pytest
 from faker import Faker
@@ -16,16 +17,19 @@ from src.modules.auth.domain.exceptions.credentials_exception import (
     InvalidPasswordHashException,
     InvalidPlainPasswordException,
 )
-from src.modules.auth.domain.exceptions.session_exception import (
-    InsufficientPermissionsException,
-)
 from src.modules.auth.domain.exceptions.user_exception import (
     UserAlreadyExistsException,
 )
 from src.modules.auth.domain.value_objects.email_vo import EmailVO
 from src.modules.auth.domain.value_objects.name_vo import NameVO
 from src.modules.auth.domain.value_objects.password_hash_vo import PasswordHashVO
+from src.shared.application.dtos.authenticated_user_dto import (
+    AuthenticatedUserCommandDto,
+)
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
+from src.shared.domain.exceptions.session_exception import (
+    InsufficientPermissionsException,
+)
 
 
 class TestAdminUserRegistrationUseCase:
@@ -51,7 +55,11 @@ class TestAdminUserRegistrationUseCase:
             email=faker.email(),
             password=faker.password(),
             role=UserRoleEnum.ADMIN,
-            actor_role=UserRoleEnum.ADMIN,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -60,7 +68,7 @@ class TestAdminUserRegistrationUseCase:
             password_hash_outbound=password_hash_outbound_mock,
         )
 
-        result = await use_case.execute(command)
+        result = await use_case.execute(command, authenticated_user)
 
         user_uow_mock.users.save.assert_awaited_once()
         user_uow_mock.commit.assert_awaited_once()
@@ -108,7 +116,11 @@ class TestAdminUserRegistrationUseCase:
             email=faker.email(),
             password=faker.password(),
             role=UserRoleEnum.ADMIN,
-            actor_role=UserRoleEnum.ADMIN,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -118,7 +130,7 @@ class TestAdminUserRegistrationUseCase:
         )
 
         with pytest.raises(UserAlreadyExistsException):
-            await use_case.execute(command)
+            await use_case.execute(command, authenticated_user)
 
         user_uow_mock.users.save.assert_not_awaited()
         user_uow_mock.commit.assert_not_awaited()
@@ -140,7 +152,11 @@ class TestAdminUserRegistrationUseCase:
             email=faker.email(),
             password=faker.password(),
             role=UserRoleEnum.BUYER,
-            actor_role=UserRoleEnum.SUPPLIER,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.SUPPLIER,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -150,7 +166,7 @@ class TestAdminUserRegistrationUseCase:
         )
 
         with pytest.raises(InsufficientPermissionsException):
-            await use_case.execute(command)
+            await use_case.execute(command, authenticated_user)
 
         user_uow_mock.users.find_by_email.assert_not_awaited()
         user_uow_mock.users.save.assert_not_awaited()
@@ -175,7 +191,11 @@ class TestAdminUserRegistrationUseCase:
             email="invalid-email",
             password=faker.password(),
             role=UserRoleEnum.ADMIN,
-            actor_role=UserRoleEnum.ADMIN,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -185,7 +205,7 @@ class TestAdminUserRegistrationUseCase:
         )
 
         with pytest.raises(InvalidEmailException):
-            await use_case.execute(command)
+            await use_case.execute(command, authenticated_user)
 
     @pytest.mark.asyncio
     async def test_should_raise_exception_when_password_is_invalid(
@@ -202,9 +222,15 @@ class TestAdminUserRegistrationUseCase:
         command = AdminUserRegistrationCommandDto(
             name=faker.name(),
             email=faker.email(),
-            password="123",
+            password=faker.password(
+                length=5, special_chars=False, digits=False, lower_case=True
+            ),
             role=UserRoleEnum.ADMIN,
-            actor_role=UserRoleEnum.ADMIN,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -214,7 +240,7 @@ class TestAdminUserRegistrationUseCase:
         )
 
         with pytest.raises(InvalidPlainPasswordException):
-            await use_case.execute(command)
+            await use_case.execute(command, authenticated_user)
 
     @pytest.mark.asyncio
     async def test_should_raise_exception_when_name_is_invalid(
@@ -233,7 +259,11 @@ class TestAdminUserRegistrationUseCase:
             email=faker.email(),
             password=faker.password(),
             role=UserRoleEnum.ADMIN,
-            actor_role=UserRoleEnum.ADMIN,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -243,7 +273,7 @@ class TestAdminUserRegistrationUseCase:
         )
 
         with pytest.raises(InvalidNameException):
-            await use_case.execute(command)
+            await use_case.execute(command, authenticated_user)
 
     @pytest.mark.asyncio
     async def test_should_propagate_exception_when_password_hashing_fails(
@@ -268,7 +298,11 @@ class TestAdminUserRegistrationUseCase:
             email=faker.email(),
             password=faker.password(),
             role=UserRoleEnum.ADMIN,
-            actor_role=UserRoleEnum.ADMIN,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.ADMIN,
         )
 
         use_case = AdminUserRegistrationUseCase(
@@ -278,7 +312,7 @@ class TestAdminUserRegistrationUseCase:
         )
 
         with pytest.raises(InvalidPasswordHashException):
-            await use_case.execute(command)
+            await use_case.execute(command, authenticated_user)
 
         user_uow_mock.users.save.assert_not_awaited()
         user_uow_mock.commit.assert_not_awaited()

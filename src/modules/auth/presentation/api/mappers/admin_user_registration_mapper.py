@@ -8,7 +8,6 @@ from src.modules.auth.presentation.api.schemas.admin_user_registration_schema im
     AdminUserRegistrationRequestSchema,
     AdminUserRegistrationResponseSchema,
 )
-from src.shared.domain.enums.user_role_enum import UserRoleEnum
 
 
 class AdminUserRegistrationApiMapper:
@@ -17,14 +16,12 @@ class AdminUserRegistrationApiMapper:
     @staticmethod
     def to_command(
         request: AdminUserRegistrationRequestSchema,
-        actor_role: UserRoleEnum,
     ) -> AdminUserRegistrationCommandDto:
         """Convert a AdminUserRegistrationRequestSchema to a AdminUserRegistrationCommandDto.
 
         Args:
             request (AdminUserRegistrationRequestSchema):
                 The AdminUserRegistrationRequestSchema instance.
-            actor_role (UserRoleEnum): The role of the user performing the registration.
 
         Returns:
             AdminUserRegistrationCommandDto: The AdminUserRegistrationCommandDto instance.
@@ -34,7 +31,6 @@ class AdminUserRegistrationApiMapper:
             email=request.email,
             password=request.password,
             role=request.role,
-            actor_role=actor_role,
         )
 
     @staticmethod
