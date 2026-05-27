@@ -6,6 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
 )
+from src.modules.warehouses.infrastructure.persistence.unit_of_work.sqlalchemy_warehouse_unit_of_work_adapter import (
+    SQLAlchemyWarehouseUnitOfWorkAdapter,
+)
 from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapter import (
     StructlogLoggerFactoryOutboundAdapter,
 )
@@ -123,6 +126,54 @@ def user_uow_mock() -> MagicMock:
     uow_mock.__aexit__ = AsyncMock(return_value=None)
 
     uow_mock.users = users_mock
+
+    uow_mock.commit = AsyncMock()
+    uow_mock.rollback = AsyncMock()
+
+    return uow_mock
+
+
+# ---------------------------------------------------------------------------
+# Modules: WAREHOUSES
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def warehouse_uow_with_session_mock(
+    session_factory_mock: MagicMock,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> tuple[SQLAlchemyWarehouseUnitOfWorkAdapter, AsyncMock]:
+    """Provide a warehouse UoW wired to a mocked session, plus the session mock.
+
+    Returns:
+        tuple: ``(uow, session_mock)`` so tests can assert on both objects.
+    """
+    uow = SQLAlchemyWarehouseUnitOfWorkAdapter(
+        session_factory=session_factory_mock,
+        logger_factory_outbound=logger_factory_outbound,
+    )
+    return uow, session_factory_mock.return_value
+
+
+@pytest.fixture()
+def warehouse_uow_mock() -> MagicMock:
+    """Build a Unit-of-Work mock that behaves as an async context manager.
+
+    The returned mock exposes ``uow.warehouses`` (an ``AsyncMock``) with
+    common repository methods preconfigured for testing.
+
+    Returns:
+        MagicMock: A UoW mock ready to be injected into the use case.
+    """
+    warehouses_mock = AsyncMock()
+
+    warehouses_mock.save.side_effect = lambda entity: entity
+
+    uow_mock = MagicMock()
+    uow_mock.__aenter__ = AsyncMock(return_value=uow_mock)
+    uow_mock.__aexit__ = AsyncMock(return_value=None)
+
+    uow_mock.warehouses = warehouses_mock
 
     uow_mock.commit = AsyncMock()
     uow_mock.rollback = AsyncMock()

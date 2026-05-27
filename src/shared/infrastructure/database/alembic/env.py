@@ -9,6 +9,7 @@ from sqlalchemy import create_engine, pool
 
 from src.shared.infrastructure.persistence.base_model import Base
 from src.modules.auth.infrastructure.persistence.models.user_model import UserModel
+from src.modules.warehouses.infrastructure.persistence.models.warehouse_model import WarehouseModel
 
 load_dotenv()
 

@@ -10,6 +10,9 @@ from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapte
 from src.shared.presentation.api.exceptions.cache_exception_handlers import (
     cache_exception_handlers,
 )
+from src.shared.presentation.api.exceptions.session_exception_handlers import (
+    as_session_exception_handlers,
+)
 from src.shared.presentation.api.exceptions.token_exception_handlers import (
     token_exception_handlers,
 )
@@ -27,6 +30,7 @@ def exception_handlers(app: FastAPI) -> None:
     """
     token_exception_handlers(app)
     cache_exception_handlers(app)
+    as_session_exception_handlers(app)
 
     @app.exception_handler(Exception)
     async def internal_server_error_exception_handler(
