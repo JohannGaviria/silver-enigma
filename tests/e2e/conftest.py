@@ -27,6 +27,10 @@ from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapte
     StructlogLoggerFactoryOutboundAdapter,
 )
 
+# ---------------------------------------------------------------------------
+# Modules: SHARED
+# ---------------------------------------------------------------------------
+
 
 def _make_session_factory(session: AsyncSession) -> async_sessionmaker[AsyncSession]:
     """Return a session factory that always yields the *same* test session.
@@ -47,6 +51,89 @@ def _make_session_factory(session: AsyncSession) -> async_sessionmaker[AsyncSess
             return session
 
     return _FixedSessionMaker()  # type: ignore[return-value]
+
+
+@pytest.fixture()
+def plain_password_valid(faker: Faker) -> PlainPasswordVO:
+    return PlainPasswordVO(faker.password())
+
+
+@pytest.fixture()
+async def created_user(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+    faker: Faker,
+    password_hash_outbound: Argon2PasswordHashOutboundAdapter,
+    plain_password_valid: PlainPasswordVO,
+) -> UserEntity:
+    unit_of_work = SQLAlchemyUserUnitOfWorkAdapter(
+        session_factory=_make_session_factory(db_session),
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+    async with unit_of_work as uow:
+        password_hash = password_hash_outbound.hash(plain_password_valid)
+        entity = UserEntity.create(
+            name=NameVO(faker.name()),
+            email=EmailVO(faker.email()),
+            password=password_hash,
+            role=UserRoleEnum.ADMIN,
+        )
+        user = await uow.users.save(entity)
+        await uow.commit()
+
+    return user
+
+
+@pytest.fixture()
+async def created_supplier(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+    faker: Faker,
+    password_hash_outbound: Argon2PasswordHashOutboundAdapter,
+    plain_password_valid: PlainPasswordVO,
+) -> UserEntity:
+    """Create a user with the SUPPLIER role, pinned to the test session."""
+    unit_of_work = SQLAlchemyUserUnitOfWorkAdapter(
+        session_factory=_make_session_factory(db_session),
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+    async with unit_of_work as uow:
+        password_hash = password_hash_outbound.hash(plain_password_valid)
+        entity = UserEntity.create(
+            name=NameVO(faker.name()),
+            email=EmailVO(faker.email()),
+            password=password_hash,
+            role=UserRoleEnum.SUPPLIER,
+        )
+        user = await uow.users.save(entity)
+        await uow.commit()
+
+    return user
+
+
+@pytest.fixture()
+def access_token_factory(
+    async_client: AsyncClient,
+) -> Callable[[str, str], Awaitable[str]]:
+
+    async def _factory(email: str, password: str) -> str:
+        response = await async_client.post(
+            url="/api/v1/auth/login",
+            json={
+                "email": email,
+                "password": password,
+            },
+        )
+
+        body = response.json()
+
+        assert response.status_code == status.HTTP_200_OK, body
+
+        return body["data"]["access"]["token"]
+
+    return _factory
 
 
 # ---------------------------------------------------------------------------
@@ -93,58 +180,3 @@ def valid_admin_command(faker: Faker) -> CreateFirstAdminCommandDto:
         email=faker.email(),
         plain_password=faker.password(),
     )
-
-
-@pytest.fixture()
-def plain_password_valid(faker: Faker) -> PlainPasswordVO:
-    return PlainPasswordVO(faker.password())
-
-
-@pytest.fixture()
-async def created_user(
-    db_session: AsyncSession,
-    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
-    faker: Faker,
-    password_hash_outbound: Argon2PasswordHashOutboundAdapter,
-    plain_password_valid: PlainPasswordVO,
-) -> UserEntity:
-    unit_of_work = SQLAlchemyUserUnitOfWorkAdapter(
-        session_factory=_make_session_factory(db_session),
-        logger_factory_outbound=logger_factory_outbound,
-    )
-
-    async with unit_of_work as uow:
-        password_hash = password_hash_outbound.hash(plain_password_valid)
-        entity = UserEntity.create(
-            name=NameVO(faker.name()),
-            email=EmailVO(faker.email()),
-            password=password_hash,
-            role=UserRoleEnum.ADMIN,
-        )
-        user = await uow.users.save(entity)
-        await uow.commit()
-
-    return user
-
-
-@pytest.fixture()
-def access_token_factory(
-    async_client: AsyncClient,
-) -> Callable[[str, str], Awaitable[str]]:
-
-    async def _factory(email: str, password: str) -> str:
-        response = await async_client.post(
-            url="/api/v1/auth/login",
-            json={
-                "email": email,
-                "password": password,
-            },
-        )
-
-        body = response.json()
-
-        assert response.status_code == status.HTTP_200_OK, body
-
-        return body["data"]["access"]["token"]
-
-    return _factory
