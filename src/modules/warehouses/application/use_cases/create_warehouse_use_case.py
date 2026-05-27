@@ -17,6 +17,13 @@ from src.modules.warehouses.domain.value_objects.warehouse_by_supplier_cache_key
 from src.modules.warehouses.domain.value_objects.warehouse_name_vo import (
     WarehouseNameVO,
 )
+from src.shared.application.dtos.authenticated_user_dto import (
+    AuthenticatedUserCommandDto,
+)
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
+from src.shared.domain.exceptions.session_exception import (
+    InsufficientPermissionsException,
+)
 from src.shared.domain.ports.outbound.cache_outbound_port import CacheOutboundPort
 from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
     LoggerFactoryOutboundPort,
@@ -44,19 +51,33 @@ class CreateWarehouseUseCase:
         self.warehouse_unit_of_work = warehouse_unit_of_work
 
     async def execute(
-        self, command: CreateWarehouseCommandDto
+        self,
+        command: CreateWarehouseCommandDto,
+        authenticated_user: AuthenticatedUserCommandDto,
     ) -> CreateWarehouseResponseDto:
         """Execute the use case that creates a warehouse.
 
         Args:
             command (CreateWarehouseCommandDto): The command DTO for creating a warehouse.
+            authenticated_user (AuthenticatedUserCommandDto): The authenticated user DTO.
 
         Returns:
             CreateWarehouseResponseDto: The response DTO for creating a warehouse.
         """
         self._logger.info(
-            "Executing create warehouse use case", supplier_id=str(command.supplier_id)
+            "Executing create warehouse use case",
+            supplier_id=str(authenticated_user.user_id),
         )
+
+        # Authorization check
+        if authenticated_user.role != UserRoleEnum.SUPPLIER:
+            self._logger.warning(
+                "Unauthorized warehouse creation attempt",
+                actor_role=authenticated_user.role,
+            )
+            raise InsufficientPermissionsException(
+                "Only suppliers can create warehouses."
+            )
 
         # Value Objects are validated eagerly at construction time, so domain
         # exceptions will propagate before we open the transaction.
@@ -64,13 +85,13 @@ class CreateWarehouseUseCase:
         address = WarehouseAddressVO(command.address)
 
         # Invalidate the cache for the warehouse by supplier
-        key = WarehouseBySupplierCacheKeyVO.from_supplier_id(command.supplier_id)
+        key = WarehouseBySupplierCacheKeyVO.from_supplier_id(authenticated_user.user_id)
         await self.cache_outbound.delete(key)
 
         async with self.warehouse_unit_of_work as uow:
             # Create and persist the new warehouse
             entity = WarehouseEntity.create(
-                supplier_id=command.supplier_id, name=name, address=address
+                supplier_id=authenticated_user.user_id, name=name, address=address
             )
             warehouse = await uow.warehouses.save(entity)
             await uow.commit()

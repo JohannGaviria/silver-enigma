@@ -23,6 +23,9 @@ from src.shared.domain.value_objects.access_token_payload_vo import AccessTokenP
 from src.shared.presentation.api.compositions.security_composition import (
     get_current_user,
 )
+from src.shared.presentation.api.mappers.authenticated_user_mapper import (
+    AuthenticatedUserApiMapper,
+)
 from src.shared.presentation.api.schemas.schema import (
     ErrorsResponseSchema,
     SuccessResponseSchema,
@@ -87,7 +90,10 @@ async def create_warehouse(
         JSONResponse: A JSON response containing the warehouse created.
     """
     result: CreateWarehouseResponseDto = await use_case.execute(
-        CreateWarehouseApiMapper.to_command(request, supplier_id=current_user.sub)
+        command=CreateWarehouseApiMapper.to_command(request),
+        authenticated_user=AuthenticatedUserApiMapper.to_command(
+            user_id=current_user.sub, role=current_user.role
+        ),
     )
 
     return JSONResponse(

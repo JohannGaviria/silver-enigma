@@ -10,12 +10,10 @@ class BaseCreateWarehouseDto:
     """Base DTO for creating a warehouse.
 
     Attributes:
-        supplier_id (UUID): The ID of the supplier.
         name (str): The name of the warehouse.
         address (str): The address of the warehouse.
     """
 
-    supplier_id: UUID
     name: str
     address: str
 
@@ -25,7 +23,6 @@ class CreateWarehouseCommandDto(BaseCreateWarehouseDto):
     """Command DTO for creating a warehouse.
 
     Attributes:
-        supplier_id (UUID): The ID of the supplier.
         name (str): The name of the warehouse.
         address (str): The address of the warehouse.
     """
@@ -48,6 +45,7 @@ class CreateWarehouseResponseDto(BaseCreateWarehouseDto):
     """
 
     id: UUID
+    supplier_id: UUID
     is_active: bool
     created_at: datetime
     updated_at: datetime

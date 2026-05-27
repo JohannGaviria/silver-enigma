@@ -1,7 +1,5 @@
 """This module contains the CreateWarehouseApiMapper class."""
 
-from uuid import UUID
-
 from src.modules.warehouses.application.dtos.create_warehouse_dto import (
     CreateWarehouseCommandDto,
     CreateWarehouseResponseDto,
@@ -16,21 +14,16 @@ class CreateWarehouseApiMapper:
     """This class contains methods for mapping between the API and the application layer."""
 
     @staticmethod
-    def to_command(
-        request: CreateWarehouseRequestSchema, supplier_id: UUID
-    ) -> CreateWarehouseCommandDto:
+    def to_command(request: CreateWarehouseRequestSchema) -> CreateWarehouseCommandDto:
         """Map a request schema to a command DTO.
 
         Args:
             request (CreateWarehouseRequestSchema): The request schema to map.
-            supplier_id (UUID): The supplier ID associated with the warehouse.
 
         Returns:
             CreateWarehouseCommandDto: The command DTO.
         """
-        return CreateWarehouseCommandDto(
-            supplier_id=supplier_id, name=request.name, address=request.address
-        )
+        return CreateWarehouseCommandDto(name=request.name, address=request.address)
 
     @staticmethod
     def to_response(

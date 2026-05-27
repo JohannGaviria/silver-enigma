@@ -15,6 +15,13 @@ from src.modules.warehouses.domain.exceptions.warehouse_exception import (
     InvalidWarehouseAddressException,
     InvalidWarehouseNameException,
 )
+from src.shared.application.dtos.authenticated_user_dto import (
+    AuthenticatedUserCommandDto,
+)
+from src.shared.domain.enums.user_role_enum import UserRoleEnum
+from src.shared.domain.exceptions.session_exception import (
+    InsufficientPermissionsException,
+)
 
 
 class TestCreateWarehouseUseCase:
@@ -28,9 +35,12 @@ class TestCreateWarehouseUseCase:
     ) -> None:
         """Test that the execute method creates a warehouse when the command is valid."""
         command = CreateWarehouseCommandDto(
-            supplier_id=UUID(faker.uuid4()),
             name=faker.name(),
             address=faker.address(),
+        )
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.SUPPLIER,
         )
 
         use_case = CreateWarehouseUseCase(
@@ -39,7 +49,7 @@ class TestCreateWarehouseUseCase:
             warehouse_unit_of_work=warehouse_uow_mock,
         )
 
-        result = await use_case.execute(command)
+        result = await use_case.execute(command, authenticated_user)
 
         warehouse_uow_mock.warehouses.save.assert_awaited_once()
         warehouse_uow_mock.commit.assert_awaited_once()
@@ -48,13 +58,13 @@ class TestCreateWarehouseUseCase:
 
         assert isinstance(saved_warehouse, WarehouseEntity)
         assert str(saved_warehouse.id) == str(result.id)
-        assert str(saved_warehouse.supplier_id) == str(command.supplier_id)
+        assert str(saved_warehouse.supplier_id) == str(authenticated_user.user_id)
         assert str(saved_warehouse.name) == command.name
         assert str(saved_warehouse.address) == command.address
         assert saved_warehouse.is_active is True
 
         assert result.id
-        assert result.supplier_id == command.supplier_id
+        assert result.supplier_id == authenticated_user.user_id
         assert result.name == command.name
         assert result.address == command.address
         assert result.is_active is True
@@ -74,9 +84,13 @@ class TestCreateWarehouseUseCase:
         cache before creating the warehouse.
         """
         command = CreateWarehouseCommandDto(
-            supplier_id=UUID(faker.uuid4()),
             name=faker.name(),
             address=faker.address(),
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.SUPPLIER,
         )
 
         use_case = CreateWarehouseUseCase(
@@ -85,13 +99,13 @@ class TestCreateWarehouseUseCase:
             warehouse_unit_of_work=warehouse_uow_mock,
         )
 
-        await use_case.execute(command)
+        await use_case.execute(command, authenticated_user)
 
         cache_outbound_mock.delete.assert_awaited_once()
 
         cache_call = cache_outbound_mock.delete.await_args.args[0]
 
-        assert str(command.supplier_id) in str(cache_call)
+        assert str(authenticated_user.user_id) in str(cache_call)
 
         cache_outbound_mock.delete.assert_awaited_once()
         warehouse_uow_mock.warehouses.save.assert_awaited_once()
@@ -121,9 +135,13 @@ class TestCreateWarehouseUseCase:
         when the warehouse name is invalid.
         """
         command = CreateWarehouseCommandDto(
-            supplier_id=UUID(faker.uuid4()),
             name=name,
             address=faker.address(),
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.SUPPLIER,
         )
 
         use_case = CreateWarehouseUseCase(
@@ -133,7 +151,7 @@ class TestCreateWarehouseUseCase:
         )
 
         with pytest.raises(InvalidWarehouseNameException):
-            await use_case.execute(command)
+            await use_case.execute(command, authenticated_user)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -160,9 +178,13 @@ class TestCreateWarehouseUseCase:
         when the warehouse address is invalid.
         """
         command = CreateWarehouseCommandDto(
-            supplier_id=UUID(faker.uuid4()),
             name=faker.name(),
             address=address,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.SUPPLIER,
         )
 
         use_case = CreateWarehouseUseCase(
@@ -172,7 +194,7 @@ class TestCreateWarehouseUseCase:
         )
 
         with pytest.raises(InvalidWarehouseAddressException):
-            await use_case.execute(command)
+            await use_case.execute(command, authenticated_user)
 
     @pytest.mark.asyncio
     async def test_should_not_touch_cache_or_persist_warehouse_when_warehouse_data_is_invalid(
@@ -187,9 +209,13 @@ class TestCreateWarehouseUseCase:
         or persist the warehouse when the warehouse data is invalid.
         """
         command = CreateWarehouseCommandDto(
-            supplier_id=UUID(faker.uuid4()),
             name="a",
             address=faker.address(),
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.SUPPLIER,
         )
 
         use_case = CreateWarehouseUseCase(
@@ -199,8 +225,39 @@ class TestCreateWarehouseUseCase:
         )
 
         with pytest.raises(InvalidWarehouseNameException):
-            await use_case.execute(command)
+            await use_case.execute(command, authenticated_user)
 
         cache_outbound_mock.delete.assert_not_awaited()
         warehouse_uow_mock.warehouses.save.assert_not_awaited()
         warehouse_uow_mock.commit.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_should_raise_exception_when_user_is_not_supplier(
+        self,
+        faker: Faker,
+        logger_factory_mock: Mock,
+        cache_outbound_mock: MagicMock,
+        warehouse_uow_mock: MagicMock,
+    ) -> None:
+        """Test that the execute method raises an exception.
+
+        when the user is not a supplier.
+        """
+        command = CreateWarehouseCommandDto(
+            name=faker.name(),
+            address=faker.address(),
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=UUID(faker.uuid4()),
+            role=UserRoleEnum.BUYER,
+        )
+
+        use_case = CreateWarehouseUseCase(
+            logger_factory_outbound=logger_factory_mock,
+            cache_outbound=cache_outbound_mock,
+            warehouse_unit_of_work=warehouse_uow_mock,
+        )
+
+        with pytest.raises(InsufficientPermissionsException):
+            await use_case.execute(command, authenticated_user)
