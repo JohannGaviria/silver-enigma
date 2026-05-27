@@ -9,6 +9,10 @@ from src.modules.auth.presentation.api.exceptions.auth_exception_handler import 
     auth_exception_handlers,
 )
 from src.modules.auth.presentation.api.routes import auth_router
+from src.modules.warehouses.presentation.api.exceptions.warehouse_exception_handlers import (
+    warehouse_exception_handlers,
+)
+from src.modules.warehouses.presentation.api.routes import warehouse_router
 from src.shared.infrastructure.cache.redis_connection import RedisConnection
 from src.shared.infrastructure.database.database_engine import DatabaseEngine
 from src.shared.infrastructure.logging.structlog_configure_logging import (
@@ -43,10 +47,13 @@ app.add_middleware(
 
 # Includes the routers for the API endpoints
 app.include_router(auth_router.router)
+app.include_router(warehouse_router.router)
+
 
 # Includes the exception handlers for the API endpoints
 exception_handlers(app)
 auth_exception_handlers(app)
+warehouse_exception_handlers(app)
 
 
 @app.get(
