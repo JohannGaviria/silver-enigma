@@ -19,6 +19,9 @@ from src.shared.infrastructure.logging.structlog_configure_logging import (
     StructlogConfigureLogging,
 )
 from src.shared.presentation.api.exceptions.exception_handlers import exception_handlers
+from src.shared.presentation.api.middleware.correlation_id_middleware import (
+    CorrelationIdMiddleware,
+)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -45,15 +48,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Includes the routers for the API endpoints
-app.include_router(auth_router.router)
-app.include_router(warehouse_router.router)
+
+# Includes the middleware for the API endpoints
+app.add_middleware(CorrelationIdMiddleware)
 
 
 # Includes the exception handlers for the API endpoints
 exception_handlers(app)
 auth_exception_handlers(app)
 warehouse_exception_handlers(app)
+
+
+# Includes the routers for the API endpoints
+app.include_router(auth_router.router)
+app.include_router(warehouse_router.router)
 
 
 @app.get(
