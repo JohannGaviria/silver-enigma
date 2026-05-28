@@ -36,8 +36,8 @@ class WarehouseBySupplierCacheValueVO(CacheValueVO):
                     "name": str(warehouse.name),
                     "address": str(warehouse.address),
                     "is_active": warehouse.is_active,
-                    "created_at": warehouse.created_at,
-                    "updated_at": warehouse.updated_at,
+                    "created_at": warehouse.created_at.isoformat(),
+                    "updated_at": warehouse.updated_at.isoformat(),
                 }
                 for warehouse in self.warehouses
             ]

@@ -72,7 +72,7 @@ class GetWarehousesUseCase:
         )
 
         # Authorization check
-        if authenticated_user != UserRoleEnum.SUPPLIER:
+        if authenticated_user.role != UserRoleEnum.SUPPLIER:
             self._logger.warning(
                 "Unauthorized warehouse retrieval attempt",
                 user_id=str(authenticated_user.user_id),
