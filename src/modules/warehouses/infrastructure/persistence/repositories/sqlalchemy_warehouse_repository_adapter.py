@@ -1,5 +1,8 @@
 """This module contains the SQLAlchemyWarehouseRepositoryAdapter class."""
 
+from uuid import UUID
+
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,6 +15,9 @@ from src.modules.warehouses.domain.ports.repositories.warehouse_repository_port 
 )
 from src.modules.warehouses.infrastructure.persistence.mappers.warehouse_mapper import (
     WarehousePersistenceMapper,
+)
+from src.modules.warehouses.infrastructure.persistence.models.warehouse_model import (
+    WarehouseModel,
 )
 from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
     LoggerFactoryOutboundPort,
@@ -40,6 +46,34 @@ class SQLAlchemyWarehouseRepositoryAdapter(WarehouserRepositoryPort):
         """
         self.session = session
         self._logger = logger_factory_outbound.get_logger(__name__)
+
+    async def find_all_by_supplier_id(self, supplier_id: UUID) -> list[WarehouseEntity]:
+        """Finds all warehouses by supplier ID within the current transaction.
+
+        Args:
+            supplier_id (UUID): The supplier ID to find warehouses for.
+
+        Returns:
+            list[WarehouseEntity]: A list of warehouse entities.
+
+        Raises:
+            WarehouseRepositoryException: If any other database error occurs.
+        """
+        try:
+            stmt = select(WarehouseModel).where(
+                WarehouseModel.supplier_id == supplier_id
+            )
+            result = await self.session.execute(stmt)
+            models = result.scalars().all()
+
+            return [WarehousePersistenceMapper.to_entity(model) for model in models]
+        except SQLAlchemyError as e:
+            self._logger.error(
+                "Database error while retrieving warehouses.", exc_info=str(e)
+            )
+            raise WarehouseRepositoryException(
+                "Database error during warehouse retrieval."
+            ) from e
 
     async def save(self, entity: WarehouseEntity) -> WarehouseEntity:
         """Persists a WarehouseEntity within the current transaction and returns it.

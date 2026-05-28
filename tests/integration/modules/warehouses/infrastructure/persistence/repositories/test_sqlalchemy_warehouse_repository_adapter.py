@@ -1,5 +1,5 @@
 from unittest.mock import AsyncMock, patch
-from uuid import uuid4
+from uuid import UUID
 
 import pytest
 from faker import Faker
@@ -22,6 +22,65 @@ from src.modules.warehouses.infrastructure.persistence.repositories.sqlalchemy_w
 
 class TestSQLAlchemyWarehouseRepositoryAdapter:
     # ---------------------------------------------------------------------------
+    # Method: find_all_by_supplier_id
+    # ---------------------------------------------------------------------------
+
+    @pytest.mark.asyncio
+    async def test_should_find_all_warehouses_by_supplier_id(
+        self,
+        faker: Faker,
+        warehouse_repository: SQLAlchemyWarehouseRepositoryAdapter,
+    ) -> None:
+        """find_all_by_supplier_id() must return all warehouses for the supplier."""
+        supplier_id = UUID(faker.uuid4())
+        warehouses = [
+            WarehouseEntity.create(
+                supplier_id=supplier_id,
+                name=WarehouseNameVO(faker.company()),
+                address=WarehouseAddressVO(faker.address()),
+            )
+            for _ in range(3)
+        ]
+
+        for warehouse in warehouses:
+            await warehouse_repository.save(warehouse)
+
+        result = await warehouse_repository.find_all_by_supplier_id(supplier_id)
+
+        assert len(result) == 3
+        assert all(warehouse in result for warehouse in warehouses)
+
+    @pytest.mark.asyncio
+    async def test_should_return_empty_list_when_no_warehouses_found(
+        self,
+        faker: Faker,
+        warehouse_repository: SQLAlchemyWarehouseRepositoryAdapter,
+    ) -> None:
+        """find_all_by_supplier_id() must return an empty list when no warehouses are found."""
+        supplier_id = UUID(faker.uuid4())
+
+        result = await warehouse_repository.find_all_by_supplier_id(supplier_id)
+
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_should_raise_warehouse_repository_exception_when_flush_fails_in_find_all_by_supplier_id(
+        self,
+        faker: Faker,
+        warehouse_repository: SQLAlchemyWarehouseRepositoryAdapter,
+    ) -> None:
+        """WarehouseRepositoryException must be raised when ``session.flush`` fails."""
+        supplier_id = UUID(faker.uuid4())
+
+        with patch.object(
+            warehouse_repository.session,
+            "execute",
+            new=AsyncMock(side_effect=SQLAlchemyError("boom")),
+        ):
+            with pytest.raises(WarehouseRepositoryException):
+                await warehouse_repository.find_all_by_supplier_id(supplier_id)
+
+    # ---------------------------------------------------------------------------
     # Method: save
     # ---------------------------------------------------------------------------
 
@@ -33,7 +92,7 @@ class TestSQLAlchemyWarehouseRepositoryAdapter:
     ) -> None:
         """save() must flush the entity and return it with all fields intact."""
         entity = WarehouseEntity.create(
-            supplier_id=uuid4(),
+            supplier_id=UUID(faker.uuid4()),
             name=WarehouseNameVO(faker.company()),
             address=WarehouseAddressVO(faker.address()),
         )
@@ -53,7 +112,7 @@ class TestSQLAlchemyWarehouseRepositoryAdapter:
         warehouse_repository: SQLAlchemyWarehouseRepositoryAdapter,
     ) -> None:
         """Two different warehouse entities can be saved without conflict."""
-        supplier_id = uuid4()
+        supplier_id = UUID(faker.uuid4())
 
         entity1 = WarehouseEntity.create(
             supplier_id=supplier_id,
@@ -80,7 +139,7 @@ class TestSQLAlchemyWarehouseRepositoryAdapter:
     ) -> None:
         """Newly created warehouses must always have is_active set to True."""
         entity = WarehouseEntity.create(
-            supplier_id=uuid4(),
+            supplier_id=UUID(faker.uuid4()),
             name=WarehouseNameVO(faker.company()),
             address=WarehouseAddressVO(faker.address()),
         )
@@ -101,7 +160,7 @@ class TestSQLAlchemyWarehouseRepositoryAdapter:
         responsibility. This test patches the right boundary.
         """
         entity = WarehouseEntity.create(
-            supplier_id=uuid4(),
+            supplier_id=UUID(faker.uuid4()),
             name=WarehouseNameVO(faker.company()),
             address=WarehouseAddressVO(faker.address()),
         )
@@ -126,7 +185,7 @@ class TestSQLAlchemyWarehouseRepositoryAdapter:
         commit inside the repository would bypass the UoW and break atomicity.
         """
         entity = WarehouseEntity.create(
-            supplier_id=uuid4(),
+            supplier_id=UUID(faker.uuid4()),
             name=WarehouseNameVO(faker.company()),
             address=WarehouseAddressVO(faker.address()),
         )
@@ -152,7 +211,7 @@ class TestSQLAlchemyWarehouseRepositoryAdapter:
         flushes; the UoW decides whether to commit or roll back.
         """
         entity = WarehouseEntity.create(
-            supplier_id=uuid4(),
+            supplier_id=UUID(faker.uuid4()),
             name=WarehouseNameVO(faker.company()),
             address=WarehouseAddressVO(faker.address()),
         )

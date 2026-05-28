@@ -2,7 +2,10 @@
 
 from fastapi import APIRouter
 
-from src.modules.warehouses.presentation.api.routes import create_warehouse_router
+from src.modules.warehouses.presentation.api.routes import (
+    create_warehouse_router,
+    get_warehouses_router,
+)
 
 router = APIRouter(
     prefix="/api/v1/warehouses",
@@ -10,3 +13,4 @@ router = APIRouter(
 )
 
 router.include_router(create_warehouse_router.router)
+router.include_router(get_warehouses_router.router)
