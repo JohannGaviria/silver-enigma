@@ -52,7 +52,7 @@ router = APIRouter()
         },
         status.HTTP_400_BAD_REQUEST: {
             "model": ErrorsResponseSchema,
-            "description": ("Invalid request data or business rule validation error."),
+            "description": "Invalid request data or business rule validation error.",
         },
         status.HTTP_401_UNAUTHORIZED: {
             "model": ErrorsResponseSchema,
@@ -61,10 +61,6 @@ router = APIRouter()
         status.HTTP_403_FORBIDDEN: {
             "model": ErrorsResponseSchema,
             "description": "The authenticated user does not have permission to update this warehouse.",
-        },
-        status.HTTP_422_UNPROCESSABLE_CONTENT: {
-            "model": ErrorsResponseSchema,
-            "description": "Request validation failed due to invalid input format or fields.",
         },
         status.HTTP_500_INTERNAL_SERVER_ERROR: {
             "model": ErrorsResponseSchema,
