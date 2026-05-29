@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from src.modules.warehouses.domain.exceptions.warehouse_exception import (
     InvalidWarehouseAddressException,
     InvalidWarehouseNameException,
+    WarehouseNotFoundException,
     WarehouseRepositoryException,
 )
 from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapter import (
@@ -111,6 +112,33 @@ def warehouse_exception_handlers(app: FastAPI) -> None:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(
                 ErrorsResponseSchema(message=str(exc), details=[exc.error]),
+                exclude_none=True,
+            ),
+        )
+
+    @app.exception_handler(WarehouseNotFoundException)
+    async def warehouse_not_found_exception_handler(
+        request: Request, exc: WarehouseNotFoundException
+    ) -> JSONResponse:
+        """Handle the WarehouseNotFoundException.
+
+        Args:
+            request (Request): The FastAPI request object.
+            exc (WarehouseNotFoundException): The exception to handle.
+
+        Returns:
+            JSONResponse: A JSON response containing the error message.
+        """
+        _logger.error(
+            "warehouse not found exception occurred while processing request",
+            request_method=request.method,
+            request_url=request.url.path,
+            exception_message=exc,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(
+                ErrorsResponseSchema(message=str(exc)),
                 exclude_none=True,
             ),
         )
