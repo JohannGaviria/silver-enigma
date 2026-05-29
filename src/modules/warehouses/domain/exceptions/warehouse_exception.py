@@ -44,3 +44,11 @@ class WarehouseRepositoryException(BaseDomainException):
         """
         self.error = error
         super().__init__("An error occurred in the WarehouseRepository.")
+
+
+class WarehouseNotFoundException(BaseDomainException):
+    """Exception raised when a warehouse is not found."""
+
+    def __init__(self) -> None:
+        """Initialize the WarehouseNotFoundException."""
+        super().__init__("Warehouse not found.")

@@ -1,10 +1,19 @@
 from unittest.mock import AsyncMock, MagicMock, Mock
+from uuid import UUID
 
 import pytest
+from faker import Faker
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
+)
+from src.modules.warehouses.domain.entities.warehouse_entity import WarehouseEntity
+from src.modules.warehouses.domain.value_objects.warehouse_address_vo import (
+    WarehouseAddressVO,
+)
+from src.modules.warehouses.domain.value_objects.warehouse_name_vo import (
+    WarehouseNameVO,
 )
 from src.modules.warehouses.infrastructure.persistence.unit_of_work.sqlalchemy_warehouse_unit_of_work_adapter import (
     SQLAlchemyWarehouseUnitOfWorkAdapter,
@@ -167,6 +176,9 @@ def warehouse_uow_mock() -> MagicMock:
     """
     warehouses_mock = AsyncMock()
 
+    warehouses_mock.find_by_id.return_value = None
+    warehouses_mock.find_all_by_supplier_id.return_value = []
+    warehouses_mock.update.side_effect = lambda entity: entity
     warehouses_mock.save.side_effect = lambda entity: entity
 
     uow_mock = MagicMock()
@@ -179,3 +191,12 @@ def warehouse_uow_mock() -> MagicMock:
     uow_mock.rollback = AsyncMock()
 
     return uow_mock
+
+
+def _make_warehouse_entity(faker: Faker, supplier_id: UUID) -> WarehouseEntity:
+    """Helper to build a WarehouseEntity with valid VOs."""
+    return WarehouseEntity.create(
+        supplier_id=supplier_id,
+        name=WarehouseNameVO(faker.company()),
+        address=WarehouseAddressVO(faker.address()),
+    )
