@@ -60,3 +60,32 @@ class WarehouseEntity(BaseEntity):
             created_at=now,
             updated_at=now,
         )
+
+    def update(
+        self,
+        name: WarehouseNameVO | None = None,
+        address: WarehouseAddressVO | None = None,
+    ) -> "WarehouseEntity":
+        """Factory method to update a WarehouseEntity.
+
+        This method sets the updated_at timestamp to the current time in UTC and returns a new
+        instance of WarehouseEntity with the updated name and address. If the name or address
+        is None, the corresponding attribute of the current instance will be used.
+
+        Args:
+            name (WarehouseNameVO | None, optional): The updated name of the warehouse.
+            address (WarehouseAddressVO | None, optional): The updated address of the warehouse.
+
+        Returns:
+            WarehouseEntity: The updated WarehouseEntity instance.
+        """
+        now = datetime.now(UTC)
+        return WarehouseEntity(
+            id=self.id,
+            supplier_id=self.supplier_id,
+            name=name if name is not None else self.name,
+            address=address if address is not None else self.address,
+            is_active=self.is_active,
+            created_at=self.created_at,
+            updated_at=now,
+        )
