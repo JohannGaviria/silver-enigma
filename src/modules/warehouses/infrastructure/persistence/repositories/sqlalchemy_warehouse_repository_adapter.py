@@ -47,6 +47,29 @@ class SQLAlchemyWarehouseRepositoryAdapter(WarehouserRepositoryPort):
         self.session = session
         self._logger = logger_factory_outbound.get_logger(__name__)
 
+    async def find_by_id(self, warehouse_id: UUID) -> WarehouseEntity | None:
+        """Find a warehouse by ID.
+
+        Args:
+            warehouse_id (UUID): The ID of the warehouse to find.
+
+        Returns:
+            WarehouseEntity | None: The found warehouse entity or None if not found.
+        """
+        try:
+            stmt = select(WarehouseModel).where(WarehouseModel.id == warehouse_id)
+            result = await self.session.execute(stmt)
+            model = result.scalar_one_or_none()
+
+            return WarehousePersistenceMapper.to_entity(model) if model else None
+        except SQLAlchemyError as e:
+            self._logger.error(
+                "Database error while retrieving warehouse.", exc_info=str(e)
+            )
+            raise WarehouseRepositoryException(
+                "Database error during warehouse retrieval."
+            ) from e
+
     async def find_all_by_supplier_id(self, supplier_id: UUID) -> list[WarehouseEntity]:
         """Finds all warehouses by supplier ID within the current transaction.
 
@@ -73,6 +96,28 @@ class SQLAlchemyWarehouseRepositoryAdapter(WarehouserRepositoryPort):
             )
             raise WarehouseRepositoryException(
                 "Database error during warehouse retrieval."
+            ) from e
+
+    async def update(self, entity: WarehouseEntity) -> WarehouseEntity:
+        """Update a warehouse entity in the repository.
+
+        Args:
+            entity (WarehouseEntity): The warehouse entity to update.
+
+        Returns:
+            WarehouseEntity: The updated warehouse entity.
+        """
+        try:
+            model = WarehousePersistenceMapper.to_model(entity)
+            merged_model = await self.session.merge(model)
+            await self.session.flush()
+            await self.session.refresh(merged_model)
+            self._logger.info("Warehouse updated.", warehouse_id=str(merged_model.id))
+            return WarehousePersistenceMapper.to_entity(merged_model)
+        except SQLAlchemyError as e:
+            self._logger.error("Database error while saving warehouse", exc_info=str(e))
+            raise WarehouseRepositoryException(
+                "Database error during warehouse creation."
             ) from e
 
     async def save(self, entity: WarehouseEntity) -> WarehouseEntity:
