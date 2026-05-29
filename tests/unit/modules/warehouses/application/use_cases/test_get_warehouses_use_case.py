@@ -12,14 +12,8 @@ from src.modules.warehouses.application.use_cases.get_warehouses_use_case import
     GetWarehousesUseCase,
 )
 from src.modules.warehouses.domain.entities.warehouse_entity import WarehouseEntity
-from src.modules.warehouses.domain.value_objects.warehouse_address_vo import (
-    WarehouseAddressVO,
-)
 from src.modules.warehouses.domain.value_objects.warehouse_by_supplier_cache_value_vo import (
     WarehouseBySupplierCacheValueVO,
-)
-from src.modules.warehouses.domain.value_objects.warehouse_name_vo import (
-    WarehouseNameVO,
 )
 from src.shared.application.dtos.authenticated_user_dto import (
     AuthenticatedUserCommandDto,
@@ -28,15 +22,7 @@ from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.exceptions.session_exception import (
     InsufficientPermissionsException,
 )
-
-
-def _make_warehouse_entity(faker: Faker, supplier_id: UUID) -> WarehouseEntity:
-    """Helper to build a WarehouseEntity with valid VOs."""
-    return WarehouseEntity.create(
-        supplier_id=supplier_id,
-        name=WarehouseNameVO(faker.company()),
-        address=WarehouseAddressVO(faker.address()),
-    )
+from tests.unit.conftest import _make_warehouse_entity
 
 
 def _make_cache_value(

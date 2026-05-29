@@ -136,6 +136,7 @@ class UpdateWarehouseUseCase:
             # Update the warehouse and persist the changes
             entity = exists_warehouse.update(name=name, address=address)
             warehouse = await uow.warehouses.update(entity)
+            await uow.commit()
 
         self._logger.info(
             "Updated warehouse successfully",
