@@ -25,19 +25,6 @@ class AuthenticationFailedException(BaseDomainException):
         super().__init__("Authentication failed due to invalid credentials.")
 
 
-class InsufficientPermissionsException(BaseDomainException):
-    """Exception raised when user authentication fails due to insufficient permissions."""
-
-    def __init__(self, error: str) -> None:
-        """Initializes the InsufficientPermissionsException.
-
-        Args:
-            error (str): A message describing the validation failure for the email address.
-        """
-        self.error = error
-        super().__init__("Insufficient permissions.")
-
-
 class SessionNotFoundException(BaseDomainException):
     """Exception raised when a session is not found in the cache."""
 
