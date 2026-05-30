@@ -3,6 +3,9 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from src.modules.products.domain.exceptions.product_exception import (
+    InvalidUnitPriceException,
+)
 from src.shared.domain.value_objects.base_value_object import BaseValueObject
 
 
@@ -23,14 +26,14 @@ class UnitPriceVO(BaseValueObject):
         is not. It ensures that the price is not empty and is not negative.
 
         Raises:
-            ValueError: If the price is invalid.
+            InvalidUnitPriceException: If the price is invalid.
         """
         errors: list[str] = []
 
         if self.price is None:
-            errors.append("Price cannot be empty.")
+            raise InvalidUnitPriceException("Price cannot be empty.", self.price)
         if self.price < Decimal("0"):
             errors.append("Price cannot be negative.")
 
         if errors:
-            raise ValueError(errors, self.price)
+            raise InvalidUnitPriceException(errors, self.price)
