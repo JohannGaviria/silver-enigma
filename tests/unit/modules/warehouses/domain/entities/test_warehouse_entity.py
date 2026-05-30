@@ -152,6 +152,71 @@ class TestWarehouseEntity:
         assert updated_warehouse.id == warehouse.id
 
     # ---------------------------------------------------------------------------
+    # update_is_active
+    # ---------------------------------------------------------------------------
+
+    def test_should_update_is_active_when_is_active_is_true(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update_is_active method updates the is_active attribute to True."""
+        warehouse = WarehouseEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=WarehouseNameVO(faker.company()),
+            address=WarehouseAddressVO(faker.address()),
+        )
+
+        updated_warehouse = warehouse.update_is_active(True)
+
+        assert updated_warehouse.is_active is True
+
+    def test_should_update_is_active_when_is_active_is_false(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update_is_active method updates the is_active attribute to False."""
+        warehouse = WarehouseEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=WarehouseNameVO(faker.company()),
+            address=WarehouseAddressVO(faker.address()),
+        )
+
+        updated_warehouse = warehouse.update_is_active(False)
+
+        assert updated_warehouse.is_active is False
+
+    def test_should_update_updated_at_and_preserve_created_at_when_updating_is_active(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update_is_active method updates the updated_at timestamp and preserves the created_at timestamp."""
+        warehouse = WarehouseEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=WarehouseNameVO(faker.company()),
+            address=WarehouseAddressVO(faker.address()),
+        )
+
+        updated_warehouse = warehouse.update_is_active(True)
+
+        assert updated_warehouse.created_at == warehouse.created_at
+        assert updated_warehouse.updated_at > warehouse.updated_at
+
+    def test_should_preserve_warehouse_id_when_updating_is_active(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update_is_active method preserves the warehouse ID."""
+        warehouse = WarehouseEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=WarehouseNameVO(faker.company()),
+            address=WarehouseAddressVO(faker.address()),
+        )
+
+        updated_warehouse = warehouse.update_is_active(True)
+
+        assert updated_warehouse.id == warehouse.id
+
+    # ---------------------------------------------------------------------------
     # immutability
     # ---------------------------------------------------------------------------
 

@@ -1,5 +1,3 @@
-"""Unit tests for the UpdateWarehouseUseCase."""
-
 from unittest.mock import AsyncMock, MagicMock, Mock
 from uuid import UUID
 

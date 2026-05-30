@@ -89,3 +89,26 @@ class WarehouseEntity(BaseEntity):
             created_at=self.created_at,
             updated_at=now,
         )
+
+    def update_is_active(self, is_active: bool) -> "WarehouseEntity":
+        """Factory method to update the is_active attribute of a WarehouseEntity.
+
+        This method sets the updated_at timestamp to the current time in UTC and returns a new
+        instance of WarehouseEntity with the updated is_active attribute.
+
+        Args:
+            is_active (bool): The updated is_active attribute of the warehouse.
+
+        Returns:
+            WarehouseEntity: The updated WarehouseEntity instance.
+        """
+        now = datetime.now(UTC)
+        return WarehouseEntity(
+            id=self.id,
+            supplier_id=self.supplier_id,
+            name=self.name,
+            address=self.address,
+            is_active=is_active,
+            created_at=self.created_at,
+            updated_at=now,
+        )
