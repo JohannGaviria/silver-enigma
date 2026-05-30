@@ -8,6 +8,9 @@ from src.modules.warehouses.application.use_cases.create_warehouse_use_case impo
 from src.modules.warehouses.application.use_cases.get_warehouses_use_case import (
     GetWarehousesUseCase,
 )
+from src.modules.warehouses.application.use_cases.toggle_warehouse_status_use_case import (
+    ToggleWarehouseStatusUseCase,
+)
 from src.modules.warehouses.application.use_cases.update_warehouse_use_case import (
     UpdateWarehouseUseCase,
 )
@@ -123,6 +126,37 @@ def get_update_warehouse_use_case(
         UpdateWarehouseUseCase: The UpdateWarehouseUseCase instance.
     """
     return UpdateWarehouseUseCase(
+        logger_factory_outbound=logger_factory_outbound,
+        cache_outbound=cache_outbound,
+        warehouse_unit_of_work=warehouse_unit_of_work,
+    )
+
+
+def get_toggle_warehouse_status_use_case(
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+    cache_outbound: RedisCacheOutboundAdapter[
+        WarehouseBySupplierCacheValueVO
+    ] = Depends(get_warehouse_by_supplier_cache_outbound),
+    warehouse_unit_of_work: SQLAlchemyWarehouseUnitOfWorkAdapter = Depends(
+        get_warehouse_unit_of_work
+    ),
+) -> ToggleWarehouseStatusUseCase:
+    """Get the ToggleWarehouseStatusUseCase instance.
+
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger
+            factory outbound adapter.
+        cache_outbound (RedisCacheOutboundAdapter[WarehouseBySupplierCacheValueVO]):
+            The cache outbound adapter.
+        warehouse_unit_of_work (SQLAlchemyWarehouseUnitOfWorkAdapter): The warehouse
+            unit of work adapter.
+
+    Returns:
+        ToggleWarehouseStatusUseCase: The ToggleWarehouseStatusUseCase instance.
+    """
+    return ToggleWarehouseStatusUseCase(
         logger_factory_outbound=logger_factory_outbound,
         cache_outbound=cache_outbound,
         warehouse_unit_of_work=warehouse_unit_of_work,

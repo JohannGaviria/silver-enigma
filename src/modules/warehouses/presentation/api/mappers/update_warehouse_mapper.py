@@ -19,7 +19,15 @@ class UpdateWarehouseApiMapper:
     def to_command(
         request: UpdateWarehouseRequestSchema, warehouse_id: UUID
     ) -> UpdateWarehouseCommandDto:
-        """Map a UpdateWarehouseRequestSchema to a UpdateWarehouseCommandDto."""
+        """Map a UpdateWarehouseRequestSchema to a UpdateWarehouseCommandDto.
+
+        Args:
+            request (UpdateWarehouseRequestSchema): The request schema.
+            warehouse_id (UUID): The ID of the warehouse to update.
+
+        Returns:
+            UpdateWarehouseCommandDto: The command DTO.
+        """
         return UpdateWarehouseCommandDto(
             warehouse_id=warehouse_id,
             name=request.name,
@@ -30,7 +38,14 @@ class UpdateWarehouseApiMapper:
     def to_response(
         command: UpdateWarehouseResponseDto,
     ) -> UpdateWarehouseResponseSchema:
-        """Map a UpdateWarehouseResponseDto to a UpdateWarehouseResponseSchema."""
+        """Map a UpdateWarehouseResponseDto to a UpdateWarehouseResponseSchema.
+
+        Args:
+            command (UpdateWarehouseResponseDto): The response DTO.
+
+        Returns:
+            UpdateWarehouseResponseSchema: The response schema.
+        """
         return UpdateWarehouseResponseSchema(
             id=command.id,
             supplier_id=command.supplier_id,
