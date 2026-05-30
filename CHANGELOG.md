@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/JohannGaviria/silver-enigma/compare/v1.3.1...v1.4.0) (2026-05-30)
+
+
+### Features
+
+* **warehouses:** implement warehouse module with persistence, APIs, caching, and status management ([606e965](https://github.com/JohannGaviria/silver-enigma/commit/606e9651dfdb925a8e93a2c7c52d08289db4fc73))
+
 ## [1.3.1](https://github.com/JohannGaviria/silver-enigma/compare/v1.3.0...v1.3.1) (2026-05-25)
 
 
