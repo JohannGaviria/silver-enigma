@@ -37,3 +37,11 @@ class UnitPriceVO(BaseValueObject):
 
         if errors:
             raise InvalidUnitPriceException(errors, self.price)
+
+    def value(self) -> Decimal:
+        """Returns the value of the UnitPriceVO.
+
+        Returns:
+            Decimal: The value of the UnitPriceVO.
+        """
+        return self.price
