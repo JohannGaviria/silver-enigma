@@ -33,3 +33,16 @@ class InvalidUnitPriceException(BaseDomainException):
         self.errors = errors
         self.price = price
         super().__init__("Unit price is invalid.")
+
+
+class ProductRepositoryException(BaseDomainException):
+    """Exception raised when a product repository operation fails."""
+
+    def __init__(self, error: str):
+        """Initializes the ProductRepositoryException.
+
+        Args:
+            error (str): The error message.
+        """
+        self.error = error
+        super().__init__("Product repository error.")
