@@ -33,7 +33,7 @@ class TestCreateProductRouter:
         )
 
         payload = {
-            "name": faker.word(),
+            "name": faker.company(),
             "description": faker.text(max_nb_chars=100),
             "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
             "unit_price": "10.50",
@@ -81,7 +81,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
                 "unit_price": "10.50",
@@ -112,7 +112,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
                 "unit_price": "10.50",
@@ -135,7 +135,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
                 "unit_price": "10.50",
@@ -158,7 +158,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
                 "unit_price": "10.50",
@@ -197,7 +197,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
                 "unit_price": "10.50",
@@ -234,7 +234,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
                 "unit_price": "10.50",
@@ -270,7 +270,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
                 "unit_price": "10.50",
@@ -404,7 +404,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
                 "unit_price": "-10.00",
@@ -464,7 +464,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
                 "unit_price": "10.50",
             },
@@ -491,7 +491,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_price": "10.50",
             },
@@ -518,7 +518,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
             },
@@ -567,7 +567,7 @@ class TestCreateProductRouter:
         response = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": "INVALID",
                 "unit_price": "10.50",
@@ -597,7 +597,7 @@ class TestCreateProductRouter:
         first = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
                 "unit_price": "10.50",
@@ -608,7 +608,7 @@ class TestCreateProductRouter:
         second = await async_client.post(
             url="/api/v1/products/",
             json={
-                "name": faker.word(),
+                "name": faker.company(),
                 "description": faker.text(max_nb_chars=100),
                 "unit_of_measure": UnitOfMeasureEnum.KG.value,
                 "unit_price": "25.00",
