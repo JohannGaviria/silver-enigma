@@ -1,3 +1,4 @@
+from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, Mock
 from uuid import UUID
 
@@ -8,6 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
 )
+from src.modules.products.domain.entities.product_entity import ProductEntity
+from src.modules.products.domain.enums.unit_of_measure_enum import UnitOfMeasureEnum
+from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
+from src.modules.products.domain.value_objects.unit_price_vo import UnitPriceVO
 from src.modules.warehouses.domain.entities.warehouse_entity import WarehouseEntity
 from src.modules.warehouses.domain.value_objects.warehouse_address_vo import (
     WarehouseAddressVO,
@@ -199,4 +204,49 @@ def _make_warehouse_entity(faker: Faker, supplier_id: UUID) -> WarehouseEntity:
         supplier_id=supplier_id,
         name=WarehouseNameVO(faker.company()),
         address=WarehouseAddressVO(faker.address()),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Modules: PRODUCTS
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def product_uow_mock() -> MagicMock:
+    """Build a Product Unit-of-Work mock that behaves as an async context manager.
+
+    Returns:
+        MagicMock: A Product UoW mock ready to be injected into use cases.
+    """
+    products_mock = AsyncMock()
+
+    products_mock.save.side_effect = lambda entity: entity
+    products_mock.update.side_effect = lambda entity: entity
+    products_mock.find_by_id.return_value = None
+    products_mock.find_all_by_supplier_id.return_value = []
+
+    uow_mock = MagicMock()
+    uow_mock.__aenter__ = AsyncMock(return_value=uow_mock)
+    uow_mock.__aexit__ = AsyncMock(return_value=None)
+
+    uow_mock.products = products_mock
+
+    uow_mock.commit = AsyncMock()
+    uow_mock.rollback = AsyncMock()
+
+    return uow_mock
+
+
+def _make_product_entity(
+    faker: Faker,
+    supplier_id: UUID,
+) -> ProductEntity:
+    """Helper to build a ProductEntity with valid value objects."""
+    return ProductEntity.create(
+        supplier_id=supplier_id,
+        name=ProductNameVO(faker.company()),
+        description=faker.text(max_nb_chars=100),
+        unit_of_measure=UnitOfMeasureEnum.UNIT,
+        unit_price=UnitPriceVO(Decimal("100.50")),
     )
