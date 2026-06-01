@@ -45,10 +45,13 @@ class ProductPersistenceMapper:
             ProductModel: The mapped SQLAlchemy model.
         """
         return ProductModel(
+            id=entity.id,
             supplier_id=entity.supplier_id,
             name=str(entity.name),
             description=entity.description,
             unit_of_measure=entity.unit_of_measure.value,
-            unit_price=entity.unit_price.value,
+            unit_price=entity.unit_price.value(),
             is_active=entity.is_active,
+            created_at=entity.created_at,
+            updated_at=entity.updated_at,
         )
