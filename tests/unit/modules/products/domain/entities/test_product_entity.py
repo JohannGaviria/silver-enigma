@@ -63,7 +63,7 @@ class TestProductEntity:
 
         product1 = ProductEntity.create(
             supplier_id=supplier_id,
-            name=ProductNameVO(faker.word()),
+            name=ProductNameVO(faker.company()),
             description=faker.text(),
             unit_of_measure=UnitOfMeasureEnum.UNIT,
             unit_price=UnitPriceVO(Decimal(1000)),
@@ -71,7 +71,7 @@ class TestProductEntity:
 
         product2 = ProductEntity.create(
             supplier_id=supplier_id,
-            name=ProductNameVO(faker.word()),
+            name=ProductNameVO(faker.company()),
             description=faker.text(),
             unit_of_measure=UnitOfMeasureEnum.UNIT,
             unit_price=UnitPriceVO(Decimal(1000)),
@@ -113,7 +113,7 @@ class TestProductEntity:
         """Test that the ProductEntity raises a FrozenInstanceError when attempting to modify its attributes."""
         product = ProductEntity.create(
             supplier_id=UUID(faker.uuid4()),
-            name=ProductNameVO(faker.word()),
+            name=ProductNameVO(faker.company()),
             description=faker.text(),
             unit_of_measure=UnitOfMeasureEnum.UNIT,
             unit_price=UnitPriceVO(Decimal(1000)),

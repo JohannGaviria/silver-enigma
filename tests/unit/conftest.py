@@ -245,7 +245,7 @@ def _make_product_entity(
     """Helper to build a ProductEntity with valid value objects."""
     return ProductEntity.create(
         supplier_id=supplier_id,
-        name=ProductNameVO(faker.word()),
+        name=ProductNameVO(faker.company()),
         description=faker.text(max_nb_chars=100),
         unit_of_measure=UnitOfMeasureEnum.UNIT,
         unit_price=UnitPriceVO(Decimal("100.50")),
