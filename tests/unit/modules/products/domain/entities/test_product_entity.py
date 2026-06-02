@@ -24,7 +24,7 @@ class TestProductEntity:
     ) -> None:
         """Test that the ProductEntity can be created successfully when valid data is provided."""
         supplier_id = UUID(faker.uuid4())
-        name = ProductNameVO(faker.word())
+        name = ProductNameVO(faker.company())
         description = faker.text(max_nb_chars=200)
         unit_of_measure = UnitOfMeasureEnum.UNIT
         unit_price = UnitPriceVO(Decimal(1000))
@@ -315,7 +315,7 @@ class TestProductEntity:
         [
             (
                 "name",
-                lambda faker: ProductNameVO(faker.word()),
+                lambda faker: ProductNameVO(faker.company()),
             ),
             (
                 "description",
@@ -359,7 +359,7 @@ class TestProductEntity:
     ) -> None:
         """Test that two ProductEntity instances with identical data are considered equal."""
         supplier_id = UUID(faker.uuid4())
-        name = ProductNameVO(faker.word())
+        name = ProductNameVO(faker.company())
         description = faker.text(max_nb_chars=200)
         unit_of_measure = UnitOfMeasureEnum.UNIT
         unit_price = UnitPriceVO(Decimal(1000))
