@@ -5,6 +5,9 @@ from fastapi import Depends
 from src.modules.products.application.use_cases.create_product_use_case import (
     CreateProductUseCase,
 )
+from src.modules.products.application.use_cases.toggle_product_status_use_case import (
+    ToggleProductStatusUseCase,
+)
 from src.modules.products.application.use_cases.update_product_use_case import (
     UpdateProductUseCase,
 )
@@ -59,6 +62,27 @@ def get_update_product_use_case(
         UpdateProductUseCase: The UpdateProductUseCase instance.
     """
     return UpdateProductUseCase(
+        logger_factory_outbound=logger_factory_outbound,
+        product_unit_of_work=product_unit_of_work,
+    )
+
+
+def get_toggle_product_status_use_case(
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+    product_unit_of_work: SQLAlchemyProductUnitOfWorkAdapter = Depends(get_product_uow),
+) -> ToggleProductStatusUseCase:
+    """Get the ToggleProductStatusUseCase instance.
+
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory outbound adapter.
+        product_unit_of_work (SQLAlchemyProductUnitOfWorkAdapter): The product unit of work adapter.
+
+    Returns:
+        ToggleProductStatusUseCase: The ToggleProductStatusUseCase instance.
+    """
+    return ToggleProductStatusUseCase(
         logger_factory_outbound=logger_factory_outbound,
         product_unit_of_work=product_unit_of_work,
     )
