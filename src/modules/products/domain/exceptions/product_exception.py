@@ -46,3 +46,11 @@ class ProductRepositoryException(BaseDomainException):
         """
         self.error = error
         super().__init__("Product repository error.")
+
+
+class ProductNotFoundException(BaseDomainException):
+    """Exception raised when a product is not found."""
+
+    def __init__(self) -> None:
+        """Initializes the ProductNotFoundException."""
+        super().__init__("Product not found.")
