@@ -69,3 +69,41 @@ class ProductEntity(BaseEntity):
             created_at=now,
             updated_at=now,
         )
+
+    def update(
+        self,
+        name: ProductNameVO | None = None,
+        description: str | None = None,
+        unit_of_measure: UnitOfMeasureEnum | None = None,
+        unit_price: UnitPriceVO | None = None,
+    ) -> "ProductEntity":
+        """Factory method to update the attributes of the ProductEntity.
+
+        This method updates the attributes of the ProductEntity instance with
+        the specified values. It sets the updated_at attribute to the current
+        UTC datetime.
+
+        Args:
+            name (ProductNameVO | None): The new name of the product.
+            description (str | None): The new description of the product.
+            unit_of_measure (UnitOfMeasureEnum | None): The new unit of measure
+                of the product.
+            unit_price (UnitPriceVO | None): The new unit price of the product.
+
+        Returns:
+            ProductEntity: The updated ProductEntity instance.
+        """
+        now = datetime.now(UTC)
+        return ProductEntity(
+            id=self.id,
+            supplier_id=self.supplier_id,
+            name=name if name is not None else self.name,
+            description=description if description is not None else self.description,
+            unit_of_measure=unit_of_measure
+            if unit_of_measure is not None
+            else self.unit_of_measure,
+            unit_price=unit_price if unit_price is not None else self.unit_price,
+            is_active=self.is_active,
+            created_at=self.created_at,
+            updated_at=now,
+        )

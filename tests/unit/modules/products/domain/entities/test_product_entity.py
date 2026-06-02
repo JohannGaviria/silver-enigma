@@ -24,7 +24,7 @@ class TestProductEntity:
     ) -> None:
         """Test that the ProductEntity can be created successfully when valid data is provided."""
         supplier_id = UUID(faker.uuid4())
-        name = ProductNameVO(faker.word())
+        name = ProductNameVO(faker.company())
         description = faker.text(max_nb_chars=200)
         unit_of_measure = UnitOfMeasureEnum.UNIT
         unit_price = UnitPriceVO(Decimal(1000))
@@ -80,6 +80,233 @@ class TestProductEntity:
         assert product1.id != product2.id
 
     # ---------------------------------------------------------------------------
+    # update
+    # ---------------------------------------------------------------------------
+
+    def test_should_update_product_attributes_when_values_are_provided(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update method returns a new ProductEntity with the updated attributes."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        new_name = ProductNameVO(faker.company())
+        new_description = faker.text()
+        new_unit_of_measure = UnitOfMeasureEnum.KG
+        new_unit_price = UnitPriceVO(Decimal(2000))
+
+        updated_product = product.update(
+            name=new_name,
+            description=new_description,
+            unit_of_measure=new_unit_of_measure,
+            unit_price=new_unit_price,
+        )
+
+        assert updated_product.name == new_name
+        assert updated_product.description == new_description
+        assert updated_product.unit_of_measure == new_unit_of_measure
+        assert updated_product.unit_price == new_unit_price
+
+    def test_should_keep_existing_values_when_update_values_are_not_provided(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update method keeps the existing values when new values are not provided."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update()
+
+        assert updated_product.name == product.name
+        assert updated_product.description == product.description
+        assert updated_product.unit_of_measure == product.unit_of_measure
+        assert updated_product.unit_price == product.unit_price
+
+    def test_should_update_only_name_when_other_values_are_not_provided(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update method updates only the name when other values are not provided."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        new_name = ProductNameVO(faker.company())
+
+        updated_product = product.update(
+            name=new_name,
+        )
+
+        assert updated_product.name == new_name
+        assert updated_product.description == product.description
+        assert updated_product.unit_of_measure == product.unit_of_measure
+        assert updated_product.unit_price == product.unit_price
+
+    def test_should_update_only_description_when_other_values_are_not_provided(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update method updates only the description when other values are not provided."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        new_description = faker.text()
+
+        updated_product = product.update(
+            description=new_description,
+        )
+
+        assert updated_product.name == product.name
+        assert updated_product.description == new_description
+        assert updated_product.unit_of_measure == product.unit_of_measure
+        assert updated_product.unit_price == product.unit_price
+
+    def test_should_update_only_unit_of_measure_when_other_values_are_not_provided(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update method updates only the unit_of_measure when other values are not provided."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update(
+            unit_of_measure=UnitOfMeasureEnum.KG,
+        )
+
+        assert updated_product.name == product.name
+        assert updated_product.description == product.description
+        assert updated_product.unit_of_measure == UnitOfMeasureEnum.KG
+        assert updated_product.unit_price == product.unit_price
+
+    def test_should_update_only_unit_price_when_other_values_are_not_provided(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update method updates only the unit_price when other values are not provided."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        new_unit_price = UnitPriceVO(Decimal(5000))
+
+        updated_product = product.update(
+            unit_price=new_unit_price,
+        )
+
+        assert updated_product.name == product.name
+        assert updated_product.description == product.description
+        assert updated_product.unit_of_measure == product.unit_of_measure
+        assert updated_product.unit_price == new_unit_price
+
+    def test_should_update_updated_at_and_preserve_created_at_when_updating_product(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update method updates the updated_at timestamp and preserves the created_at timestamp."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update(
+            name=ProductNameVO(faker.company()),
+        )
+
+        assert updated_product.created_at == product.created_at
+        assert updated_product.updated_at > product.updated_at
+
+    def test_should_preserve_product_id_when_updating_product(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update method preserves the product ID."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update(
+            name=ProductNameVO(faker.company()),
+        )
+
+        assert updated_product.id == product.id
+
+    def test_should_preserve_supplier_id_when_updating_product(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update method preserves the supplier ID."""
+        supplier_id = UUID(faker.uuid4())
+
+        product = ProductEntity.create(
+            supplier_id=supplier_id,
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update(
+            name=ProductNameVO(faker.company()),
+        )
+
+        assert updated_product.supplier_id == supplier_id
+
+    def test_should_preserve_is_active_when_updating_product(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that the update method preserves the is_active attribute."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update(
+            name=ProductNameVO(faker.company()),
+        )
+
+        assert updated_product.is_active == product.is_active
+
+    # ---------------------------------------------------------------------------
     # immutability
     # ---------------------------------------------------------------------------
 
@@ -88,7 +315,7 @@ class TestProductEntity:
         [
             (
                 "name",
-                lambda faker: ProductNameVO(faker.word()),
+                lambda faker: ProductNameVO(faker.company()),
             ),
             (
                 "description",
@@ -132,7 +359,7 @@ class TestProductEntity:
     ) -> None:
         """Test that two ProductEntity instances with identical data are considered equal."""
         supplier_id = UUID(faker.uuid4())
-        name = ProductNameVO(faker.word())
+        name = ProductNameVO(faker.company())
         description = faker.text(max_nb_chars=200)
         unit_of_measure = UnitOfMeasureEnum.UNIT
         unit_price = UnitPriceVO(Decimal(1000))

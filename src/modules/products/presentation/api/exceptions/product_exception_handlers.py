@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from src.modules.products.domain.exceptions.product_exception import (
     InvalidProductNameException,
     InvalidUnitPriceException,
+    ProductNotFoundException,
     ProductRepositoryException,
 )
 from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapter import (
@@ -78,7 +79,8 @@ def product_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content=jsonable_encoder(
-                ErrorsResponseSchema(message=str(exc), details=exc.errors)
+                ErrorsResponseSchema(message=str(exc), details=exc.errors),
+                exclude_none=True,
             ),
         )
 
@@ -105,6 +107,33 @@ def product_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(
-                ErrorsResponseSchema(message=str(exc), details=[exc.error])
+                ErrorsResponseSchema(message=str(exc), details=[exc.error]),
+                exclude_none=True,
+            ),
+        )
+
+    @app.exception_handler(ProductNotFoundException)
+    async def product_not_found_exception_handler(
+        request: Request, exc: ProductNotFoundException
+    ) -> JSONResponse:
+        """Handle ProductNotFoundException.
+
+        Args:
+            request (Request): The request object.
+            exc (ProductNotFoundException): The exception to handle.
+
+        Returns:
+            JSONResponse: A JSON response with the error message.
+        """
+        _logger.error(
+            "product not found exception occurred while processing request",
+            request_method=request.method,
+            request_url=request.url.path,
+            exception_message=exc,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(
+                ErrorsResponseSchema(message=str(exc)), exclude_none=True
             ),
         )

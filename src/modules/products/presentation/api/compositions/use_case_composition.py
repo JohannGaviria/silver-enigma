@@ -5,6 +5,9 @@ from fastapi import Depends
 from src.modules.products.application.use_cases.create_product_use_case import (
     CreateProductUseCase,
 )
+from src.modules.products.application.use_cases.update_product_use_case import (
+    UpdateProductUseCase,
+)
 from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_product_unit_of_work_adapter import (
     SQLAlchemyProductUnitOfWorkAdapter,
 )
@@ -27,10 +30,35 @@ def get_create_product_use_case(
 ) -> CreateProductUseCase:
     """Get the CreateProductUseCase instance.
 
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory outbound adapter.
+        product_unit_of_work (SQLAlchemyProductUnitOfWorkAdapter): The product unit of work adapter.
+
     Returns:
         CreateProductUseCase: The CreateProductUseCase instance.
     """
     return CreateProductUseCase(
+        logger_factory_outbound=logger_factory_outbound,
+        product_unit_of_work=product_unit_of_work,
+    )
+
+
+def get_update_product_use_case(
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+    product_unit_of_work: SQLAlchemyProductUnitOfWorkAdapter = Depends(get_product_uow),
+) -> UpdateProductUseCase:
+    """Get the UpdateProductUseCase instance.
+
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory outbound adapter.
+        product_unit_of_work (SQLAlchemyProductUnitOfWorkAdapter): The product unit of work adapter.
+
+    Returns:
+        UpdateProductUseCase: The UpdateProductUseCase instance.
+    """
+    return UpdateProductUseCase(
         logger_factory_outbound=logger_factory_outbound,
         product_unit_of_work=product_unit_of_work,
     )
