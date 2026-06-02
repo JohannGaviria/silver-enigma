@@ -19,6 +19,177 @@ from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_pro
 
 
 class TestSQLAlchemyProductRepositoryAdapter:
+    # --------------------------------------------------------------------------
+    # find_by_id
+    # --------------------------------------------------------------------------
+
+    @pytest.mark.asyncio
+    async def test_should_find_product_by_id(
+        self,
+        faker: Faker,
+        product_repository: SQLAlchemyProductRepositoryAdapter,
+    ) -> None:
+        """find_by_id() must return the product with the given ID."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal("1000")),
+        )
+        await product_repository.save(product)
+
+        result = await product_repository.find_by_id(product.id)
+
+        assert result
+        assert result.id == product.id
+        assert result.supplier_id == product.supplier_id
+        assert result.name == product.name
+        assert result.description == product.description
+        assert result.unit_of_measure == product.unit_of_measure
+        assert result.unit_price == product.unit_price
+        assert result.is_active is True
+
+    @pytest.mark.asyncio
+    async def test_should_return_none_when_product_not_found(
+        self,
+        faker: Faker,
+        product_repository: SQLAlchemyProductRepositoryAdapter,
+    ) -> None:
+        """find_by_id() must return None when the product is not found."""
+        result = await product_repository.find_by_id(UUID(faker.uuid4()))
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_should_raise_product_repository_exception_when_execute_fails_in_find_by_id(
+        self,
+        faker: Faker,
+        product_repository: SQLAlchemyProductRepositoryAdapter,
+    ) -> None:
+        """ProductRepositoryException must be raised when session.execute fails."""
+        with patch.object(
+            product_repository.session,
+            "execute",
+            new=AsyncMock(side_effect=SQLAlchemyError("boom")),
+        ):
+            with pytest.raises(ProductRepositoryException):
+                await product_repository.find_by_id(UUID(faker.uuid4()))
+
+    # --------------------------------------------------------------------------
+    # update
+    # --------------------------------------------------------------------------
+
+    @pytest.mark.asyncio
+    async def test_should_update_product_and_return_entity(
+        self,
+        faker: Faker,
+        product_repository: SQLAlchemyProductRepositoryAdapter,
+    ) -> None:
+        """update() must flush the entity and return it with all updated fields."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal("1000")),
+        )
+        await product_repository.save(product)
+
+        new_name = ProductNameVO(faker.company())
+        new_description = faker.text()
+        new_unit_price = UnitPriceVO(Decimal("2500"))
+
+        entity = product.update(
+            name=new_name,
+            description=new_description,
+            unit_price=new_unit_price,
+        )
+
+        result = await product_repository.update(entity)
+
+        assert result.id == entity.id
+        assert result.supplier_id == entity.supplier_id
+        assert result.name == new_name
+        assert result.description == new_description
+        assert result.unit_price == new_unit_price
+        assert result.unit_of_measure == entity.unit_of_measure
+        assert result.is_active is True
+
+    @pytest.mark.asyncio
+    async def test_should_raise_product_repository_exception_when_flush_fails_in_update(
+        self,
+        faker: Faker,
+        product_repository: SQLAlchemyProductRepositoryAdapter,
+    ) -> None:
+        """ProductRepositoryException must be raised when session.flush fails."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal("1000")),
+        )
+        await product_repository.save(product)
+
+        with patch.object(
+            product_repository.session,
+            "flush",
+            new=AsyncMock(side_effect=SQLAlchemyError("boom")),
+        ):
+            with pytest.raises(ProductRepositoryException):
+                await product_repository.update(product)
+
+    @pytest.mark.asyncio
+    async def test_should_never_call_commit_on_update(
+        self,
+        faker: Faker,
+        product_repository: SQLAlchemyProductRepositoryAdapter,
+    ) -> None:
+        """The repository must NEVER call session.commit()."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal("1000")),
+        )
+        await product_repository.save(product)
+
+        with patch.object(
+            product_repository.session,
+            "commit",
+            new=AsyncMock(),
+        ) as mock_commit:
+            await product_repository.update(product)
+
+        mock_commit.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_should_never_call_rollback_on_update(
+        self,
+        faker: Faker,
+        product_repository: SQLAlchemyProductRepositoryAdapter,
+    ) -> None:
+        """The repository must NEVER call session.rollback()."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal("1000")),
+        )
+        await product_repository.save(product)
+
+        with patch.object(
+            product_repository.session,
+            "rollback",
+            new=AsyncMock(),
+        ) as mock_rollback:
+            await product_repository.update(product)
+
+        mock_rollback.assert_not_awaited()
+
     # ---------------------------------------------------------------------------
     # Method: save
     # ---------------------------------------------------------------------------
