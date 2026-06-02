@@ -224,7 +224,6 @@ def product_uow_mock() -> MagicMock:
     products_mock.save.side_effect = lambda entity: entity
     products_mock.update.side_effect = lambda entity: entity
     products_mock.find_by_id.return_value = None
-    products_mock.find_all_by_supplier_id.return_value = []
 
     uow_mock = MagicMock()
     uow_mock.__aenter__ = AsyncMock(return_value=uow_mock)

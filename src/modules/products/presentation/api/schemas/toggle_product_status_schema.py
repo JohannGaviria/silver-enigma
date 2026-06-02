@@ -1,4 +1,4 @@
-"""This module contains the UpdateProductSchema class."""
+"""This module contains the Schemas for the product status toggle endpoint."""
 
 from datetime import datetime
 from decimal import Decimal
@@ -9,35 +9,26 @@ from pydantic import BaseModel
 from src.modules.products.domain.enums.unit_of_measure_enum import UnitOfMeasureEnum
 
 
-class UpdateProductRequestSchema(BaseModel):
-    """Schema for the request to update a product.
+class ToggleProductStatusRequestSchema(BaseModel):
+    """Schema for the request to toggle the status of a product.
 
     Attributes:
-        name (str | None): The name of the product.
-        description (str | None): The description of the product.
-        unit_of_measure (UnitOfMeasureEnum | None): The unit of measure of the product.
-        unit_price (Decimal | None): The unit price of the product.
+        is_active (bool): The new status of the product.
     """
 
-    name: str | None = None
-    description: str | None = None
-    unit_of_measure: UnitOfMeasureEnum | None = None
-    unit_price: Decimal | None = None
+    is_active: bool
 
     model_config = {
         "json_schema_extra": {
             "example": {
-                "name": "New Product Name",
-                "description": "New Product Description",
-                "unit_of_measure": "UNIT",
-                "unit_price": 100.50,
+                "is_active": False,
             }
         }
     }
 
 
-class UpdateProductResponseSchema(BaseModel):
-    """Schema for the response from the UpdateProductUseCase.
+class ToggleProductStatusResponseSchema(BaseModel):
+    """Schema for the response from the ToggleProductStatusUseCase.
 
     Attributes:
         id (UUID): The ID of the product.
@@ -70,7 +61,7 @@ class UpdateProductResponseSchema(BaseModel):
                 "description": "New Product Description",
                 "unit_of_measure": "UNIT",
                 "unit_price": 100.50,
-                "is_active": True,
+                "is_active": False,
                 "created_at": "2026-06-02 18:28:46.815704+00:00",
                 "updated_at": "2026-06-02 18:29:03.138247+00:00",
             }
