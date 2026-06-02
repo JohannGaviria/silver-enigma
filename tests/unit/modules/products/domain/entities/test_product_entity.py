@@ -306,6 +306,122 @@ class TestProductEntity:
 
         assert updated_product.is_active == product.is_active
 
+        # ---------------------------------------------------------------------------
+
+    # update_is_active
+    # ---------------------------------------------------------------------------
+
+    def test_should_update_is_active_to_true(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that update_is_active sets is_active to True."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        ).update_is_active(False)
+
+        updated_product = product.update_is_active(True)
+
+        assert updated_product.is_active is True
+
+    def test_should_update_is_active_to_false(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that update_is_active sets is_active to False."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update_is_active(False)
+
+        assert updated_product.is_active is False
+
+    def test_should_preserve_all_other_attributes_when_updating_is_active(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that update_is_active only changes the is_active attribute."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update_is_active(False)
+
+        assert updated_product.id == product.id
+        assert updated_product.supplier_id == product.supplier_id
+        assert updated_product.name == product.name
+        assert updated_product.description == product.description
+        assert updated_product.unit_of_measure == product.unit_of_measure
+        assert updated_product.unit_price == product.unit_price
+        assert updated_product.created_at == product.created_at
+
+    def test_should_update_updated_at_and_preserve_created_at_when_updating_is_active(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that update_is_active updates updated_at and preserves created_at."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update_is_active(False)
+
+        assert updated_product.created_at == product.created_at
+        assert updated_product.updated_at > product.updated_at
+
+    def test_should_preserve_product_id_when_updating_is_active(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that update_is_active preserves the product ID."""
+        product = ProductEntity.create(
+            supplier_id=UUID(faker.uuid4()),
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update_is_active(False)
+
+        assert updated_product.id == product.id
+
+    def test_should_preserve_supplier_id_when_updating_is_active(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that update_is_active preserves the supplier ID."""
+        supplier_id = UUID(faker.uuid4())
+
+        product = ProductEntity.create(
+            supplier_id=supplier_id,
+            name=ProductNameVO(faker.company()),
+            description=faker.text(),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal(1000)),
+        )
+
+        updated_product = product.update_is_active(False)
+
+        assert updated_product.supplier_id == supplier_id
+
     # ---------------------------------------------------------------------------
     # immutability
     # ---------------------------------------------------------------------------
