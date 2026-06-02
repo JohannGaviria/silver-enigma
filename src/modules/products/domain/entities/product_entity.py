@@ -107,3 +107,29 @@ class ProductEntity(BaseEntity):
             created_at=self.created_at,
             updated_at=now,
         )
+
+    def update_is_active(self, is_active: bool) -> "ProductEntity":
+        """Factory method to update the is_active attribute of the ProductEntity.
+
+        This method updates the is_active attribute of the ProductEntity instance with
+        the specified value. It sets the updated_at attribute to the current
+        UTC datetime.
+
+        Args:
+            is_active (bool): The new is_active value of the product.
+
+        Returns:
+            ProductEntity: The updated ProductEntity instance.
+        """
+        now = datetime.now(UTC)
+        return ProductEntity(
+            id=self.id,
+            supplier_id=self.supplier_id,
+            name=self.name,
+            description=self.description,
+            unit_of_measure=self.unit_of_measure,
+            unit_price=self.unit_price,
+            is_active=is_active,
+            created_at=self.created_at,
+            updated_at=now,
+        )
