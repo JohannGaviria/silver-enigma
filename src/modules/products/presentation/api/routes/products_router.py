@@ -2,7 +2,10 @@
 
 from fastapi import APIRouter
 
-from src.modules.products.presentation.api.routes import create_product_router
+from src.modules.products.presentation.api.routes import (
+    create_product_router,
+    update_product_router,
+)
 
 router = APIRouter(
     prefix="/api/v1/products",
@@ -11,3 +14,4 @@ router = APIRouter(
 
 
 router.include_router(create_product_router.router)
+router.include_router(update_product_router.router)
