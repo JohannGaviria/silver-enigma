@@ -54,3 +54,11 @@ class ProductNotFoundException(BaseDomainException):
     def __init__(self) -> None:
         """Initializes the ProductNotFoundException."""
         super().__init__("Product not found.")
+
+
+class ProductNotActiveException(BaseDomainException):
+    """Exception raised when a product is not active."""
+
+    def __init__(self) -> None:
+        """Initializes the ProductNotActiveException."""
+        super().__init__("Product is not active.")
