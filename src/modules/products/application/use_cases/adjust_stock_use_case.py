@@ -4,7 +4,11 @@ from src.modules.products.application.dtos.adjust_stock_dto import (
     AdjustStockCommandDto,
     AdjustStockResponseDto,
 )
+from src.modules.products.domain.entities.inventory_movement_entity import (
+    InventoryMovementEntity,
+)
 from src.modules.products.domain.entities.stock_entity import StockEntity
+from src.modules.products.domain.enums.movement_type_log_enum import MovementTypeLogEnum
 from src.modules.products.domain.exceptions.inventory_warehouse_exception import (
     ReferencedWarehouseNotActiveException,
     ReferencedWarehouseNotFoundException,
@@ -177,11 +181,17 @@ class AdjustStockUseCase:
                 entity = exists_stock.update_total_stock(total_stock)
                 stock = await uow.stocks.update(entity)
 
+            # Create a new inventory movement for the release
+            inventory_movement = InventoryMovementEntity.create(
+                product_id=command.product_id,
+                warehouse_id=command.warehouse_id,
+                movement_type=MovementTypeLogEnum.RELEASE,
+                quantity=command.quantity,
+            )
+            await uow.inventory_movements.save(inventory_movement)
+
             # Commit the transaction
             await uow.commit()
-
-        # TODO: Implement stock movement audit log
-        # [RNF-012](https://github.com/JohannGaviria/silver-enigma/issues/49)
 
         self._logger.info(
             "Adjusted stock successfully.",

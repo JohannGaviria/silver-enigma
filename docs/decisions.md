@@ -439,3 +439,189 @@ Otherwise, Shared gradually becomes a central repository for domain logic, viola
 Cross-module interactions require additional ports and adapters.
 
 This introduces extra boilerplate, but the explicit contracts and clear module boundaries outweigh the added complexity as the system grows.
+
+---
+
+## ADR-010: Persisted inventory movement audit trail
+
+### Context
+
+One of the non-functional requirements of the inventory module establishes that every stock movement must be auditable.
+
+The original requirement stated:
+
+> Every stock movement must emit a log containing:
+>
+> - product identifier
+> - warehouse identifier
+> - affected quantity
+> - movement type (`RESERVE`, `RELEASE`, `DECREMENT`)
+> - originating order
+
+Applicable requirements:
+
+- US-RF-012
+- US-RF-016
+- US-RF-018
+- US-RF-020
+- US-RF-021
+
+The requirement did not explicitly define how this information should be stored.
+
+Initially, the term *log* could be interpreted as application-level logging through the standard logging infrastructure (`logger.info`, structured logs, ELK, etc.).
+
+However, inventory movements are business-critical events whose history must remain available for:
+
+- Operational auditing
+- Investigation of stock inconsistencies
+- Traceability of inventory changes
+- Production incident analysis
+- Historical reconstruction of inventory behavior
+
+Application logs are not designed to provide these guarantees because they may be:
+
+- Rotated
+- Deleted
+- Aggregated externally
+- Filtered
+- Unavailable after infrastructure changes
+
+As a result, relying solely on application logging would not satisfy the long-term auditability requirements of the inventory domain.
+
+### Considered alternatives
+
+#### Application logs only
+
+Store movement information exclusively through the logging system.
+
+##### Pros
+
+- Simple implementation
+- No additional database tables
+- Low development effort
+
+##### Cons
+
+- Audit history depends on log retention policies
+- Difficult to query from business workflows
+- No referential integrity
+- Historical data may be lost
+- Does not model inventory movements as domain concepts
+
+#### Domain events only
+
+Emit inventory movement events without persisting them directly.
+
+##### Pros
+
+- Decoupled architecture
+- Facilitates future integrations
+
+##### Cons
+
+- Requires additional infrastructure
+- Historical reconstruction depends on event retention
+- Adds complexity without immediate business benefit
+
+#### Persisted inventory movement records
+
+Store every inventory movement as a database record.
+
+##### Pros
+
+- Full audit trail
+- Queryable historical information
+- Referential integrity with domain entities
+- Simplifies debugging and operational support
+- Explicitly models inventory movement as part of the domain
+
+##### Cons
+
+- Additional storage consumption
+- Extra write operation per stock movement
+
+### Decision: Persist inventory movements as a domain entity
+
+Inventory movements are modeled as a first-class domain concept and persisted in the database.
+
+A new entity is introduced:
+
+```text
+InventoryMovement
+```
+
+Every successful stock operation must create a corresponding movement record within the same transaction.
+
+Supported movement types:
+
+```text
+RESERVE
+RELEASE
+DECREMENT
+```
+
+Persisted structure:
+
+```sql
+inventory_movement
+(
+    id UUID PRIMARY KEY,
+    product_id UUID NOT NULL,
+    warehouse_id UUID NOT NULL,
+    order_id UUID NOT NULL,
+    movement_type inventory_movement_type NOT NULL,
+    quantity INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL
+)
+```
+
+Relationships:
+
+```text
+inventory_movement.product_id   -> products.id
+inventory_movement.warehouse_id -> warehouses.id
+inventory_movement.order_id     -> orders.id
+```
+
+### Transactional guarantee
+
+The inventory movement record must be persisted within the same transaction that modifies stock.
+
+This guarantees:
+
+```text
+Stock updated
+        +
+Movement recorded
+```
+
+or
+
+```text
+Neither operation is committed
+```
+
+Partial success is not allowed.
+
+### Domain implications
+
+This decision extends the Inventory bounded context with a new aggregate/entity responsible for representing historical stock changes.
+
+Inventory movements are not merely technical logs.
+
+They represent business events that occurred in the system and therefore belong to the domain model.
+
+### Benefits
+
+- Complete auditability of stock operations.
+- Historical traceability of inventory changes.
+- Easier debugging of production incidents.
+- Referential integrity with products, warehouses, and orders.
+- Enables future reporting and analytics features without relying on external logging systems.
+- Preserves inventory history independently of infrastructure log retention policies.
+
+### Trade-off
+
+Each inventory operation generates an additional database write.
+
+This overhead is accepted because auditability and traceability are considered more important than the small storage and write-performance cost introduced by the solution.

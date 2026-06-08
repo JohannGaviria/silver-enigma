@@ -2,6 +2,9 @@
 
 from abc import abstractmethod
 
+from src.modules.products.domain.ports.repositories.inventory_movement_repository_port import (
+    InventoryMovementRepositoryPort,
+)
 from src.modules.products.domain.ports.repositories.product_repository_port import (
     ProductRepositoryPort,
 )
@@ -29,11 +32,14 @@ class InventoryUnitOfWorkPort(UnitOfWorkPort):
         products (ProductRepositoryPort): Repository used to access product data.
         warehouses (WarehouseQueryRepositoryPort): Repository used to query
             warehouse-related information required by inventory validations.
+        inventory_movements (InventoryMovementRepositoryPort): Repository used
+            to manage inventory movement records.
     """
 
     stocks: StockRepositoryPort
     products: ProductRepositoryPort
     warehouses: WarehouseQueryRepositoryPort
+    inventory_movements: InventoryMovementRepositoryPort
 
     @abstractmethod
     async def __aenter__(self) -> "InventoryUnitOfWorkPort":
