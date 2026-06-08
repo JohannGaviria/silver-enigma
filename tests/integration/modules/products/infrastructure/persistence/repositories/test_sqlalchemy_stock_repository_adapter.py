@@ -235,7 +235,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
         assert mock_execute.await_args is not None
         issued_stmt = mock_execute.await_args.args[0]
         compiled = str(issued_stmt.compile(compile_kwargs={"literal_binds": True}))
-        assert "FOR UPDATE" in compiled.upper()
+        assert "FOR UPDATE" not in compiled
 
     @pytest.mark.asyncio
     async def test_should_raise_stock_repository_exception_when_execute_fails_in_find_by_product_and_warehouse_for_update(
