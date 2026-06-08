@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from src.modules.products.domain.exceptions.product_exception import (
     InvalidProductNameException,
     InvalidUnitPriceException,
+    ProductNotActiveException,
     ProductNotFoundException,
     ProductRepositoryException,
 )
@@ -133,6 +134,32 @@ def product_exception_handlers(app: FastAPI) -> None:
         )
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(
+                ErrorsResponseSchema(message=str(exc)), exclude_none=True
+            ),
+        )
+
+    @app.exception_handler(ProductNotActiveException)
+    async def product_not_active_exception_handler(
+        request: Request, exc: ProductNotActiveException
+    ) -> JSONResponse:
+        """Handle ProductNotActiveException.
+
+        Args:
+            request (Request): The request object.
+            exc (ProductNotActiveException): The exception to handle.
+
+        Returns:
+            JSONResponse: A JSON response with the error message.
+        """
+        _logger.error(
+            "product not active exception occurred while processing request",
+            request_method=request.method,
+            request_url=request.url.path,
+            exception_message=exc,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
             content=jsonable_encoder(
                 ErrorsResponseSchema(message=str(exc)), exclude_none=True
             ),
