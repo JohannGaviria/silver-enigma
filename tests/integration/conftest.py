@@ -13,11 +13,23 @@ from src.modules.products.domain.entities.product_entity import ProductEntity
 from src.modules.products.domain.enums.unit_of_measure_enum import UnitOfMeasureEnum
 from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
 from src.modules.products.domain.value_objects.unit_price_vo import UnitPriceVO
+from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_inventory_movement_repository_adapter import (
+    SQLAlchemyInventoryMovementRepositoryAdapter,
+)
 from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_product_repository_adapter import (
     SQLAlchemyProductRepositoryAdapter,
 )
+from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_stock_repository_adapter import (
+    SQLAlchemyStockRepositoryAdapter,
+)
+from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_inventory_unit_of_work_adapter import (
+    SQLAlchemyInventoryUnitOfWorkAdapter,
+)
 from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_product_unit_of_work_adapter import (
     SQLAlchemyProductUnitOfWorkAdapter,
+)
+from src.modules.warehouses.infrastructure.persistence.repositories.sqlalchemy_warehouse_query_repository_adapter import (
+    SQLAlchemyWarehouseQueryRepositoryAdapter,
 )
 from src.modules.warehouses.infrastructure.persistence.repositories.sqlalchemy_warehouse_repository_adapter import (
     SQLAlchemyWarehouseRepositoryAdapter,
@@ -74,6 +86,18 @@ async def warehouse_repository(
 ) -> SQLAlchemyWarehouseRepositoryAdapter:
     """Repository wired to the integration-test session."""
     return SQLAlchemyWarehouseRepositoryAdapter(
+        session=db_session,
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest_asyncio.fixture()
+async def warehouse_query_repository(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyWarehouseQueryRepositoryAdapter:
+    """Repository wired to the integration-test session."""
+    return SQLAlchemyWarehouseQueryRepositoryAdapter(
         session=db_session,
         logger_factory_outbound=logger_factory_outbound,
     )
@@ -145,4 +169,45 @@ def _make_product_entity(
         description=faker.text(),
         unit_of_measure=UnitOfMeasureEnum.UNIT,
         unit_price=UnitPriceVO(Decimal("1000")),
+    )
+
+
+@pytest_asyncio.fixture()
+async def inventory_movement_repository(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyInventoryMovementRepositoryAdapter:
+    """Repository wired to the integration-test session."""
+    return SQLAlchemyInventoryMovementRepositoryAdapter(
+        session=db_session,
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest_asyncio.fixture()
+async def stock_repository(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyStockRepositoryAdapter:
+    """Repository wired to the integration-test session."""
+    return SQLAlchemyStockRepositoryAdapter(
+        session=db_session,
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest.fixture()
+def pinned_inventory_uow(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyInventoryUnitOfWorkAdapter:
+    """Inventory UoW pinned to the test session."""
+
+    class _FixedSessionMaker:
+        def __call__(self) -> AsyncSession:
+            return db_session
+
+    return SQLAlchemyInventoryUnitOfWorkAdapter(
+        session_factory=_FixedSessionMaker(),  # type: ignore[arg-type]
+        logger_factory_outbound=logger_factory_outbound,
     )
