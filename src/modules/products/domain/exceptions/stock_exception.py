@@ -1,5 +1,7 @@
 """This module contains the stock domain exceptions."""
 
+from uuid import UUID
+
 from src.shared.domain.exceptions.base_exception import BaseDomainException
 
 
@@ -31,3 +33,41 @@ class InvalidAvailableStockException(BaseDomainException):
         self.errors = errors
         self.available_stock = available_stock
         super().__init__("Available stock is invalid.")
+
+
+class StockConflictException(BaseDomainException):
+    """Exception raised when stock conflicts with existing stock."""
+
+    def __init__(
+        self,
+        product_id: UUID,
+        warehouse_id: UUID,
+        requested_quantity: int,
+        available_stock: int,
+    ):
+        """Initializes the StockConflictException.
+
+        Args:
+            product_id (UUID): The ID of the product.
+            warehouse_id (UUID): The ID of the warehouse.
+            requested_quantity (int): The requested quantity.
+            available_stock (int): The available stock.
+        """
+        self.product_id = product_id
+        self.warehouse_id = warehouse_id
+        self.requested_quantity = requested_quantity
+        self.available_stock = available_stock
+        super().__init__("Stock conflicts with existing stock.")
+
+
+class StockRepositoryException(BaseDomainException):
+    """Exception raised when a stock repository operation fails."""
+
+    def __init__(self, error: str):
+        """Initializes the StockRepositoryException.
+
+        Args:
+            error (str): The error message.
+        """
+        self.error = error
+        super().__init__("Stock repository error.")

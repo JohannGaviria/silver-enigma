@@ -6,6 +6,9 @@ import pytest
 from faker import Faker
 
 from src.modules.products.domain.entities.stock_entity import StockEntity
+from src.modules.products.domain.exceptions.stock_exception import (
+    StockConflictException,
+)
 from src.modules.products.domain.value_objects.available_stock_vo import (
     AvailableStockVO,
 )
@@ -71,6 +74,54 @@ class TestStockEntity:
         )
 
         assert stock1.id != stock2.id
+
+    # ---------------------------------------------------------------------------
+    # update_total_stock
+    # ---------------------------------------------------------------------------
+
+    def test_should_update_total_stock_when_new_value_is_greater_than_or_equal_to_available_stock(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that total stock can be updated when it is not lower than available stock."""
+        stock = StockEntity.create(
+            product_id=UUID(faker.uuid4()),
+            warehouse_id=UUID(faker.uuid4()),
+            total_stock=TotalStockVO(100),
+            available_stock=AvailableStockVO(50),
+        )
+
+        updated_stock = stock.update_total_stock(
+            total_stock=TotalStockVO(80),
+        )
+
+        assert updated_stock.total_stock == TotalStockVO(80)
+        assert updated_stock.available_stock == stock.available_stock
+
+        assert updated_stock.id == stock.id
+        assert updated_stock.product_id == stock.product_id
+        assert updated_stock.warehouse_id == stock.warehouse_id
+        assert updated_stock.created_at == stock.created_at
+
+        assert updated_stock.updated_at >= stock.updated_at
+        assert updated_stock != stock
+
+    def test_should_raise_stock_conflict_exception_when_total_stock_is_lower_than_available_stock(
+        self,
+        faker: Faker,
+    ) -> None:
+        """Test that updating total stock below available stock raises an exception."""
+        stock = StockEntity.create(
+            product_id=UUID(faker.uuid4()),
+            warehouse_id=UUID(faker.uuid4()),
+            total_stock=TotalStockVO(100),
+            available_stock=AvailableStockVO(50),
+        )
+
+        with pytest.raises(StockConflictException):
+            stock.update_total_stock(
+                total_stock=TotalStockVO(40),
+            )
 
     # ---------------------------------------------------------------------------
     # immutability
