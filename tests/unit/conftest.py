@@ -249,3 +249,49 @@ def _make_product_entity(
         unit_of_measure=UnitOfMeasureEnum.UNIT,
         unit_price=UnitPriceVO(Decimal("100.50")),
     )
+
+
+@pytest.fixture()
+def inventory_uow_mock() -> MagicMock:
+    """Build an Inventory Unit-of-Work mock that behaves as an async context manager.
+
+    Returns:
+        MagicMock: An Inventory UoW mock ready to be injected into use cases.
+    """
+    products_mock = AsyncMock()
+    warehouses_mock = AsyncMock()
+    stocks_mock = AsyncMock()
+    inventory_movements_mock = AsyncMock()
+
+    # Products
+    products_mock.find_by_id.return_value = None
+    products_mock.save.side_effect = lambda entity: entity
+    products_mock.update.side_effect = lambda entity: entity
+
+    # Warehouses
+    warehouses_mock.find_by_id.return_value = None
+    warehouses_mock.save.side_effect = lambda entity: entity
+    warehouses_mock.update.side_effect = lambda entity: entity
+
+    # Stocks
+    stocks_mock.find_by_product_and_warehouse.return_value = None
+    stocks_mock.save.side_effect = lambda entity: entity
+    stocks_mock.update.side_effect = lambda entity: entity
+
+    # Inventory movements
+    inventory_movements_mock.save.side_effect = lambda entity: entity
+
+    uow_mock = MagicMock()
+
+    uow_mock.__aenter__ = AsyncMock(return_value=uow_mock)
+    uow_mock.__aexit__ = AsyncMock(return_value=None)
+
+    uow_mock.products = products_mock
+    uow_mock.warehouses = warehouses_mock
+    uow_mock.stocks = stocks_mock
+    uow_mock.inventory_movements = inventory_movements_mock
+
+    uow_mock.commit = AsyncMock()
+    uow_mock.rollback = AsyncMock()
+
+    return uow_mock
