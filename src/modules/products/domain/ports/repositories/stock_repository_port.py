@@ -27,6 +27,31 @@ class StockRepositoryPort(ABC):
     ) -> StockEntity | None:
         """Finds a StockEntity by its product and warehouse IDs.
 
+        Use this method for read-only queries (e.g. displaying stock levels).
+        For operations that will mutate the stock afterwards, use
+        :meth:`find_by_product_and_warehouse_for_update` instead.
+
+        Args:
+            product_id (UUID): The ID of the product.
+            warehouse_id (UUID): The ID of the warehouse.
+
+        Returns:
+            StockEntity | None: The found stock entity, or None if not found.
+        """
+        pass
+
+    @abstractmethod
+    async def find_by_product_and_warehouse_for_update(
+        self, product_id: UUID, warehouse_id: UUID
+    ) -> StockEntity | None:
+        """Finds a StockEntity by its product and warehouse IDs.
+
+        Acquiring a row-level lock (SELECT FOR UPDATE) for the duration of the transaction.
+
+        Must be called inside an active transaction. Blocks concurrent
+        transactions from modifying the same row until the lock is released,
+        preventing race conditions in reservation and decrement operations.
+
         Args:
             product_id (UUID): The ID of the product.
             warehouse_id (UUID): The ID of the warehouse.

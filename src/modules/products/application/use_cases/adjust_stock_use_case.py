@@ -161,8 +161,10 @@ class AdjustStockUseCase:
                 )
                 raise ProductNotActiveException()
 
-            # Find the stock by product and warehouse IDs and check if it exists
-            exists_stock = await uow.stocks.find_by_product_and_warehouse(
+            # Acquire a row-level lock before reading stock that will be mutated,
+            # preventing concurrent transactions from passing stock validation
+            # simultaneously and causing overselling.
+            exists_stock = await uow.stocks.find_by_product_and_warehouse_for_update(
                 command.product_id, command.warehouse_id
             )
 

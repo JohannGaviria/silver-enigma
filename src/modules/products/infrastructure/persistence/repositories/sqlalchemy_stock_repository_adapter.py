@@ -106,6 +106,43 @@ class SQLAlchemyStockRepositoryAdapter(StockRepositoryPort):
                 "Database error during stock retrieval."
             ) from e
 
+    async def find_by_product_and_warehouse_for_update(
+        self, product_id: UUID, warehouse_id: UUID
+    ) -> StockEntity | None:
+        """Retrieves a StockEntity by its product and warehouse IDs.
+
+        Acquiring a row-level lock (SELECT FOR UPDATE) for the duration of the transaction.
+
+        Args:
+            product_id (UUID): The ID of the product.
+            warehouse_id (UUID): The ID of the warehouse.
+
+        Returns:
+            StockEntity | None: The locked stock entity, or None if not found.
+
+        Raises:
+            StockRepositoryException: If any database error occurs.
+        """
+        try:
+            stmt = (
+                select(StockModel)
+                .where(
+                    StockModel.product_id == product_id,
+                    StockModel.warehouse_id == warehouse_id,
+                )
+                .with_for_update()
+            )
+            result = await self.session.execute(stmt)
+            model = result.scalar_one_or_none()
+            return StockPersistenceMapper.to_entity(model) if model else None
+        except SQLAlchemyError as e:
+            self._logger.error(
+                "Database error while retrieving stock for update.", exc_info=str(e)
+            )
+            raise StockRepositoryException(
+                "Database error during stock retrieval for update."
+            ) from e
+
     async def update(self, entity: StockEntity) -> StockEntity:
         """Update a stock entity in the repository.
 

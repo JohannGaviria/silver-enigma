@@ -75,7 +75,7 @@ class TestAdjustStockUseCase:
 
         inventory_uow_mock.warehouses.find_by_id.return_value = warehouse
         inventory_uow_mock.products.find_by_id.return_value = product
-        inventory_uow_mock.stocks.find_by_product_and_warehouse.return_value = None
+        inventory_uow_mock.stocks.find_by_product_and_warehouse_for_update.return_value = None
 
         command = AdjustStockCommandDto(
             product_id=product.id,
@@ -93,6 +93,10 @@ class TestAdjustStockUseCase:
             inventory_uow_mock,
         ).execute(command, authenticated_user)
 
+        inventory_uow_mock.stocks.find_by_product_and_warehouse_for_update.assert_awaited_once_with(
+            product.id, warehouse.id
+        )
+        inventory_uow_mock.stocks.find_by_product_and_warehouse.assert_not_awaited()
         inventory_uow_mock.stocks.save.assert_awaited_once()
         inventory_uow_mock.stocks.update.assert_not_awaited()
         inventory_uow_mock.inventory_movements.save.assert_awaited_once()
@@ -138,9 +142,7 @@ class TestAdjustStockUseCase:
 
         inventory_uow_mock.warehouses.find_by_id.return_value = warehouse
         inventory_uow_mock.products.find_by_id.return_value = product
-        inventory_uow_mock.stocks.find_by_product_and_warehouse.return_value = (
-            existing_stock
-        )
+        inventory_uow_mock.stocks.find_by_product_and_warehouse_for_update.return_value = existing_stock
 
         command = AdjustStockCommandDto(
             product_id=product.id,
@@ -158,6 +160,10 @@ class TestAdjustStockUseCase:
             inventory_uow_mock,
         ).execute(command, authenticated_user)
 
+        inventory_uow_mock.stocks.find_by_product_and_warehouse_for_update.assert_awaited_once_with(
+            product.id, warehouse.id
+        )
+        inventory_uow_mock.stocks.find_by_product_and_warehouse.assert_not_awaited()
         inventory_uow_mock.stocks.update.assert_awaited_once()
         inventory_uow_mock.stocks.save.assert_not_awaited()
         inventory_uow_mock.inventory_movements.save.assert_awaited_once()
@@ -187,7 +193,7 @@ class TestAdjustStockUseCase:
 
         inventory_uow_mock.warehouses.find_by_id.return_value = warehouse
         inventory_uow_mock.products.find_by_id.return_value = product
-        inventory_uow_mock.stocks.find_by_product_and_warehouse.return_value = None
+        inventory_uow_mock.stocks.find_by_product_and_warehouse_for_update.return_value = None
 
         command = AdjustStockCommandDto(
             product_id=product.id,
