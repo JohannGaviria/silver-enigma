@@ -58,3 +58,16 @@ class StockConflictException(BaseDomainException):
         self.requested_quantity = requested_quantity
         self.available_stock = available_stock
         super().__init__("Stock conflicts with existing stock.")
+
+
+class StockRepositoryException(BaseDomainException):
+    """Exception raised when a stock repository operation fails."""
+
+    def __init__(self, error: str):
+        """Initializes the StockRepositoryException.
+
+        Args:
+            error (str): The error message.
+        """
+        self.error = error
+        super().__init__("Stock repository error.")
