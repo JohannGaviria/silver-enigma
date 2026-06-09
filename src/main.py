@@ -9,6 +9,9 @@ from src.modules.auth.presentation.api.exceptions.auth_exception_handler import 
     auth_exception_handlers,
 )
 from src.modules.auth.presentation.api.routes import auth_router
+from src.modules.products.presentation.api.exceptions.inventory_exception_handlers import (
+    inventory_exception_handlers,
+)
 from src.modules.products.presentation.api.exceptions.inventory_movement_exception_handlers import (
     inventory_movement_exception_handlers,
 )
@@ -74,6 +77,7 @@ product_exception_handlers(app)
 stock_exception_handlers(app)
 inventory_movement_exception_handlers(app)
 inventory_warehouse_exception_handlers(app)
+inventory_exception_handlers(app)
 
 
 # Includes the routers for the API endpoints

@@ -16,6 +16,9 @@ from src.modules.products.domain.value_objects.unit_price_vo import UnitPriceVO
 from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_inventory_movement_repository_adapter import (
     SQLAlchemyInventoryMovementRepositoryAdapter,
 )
+from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_inventory_repository_adapter import (
+    SQLAlchemyInventoryRepositoryAdapter,
+)
 from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_product_repository_adapter import (
     SQLAlchemyProductRepositoryAdapter,
 )
@@ -209,5 +212,17 @@ def pinned_inventory_uow(
 
     return SQLAlchemyInventoryUnitOfWorkAdapter(
         session_factory=_FixedSessionMaker(),  # type: ignore[arg-type]
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest_asyncio.fixture()
+async def inventory_repository(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyInventoryRepositoryAdapter:
+    """Repository wired to the integration-test session."""
+    return SQLAlchemyInventoryRepositoryAdapter(
+        session=db_session,
         logger_factory_outbound=logger_factory_outbound,
     )

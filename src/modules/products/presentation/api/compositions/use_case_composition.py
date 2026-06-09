@@ -8,11 +8,17 @@ from src.modules.products.application.use_cases.adjust_stock_use_case import (
 from src.modules.products.application.use_cases.create_product_use_case import (
     CreateProductUseCase,
 )
+from src.modules.products.application.use_cases.get_warehouse_stock_use_case import (
+    GetWarehouseStockUseCase,
+)
 from src.modules.products.application.use_cases.toggle_product_status_use_case import (
     ToggleProductStatusUseCase,
 )
 from src.modules.products.application.use_cases.update_product_use_case import (
     UpdateProductUseCase,
+)
+from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_inventory_repository_adapter import (
+    SQLAlchemyInventoryRepositoryAdapter,
 )
 from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_inventory_unit_of_work_adapter import (
     SQLAlchemyInventoryUnitOfWorkAdapter,
@@ -21,6 +27,7 @@ from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_pro
     SQLAlchemyProductUnitOfWorkAdapter,
 )
 from src.modules.products.presentation.api.compositions.infrastructure_composition import (
+    get_inventory_repository,
     get_inventory_uow,
     get_product_uow,
 )
@@ -115,4 +122,27 @@ def get_adjust_stock_use_case(
     return AdjustStockUseCase(
         logger_factory_outbound=logger_factory_outbound,
         inventory_unit_of_work=inventory_unit_of_work,
+    )
+
+
+def get_get_warehouse_stock_use_case(
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+    inventory_repository: SQLAlchemyInventoryRepositoryAdapter = Depends(
+        get_inventory_repository
+    ),
+) -> GetWarehouseStockUseCase:
+    """Get the GetWarehouseStockUseCase instance.
+
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory outbound adapter.
+        inventory_repository (SQLAlchemyInventoryRepositoryAdapter): The inventory repository adapter.
+
+    Returns:
+        GetWarehouseStockUseCase: The GetWarehouseStockUseCase instance.
+    """
+    return GetWarehouseStockUseCase(
+        logger_factory_outbound=logger_factory_outbound,
+        inventory_repository=inventory_repository,
     )

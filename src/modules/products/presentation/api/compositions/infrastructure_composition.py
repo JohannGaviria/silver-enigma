@@ -3,7 +3,14 @@
 from collections.abc import AsyncGenerator
 
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.modules.products.domain.ports.repositories.inventory_repository_port import (
+    InventoryRepositoryPort,
+)
+from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_inventory_repository_adapter import (
+    SQLAlchemyInventoryRepositoryAdapter,
+)
 from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_inventory_unit_of_work_adapter import (
     SQLAlchemyInventoryUnitOfWorkAdapter,
 )
@@ -59,3 +66,34 @@ async def get_inventory_uow(
         logger_factory_outbound=logger_factory_outbound,
     ) as uow:
         yield uow
+
+
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    """Get the SQLAlchemy asynchronous session.
+
+    Returns:
+        AsyncGenerator[AsyncSession, None]: The SQLAlchemy asynchronous session.
+    """
+    session_factory = await DatabaseEngine.get_session_factory()
+
+    async with session_factory() as session:
+        yield session
+
+
+async def get_inventory_repository(
+    session: AsyncSession = Depends(get_async_session),
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+) -> InventoryRepositoryPort:
+    """Get the InventoryRepositoryPort instance.
+
+    Args:
+        session (AsyncSession): The SQLAlchemy asynchronous session provided.
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory
+            for creating loggers.
+    """
+    return SQLAlchemyInventoryRepositoryAdapter(
+        session=session,
+        logger_factory_outbound=logger_factory_outbound,
+    )
