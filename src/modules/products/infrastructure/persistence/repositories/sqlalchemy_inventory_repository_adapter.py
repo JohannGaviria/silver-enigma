@@ -78,7 +78,10 @@ class SQLAlchemyInventoryRepositoryAdapter(InventoryRepositoryPort):
             InventoryRepositoryException: If any other database error occurs.
         """
         try:
-            offset = page * page_size
+            # Antes
+            # offset = page * page_size
+            # Ahora
+            offset = (page - 1) * page_size
 
             filters = (
                 WarehouseModel.id == warehouse_id,

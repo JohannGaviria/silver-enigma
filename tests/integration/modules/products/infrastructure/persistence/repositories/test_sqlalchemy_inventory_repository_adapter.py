@@ -83,11 +83,11 @@ class TestSQLAlchemyInventoryRepositoryAdapter:
         result = await inventory_repository.find_inventory_by_user_and_warehouse(
             user_id=supplier_id,
             warehouse_id=warehouse.id,
-            page=0,
+            page=1,
             page_size=10,
         )
 
-        assert result.page == 0
+        assert result.page == 1
         assert result.page_size == 10
         assert result.elements == 1
 
@@ -113,11 +113,11 @@ class TestSQLAlchemyInventoryRepositoryAdapter:
         result = await inventory_repository.find_inventory_by_user_and_warehouse(
             user_id=UUID(faker.uuid4()),
             warehouse_id=UUID(faker.uuid4()),
-            page=0,
+            page=1,
             page_size=10,
         )
 
-        assert result.page == 0
+        assert result.page == 1
         assert result.page_size == 10
         assert result.elements == 0
         assert result.warehouse_stock == []
@@ -162,7 +162,7 @@ class TestSQLAlchemyInventoryRepositoryAdapter:
         result = await inventory_repository.find_inventory_by_user_and_warehouse(
             user_id=other_supplier_id,
             warehouse_id=warehouse.id,
-            page=0,
+            page=1,
             page_size=10,
         )
 
@@ -223,7 +223,7 @@ class TestSQLAlchemyInventoryRepositoryAdapter:
         result = await inventory_repository.find_inventory_by_user_and_warehouse(
             user_id=supplier_id,
             warehouse_id=warehouse_1.id,
-            page=0,
+            page=1,
             page_size=10,
         )
 
@@ -320,7 +320,7 @@ class TestSQLAlchemyInventoryRepositoryAdapter:
         result = await inventory_repository.find_inventory_by_user_and_warehouse(
             user_id=supplier_id,
             warehouse_id=warehouse.id,
-            page=0,
+            page=1,
             page_size=2,
         )
 
@@ -346,7 +346,7 @@ class TestSQLAlchemyInventoryRepositoryAdapter:
                 await inventory_repository.find_inventory_by_user_and_warehouse(
                     user_id=UUID(faker.uuid4()),
                     warehouse_id=UUID(faker.uuid4()),
-                    page=0,
+                    page=1,
                     page_size=10,
                 )
 
@@ -365,7 +365,7 @@ class TestSQLAlchemyInventoryRepositoryAdapter:
             await inventory_repository.find_inventory_by_user_and_warehouse(
                 user_id=UUID(faker.uuid4()),
                 warehouse_id=UUID(faker.uuid4()),
-                page=0,
+                page=1,
                 page_size=10,
             )
 
@@ -386,7 +386,7 @@ class TestSQLAlchemyInventoryRepositoryAdapter:
             await inventory_repository.find_inventory_by_user_and_warehouse(
                 user_id=UUID(faker.uuid4()),
                 warehouse_id=UUID(faker.uuid4()),
-                page=0,
+                page=1,
                 page_size=10,
             )
 
