@@ -35,6 +35,44 @@ class GetWarehouseStockResponseSchema(BaseModel):
 
     Attributes:
         warehouse_stock (list[WarehouseStockItemSchema]): A list of warehouse stock items.
+        page (int): The page number.
+        page_size (int): The page size.
+        elements (int): The number of elements.
     """
 
     warehouse_stock: list[WarehouseStockItemSchema]
+    page: int
+    page_size: int
+    elements: int
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "warehouse_stock": [
+                    {
+                        "stock_id": "00000000-0000-0000-0000-000000000000",
+                        "product_id": "00000000-0000-0000-0000-000000000000",
+                        "name": "Product name",
+                        "total_stock": 100,
+                        "available_stock": 50,
+                        "stock_disponible": 40,
+                        "created_at": "2023-01-01T00:00:00",
+                        "updated_at": "2023-01-01T00:00:00",
+                    },
+                    {
+                        "stock_id": "00000000-0000-0000-0000-000000000000",
+                        "product_id": "00000000-0000-0000-0000-000000000000",
+                        "name": "Product name",
+                        "total_stock": 100,
+                        "available_stock": 50,
+                        "stock_disponible": 40,
+                        "created_at": "2023-01-01T00:00:00",
+                        "updated_at": "2023-01-01T00:00:00",
+                    },
+                ],
+                "page": 1,
+                "page_size": 10,
+                "elements": 2,
+            }
+        }
+    }

@@ -72,5 +72,8 @@ class GetWarehouseStockApiMapper:
             GetWarehouseStockResponseSchema: The GetWarehouseStockResponseSchema instance.
         """
         return GetWarehouseStockResponseSchema(
-            warehouse_stock=[cls.to_item(ws) for ws in response.warehouse_stock]
+            warehouse_stock=[cls.to_item(ws) for ws in response.warehouse_stock],
+            page=response.page,
+            page_size=response.page_size,
+            elements=response.elements,
         )

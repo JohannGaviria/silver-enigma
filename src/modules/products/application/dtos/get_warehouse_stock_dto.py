@@ -81,9 +81,15 @@ class GetWarehouseStockResponseDto:
 
     Attributes:
         warehouse_stock (list[WarehouseStockItemDto]): A list of warehouse stock items.
+        page (int): The page number.
+        page_size (int): The page size.
+        elements (int): The number of elements.
     """
 
     warehouse_stock: list[WarehouseStockItemDto]
+    page: int
+    page_size: int
+    elements: int
 
     @classmethod
     def from_stocks(
@@ -101,5 +107,8 @@ class GetWarehouseStockResponseDto:
             warehouse_stock=[
                 WarehouseStockItemDto.from_vo(ws)
                 for ws in warehouse_stock.warehouse_stock
-            ]
+            ],
+            page=warehouse_stock.page,
+            page_size=warehouse_stock.page_size,
+            elements=warehouse_stock.elements,
         )
