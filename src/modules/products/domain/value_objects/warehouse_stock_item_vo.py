@@ -9,11 +9,10 @@ from src.modules.products.domain.value_objects.available_stock_vo import (
 )
 from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
-from src.shared.domain.value_objects.base_value_object import BaseValueObject
 
 
 @dataclass(frozen=True)
-class WarehouseStockItemVO(BaseValueObject):
+class WarehouseStockItemVO:
     """Value Object representing a warehouse stock item.
 
     Attributes:
