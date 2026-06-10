@@ -8,6 +8,9 @@ from src.modules.products.application.use_cases.adjust_stock_use_case import (
 from src.modules.products.application.use_cases.create_product_use_case import (
     CreateProductUseCase,
 )
+from src.modules.products.application.use_cases.get_product_catalog_use_case import (
+    GetProductCatalogUseCase,
+)
 from src.modules.products.application.use_cases.get_warehouse_stock_use_case import (
     GetWarehouseStockUseCase,
 )
@@ -143,6 +146,29 @@ def get_get_warehouse_stock_use_case(
         GetWarehouseStockUseCase: The GetWarehouseStockUseCase instance.
     """
     return GetWarehouseStockUseCase(
+        logger_factory_outbound=logger_factory_outbound,
+        inventory_repository=inventory_repository,
+    )
+
+
+def get_get_product_catalog_use_case(
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+    inventory_repository: SQLAlchemyInventoryRepositoryAdapter = Depends(
+        get_inventory_repository
+    ),
+) -> GetProductCatalogUseCase:
+    """Get the GetProductCatalogUseCase instance.
+
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory outbound adapter.
+        inventory_repository (SQLAlchemyInventoryRepositoryAdapter): The inventory repository adapter.
+
+    Returns:
+        GetProductCatalogUseCase: The GetProductCatalogUseCase instance.
+    """
+    return GetProductCatalogUseCase(
         logger_factory_outbound=logger_factory_outbound,
         inventory_repository=inventory_repository,
     )

@@ -114,6 +114,36 @@ async def created_supplier(
 
 
 @pytest.fixture()
+async def created_buyer(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+    faker: Faker,
+    password_hash_outbound: Argon2PasswordHashOutboundAdapter,
+    plain_password_valid: PlainPasswordVO,
+) -> UserEntity:
+    """Create a user with the BUYER role, pinned to the test session."""
+    unit_of_work = SQLAlchemyUserUnitOfWorkAdapter(
+        session_factory=_make_session_factory(db_session),
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+    async with unit_of_work as uow:
+        password_hash = password_hash_outbound.hash(plain_password_valid)
+
+        entity = UserEntity.create(
+            name=NameVO(faker.name()),
+            email=EmailVO(faker.email()),
+            password=password_hash,
+            role=UserRoleEnum.BUYER,
+        )
+
+        user = await uow.users.save(entity)
+        await uow.commit()
+
+    return user
+
+
+@pytest.fixture()
 def access_token_factory(
     async_client: AsyncClient,
 ) -> Callable[[str, str], Awaitable[str]]:
