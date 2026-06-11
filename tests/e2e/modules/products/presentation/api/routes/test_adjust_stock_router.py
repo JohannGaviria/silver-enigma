@@ -97,7 +97,7 @@ class TestAdjustStockRouter:
         assert body["data"]["product_id"] == product_id
         assert body["data"]["warehouse_id"] == warehouse_id
         assert body["data"]["total_stock"] == 100
-        assert body["data"]["available_stock"] == 0
+        assert body["data"]["reserved_stock"] == 0
         assert body["data"]["stock_disponible"] == 100
 
         assert body["data"]["id"] is not None
@@ -141,7 +141,7 @@ class TestAdjustStockRouter:
 
         assert response.status_code == status.HTTP_200_OK
         assert body["data"]["total_stock"] == 250
-        assert body["data"]["available_stock"] == 0
+        assert body["data"]["reserved_stock"] == 0
 
     @pytest.mark.asyncio
     async def test_should_return_401_when_access_token_is_missing(

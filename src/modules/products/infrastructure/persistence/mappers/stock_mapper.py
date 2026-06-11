@@ -1,8 +1,8 @@
 """This module contains the StockPersistenceMapper class."""
 
 from src.modules.products.domain.entities.stock_entity import StockEntity
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
 )
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
 from src.modules.products.infrastructure.persistence.models.stock_model import (
@@ -28,7 +28,7 @@ class StockPersistenceMapper:
             product_id=model.product_id,
             warehouse_id=model.warehouse_id,
             total_stock=TotalStockVO(model.total_stock),
-            available_stock=AvailableStockVO(model.available_stock),
+            reserved_stock=ReservedStockVO(model.reserved_stock),
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -48,7 +48,7 @@ class StockPersistenceMapper:
             product_id=entity.product_id,
             warehouse_id=entity.warehouse_id,
             total_stock=entity.total_stock.value(),
-            available_stock=entity.available_stock.value(),
+            reserved_stock=entity.reserved_stock.value(),
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )

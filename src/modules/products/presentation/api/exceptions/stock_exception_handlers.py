@@ -5,7 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from src.modules.products.domain.exceptions.stock_exception import (
-    InvalidAvailableStockException,
+    InvalidReservedStockException,
     InvalidTotalStockException,
     StockConflictException,
     StockRepositoryException,
@@ -58,21 +58,21 @@ def stock_exception_handlers(app: FastAPI) -> None:
             ),
         )
 
-    @app.exception_handler(InvalidAvailableStockException)
-    async def invalid_available_stock_exception_handler(
-        request: Request, exc: InvalidAvailableStockException
+    @app.exception_handler(InvalidReservedStockException)
+    async def invalid_reserved_stock_exception_handler(
+        request: Request, exc: InvalidReservedStockException
     ) -> JSONResponse:
-        """Handle InvalidAvailableStockException.
+        """Handle InvalidReservedStockException.
 
         Args:
             request (Request): The request object.
-            exc (InvalidAvailableStockException): The exception to handle.
+            exc (InvalidReservedStockException): The exception to handle.
 
         Returns:
             JSONResponse: A JSON response with the error message.
         """
         _logger.error(
-            "invalid available stock exception occurred while processing request",
+            "invalid reserved stock exception occurred while processing request",
             request_method=request.method,
             request_url=request.url.path,
             exception_message=exc,
@@ -83,7 +83,7 @@ def stock_exception_handlers(app: FastAPI) -> None:
             content=jsonable_encoder(
                 ErrorsResponseSchema(
                     message=str(exc),
-                    context={"available_stock": exc.available_stock},
+                    context={"reserved_stock": exc.reserved_stock},
                     details=exc.errors,
                 )
             ),
@@ -110,7 +110,7 @@ def stock_exception_handlers(app: FastAPI) -> None:
             product_id=exc.product_id,
             warehouse_id=exc.warehouse_id,
             requested_quantity=exc.requested_quantity,
-            available_stock=exc.available_stock,
+            reserved_stock=exc.reserved_stock,
         )
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
@@ -121,7 +121,7 @@ def stock_exception_handlers(app: FastAPI) -> None:
                         "product_id": exc.product_id,
                         "warehouse_id": exc.warehouse_id,
                         "requested_quantity": exc.requested_quantity,
-                        "available_stock": exc.available_stock,
+                        "reserved_stock": exc.reserved_stock,
                     },
                 )
             ),

@@ -40,7 +40,7 @@ class AdjustStockResponseDto(BaseAdjustStockDto):
         product_id (UUID): The ID of the product.
         warehouse_id (UUID): The ID of the warehouse.
         total_stock (int): The total stock after adjusting.
-        available_stock (int): The available stock after adjusting.
+        reserved_stock (int): The reserved stock after adjusting.
         stock_disponible (int): The stock that can be dispensed.
         created_at (datetime): The date and time the command was created.
         updated_at (datetime): The date and time the command was updated.
@@ -48,7 +48,7 @@ class AdjustStockResponseDto(BaseAdjustStockDto):
 
     id: UUID
     total_stock: int
-    available_stock: int
+    reserved_stock: int
     stock_disponible: int
     created_at: datetime
     updated_at: datetime

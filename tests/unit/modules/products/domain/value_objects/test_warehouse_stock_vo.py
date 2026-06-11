@@ -7,10 +7,10 @@ import pytest
 from src.modules.products.domain.exceptions.pagination_exception import (
     InvalidPaginationElementsException,
 )
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
-)
 from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
+)
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
 from src.modules.products.domain.value_objects.warehouse_stock_item_vo import (
     WarehouseStockItemVO,
@@ -34,7 +34,7 @@ class TestWarehouseStockVO:
             supplier_id=UUID("33333333-3333-3333-3333-333333333333"),
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
+            reserved_stock=ReservedStockVO(80),
             stock_disponible=80,
             created_at=datetime(2025, 1, 1, 10, 0, 0),
             updated_at=datetime(2025, 1, 2, 10, 0, 0),

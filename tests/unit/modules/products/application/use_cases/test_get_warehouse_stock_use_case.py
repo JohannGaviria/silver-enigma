@@ -13,10 +13,10 @@ from src.modules.products.application.dtos.get_warehouse_stock_dto import (
 from src.modules.products.application.use_cases.get_warehouse_stock_use_case import (
     GetWarehouseStockUseCase,
 )
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
-)
 from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
+)
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
 from src.modules.products.domain.value_objects.warehouse_stock_item_vo import (
     WarehouseStockItemVO,
@@ -42,7 +42,7 @@ def _make_warehouse_stock_vo(faker: Faker) -> WarehouseStockVO:
         supplier_id=UUID(faker.uuid4()),
         name=ProductNameVO("Premium Rice"),
         total_stock=TotalStockVO(stock),
-        available_stock=AvailableStockVO(stock),
+        reserved_stock=ReservedStockVO(stock),
         stock_disponible=stock,
         created_at=faker.date_time(end_datetime=10, tzinfo=UTC),
         updated_at=faker.date_time(end_datetime=10, tzinfo=UTC),
@@ -235,7 +235,7 @@ class TestGetWarehouseStockUseCase:
         assert item.product_id == source.product_id
         assert item.name == str(source.name)
         assert item.total_stock == source.total_stock.value()
-        assert item.available_stock == source.available_stock.value()
+        assert item.reserved_stock == source.reserved_stock.value()
         assert item.stock_disponible == source.stock_disponible
         assert item.created_at == source.created_at
         assert item.updated_at == source.updated_at

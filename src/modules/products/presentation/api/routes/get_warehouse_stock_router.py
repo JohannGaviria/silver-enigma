@@ -91,7 +91,7 @@ async def get_warehouse_stock(
     """Get warehouse stock endpoint.
 
     Retrieves a paginated list of stock items stored in the specified warehouse.
-    The response includes inventory information such as available stock quantities
+    The response includes inventory information such as reserved stock quantities
     and related product details.
 
     Args:

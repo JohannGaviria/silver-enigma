@@ -5,8 +5,8 @@ from decimal import Decimal
 from uuid import UUID
 
 from src.modules.products.domain.enums.unit_of_measure_enum import UnitOfMeasureEnum
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
 )
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
 
@@ -22,7 +22,7 @@ class ProductStockItemVO:
         unit_of_measure (UnitOfMeasureEnum): Unit of measure of the product.
         unit_price (Decimal): Unit price of the product.
         total_stock (TotalStockVO): Total stock of the product.
-        available_stock (AvailableStockVO): Available stock of the product.
+        reserved_stock (ReservedStockVO): Reserved stock of the product.
     """
 
     product_id: UUID
@@ -31,4 +31,4 @@ class ProductStockItemVO:
     unit_of_measure: UnitOfMeasureEnum
     unit_price: Decimal
     total_stock: TotalStockVO
-    available_stock: AvailableStockVO
+    reserved_stock: ReservedStockVO

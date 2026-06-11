@@ -8,11 +8,11 @@ from faker import Faker
 from src.modules.products.domain.enums.unit_of_measure_enum import (
     UnitOfMeasureEnum,
 )
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
-)
 from src.modules.products.domain.value_objects.product_stock_item_vo import (
     ProductStockItemVO,
+)
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
 )
 from src.modules.products.domain.value_objects.total_stock_vo import (
     TotalStockVO,
@@ -42,7 +42,7 @@ class TestProductStockItemVO:
             )
         )
         total_stock = TotalStockVO(faker.random_int(min=1, max=1000))
-        available_stock = AvailableStockVO(
+        reserved_stock = ReservedStockVO(
             faker.random_int(min=0, max=total_stock.value())
         )
 
@@ -53,7 +53,7 @@ class TestProductStockItemVO:
             unit_of_measure=UnitOfMeasureEnum.KG,
             unit_price=unit_price,
             total_stock=total_stock,
-            available_stock=available_stock,
+            reserved_stock=reserved_stock,
         )
 
         assert product_stock_item.product_id == product_id
@@ -62,7 +62,7 @@ class TestProductStockItemVO:
         assert product_stock_item.unit_of_measure == UnitOfMeasureEnum.KG
         assert product_stock_item.unit_price == unit_price
         assert product_stock_item.total_stock == total_stock
-        assert product_stock_item.available_stock == available_stock
+        assert product_stock_item.reserved_stock == reserved_stock
 
     # ---------------------------------------------------------------------------
     # immutability
@@ -80,7 +80,7 @@ class TestProductStockItemVO:
             unit_of_measure=UnitOfMeasureEnum.UNIT,
             unit_price=Decimal("10.50"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
+            reserved_stock=ReservedStockVO(80),
         )
 
         with pytest.raises(FrozenInstanceError):
@@ -105,7 +105,7 @@ class TestProductStockItemVO:
             unit_of_measure=UnitOfMeasureEnum.KG,
             unit_price=Decimal("15.50"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
+            reserved_stock=ReservedStockVO(80),
         )
 
         vo2 = ProductStockItemVO(
@@ -115,7 +115,7 @@ class TestProductStockItemVO:
             unit_of_measure=UnitOfMeasureEnum.KG,
             unit_price=Decimal("15.50"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
+            reserved_stock=ReservedStockVO(80),
         )
 
         assert vo1 == vo2
@@ -131,7 +131,7 @@ class TestProductStockItemVO:
             unit_of_measure=UnitOfMeasureEnum.KG,
             unit_price=Decimal("15.50"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
+            reserved_stock=ReservedStockVO(80),
         )
 
         vo2 = ProductStockItemVO(
@@ -141,7 +141,7 @@ class TestProductStockItemVO:
             unit_of_measure=UnitOfMeasureEnum.KG,
             unit_price=Decimal("15.50"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
+            reserved_stock=ReservedStockVO(80),
         )
 
         assert vo1 != vo2

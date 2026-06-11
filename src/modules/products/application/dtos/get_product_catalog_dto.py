@@ -67,7 +67,7 @@ class ProductStockItemDto:
             unit_of_measure=product_stock_item_vo.unit_of_measure,
             unit_price=product_stock_item_vo.unit_price,
             stock_disponible=product_stock_item_vo.total_stock.value()
-            - product_stock_item_vo.available_stock.value(),
+            - product_stock_item_vo.reserved_stock.value(),
         )
 
 

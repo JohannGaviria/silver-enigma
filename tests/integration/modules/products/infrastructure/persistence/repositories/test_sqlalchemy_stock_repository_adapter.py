@@ -9,8 +9,8 @@ from src.modules.products.domain.entities.stock_entity import StockEntity
 from src.modules.products.domain.exceptions.stock_exception import (
     StockRepositoryException,
 )
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
 )
 from src.modules.products.domain.value_objects.total_stock_vo import (
     TotalStockVO,
@@ -36,7 +36,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=UUID(faker.uuid4()),
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
         await stock_repository.save(stock)
 
@@ -47,7 +47,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
         assert result.product_id == stock.product_id
         assert result.warehouse_id == stock.warehouse_id
         assert result.total_stock == stock.total_stock
-        assert result.available_stock == stock.available_stock
+        assert result.reserved_stock == stock.reserved_stock
 
     @pytest.mark.asyncio
     async def test_should_return_none_when_stock_not_found(
@@ -93,7 +93,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=product_id,
             warehouse_id=warehouse_id,
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         await stock_repository.save(stock)
@@ -158,7 +158,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=product_id,
             warehouse_id=warehouse_id,
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         await stock_repository.save(stock)
@@ -173,7 +173,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
         assert result.product_id == product_id
         assert result.warehouse_id == warehouse_id
         assert result.total_stock == stock.total_stock
-        assert result.available_stock == stock.available_stock
+        assert result.reserved_stock == stock.reserved_stock
 
     @pytest.mark.asyncio
     async def test_should_return_none_when_stock_for_update_not_found(
@@ -270,7 +270,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=UUID(faker.uuid4()),
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         await stock_repository.save(stock)
@@ -285,7 +285,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
         assert result.product_id == entity.product_id
         assert result.warehouse_id == entity.warehouse_id
         assert result.total_stock == TotalStockVO(200)
-        assert result.available_stock == entity.available_stock
+        assert result.reserved_stock == entity.reserved_stock
 
     @pytest.mark.asyncio
     async def test_should_raise_stock_repository_exception_when_flush_fails_in_update(
@@ -298,7 +298,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=UUID(faker.uuid4()),
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         await stock_repository.save(stock)
@@ -322,7 +322,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=UUID(faker.uuid4()),
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         await stock_repository.save(stock)
@@ -347,7 +347,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=UUID(faker.uuid4()),
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         await stock_repository.save(stock)
@@ -376,7 +376,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=UUID(faker.uuid4()),
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         result = await stock_repository.save(entity)
@@ -385,7 +385,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
         assert result.product_id == entity.product_id
         assert result.warehouse_id == entity.warehouse_id
         assert result.total_stock == entity.total_stock
-        assert result.available_stock == entity.available_stock
+        assert result.reserved_stock == entity.reserved_stock
 
     @pytest.mark.asyncio
     async def test_should_persist_multiple_stocks_independently(
@@ -400,14 +400,14 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=product_id,
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         entity2 = StockEntity.create(
             product_id=product_id,
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(200),
-            available_stock=AvailableStockVO(100),
+            reserved_stock=ReservedStockVO(100),
         )
 
         result1 = await stock_repository.save(entity1)
@@ -426,7 +426,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=UUID(faker.uuid4()),
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         with patch.object(
@@ -448,7 +448,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=UUID(faker.uuid4()),
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         with patch.object(
@@ -471,7 +471,7 @@ class TestSQLAlchemyStockRepositoryAdapter:
             product_id=UUID(faker.uuid4()),
             warehouse_id=UUID(faker.uuid4()),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(50),
+            reserved_stock=ReservedStockVO(50),
         )
 
         with patch.object(

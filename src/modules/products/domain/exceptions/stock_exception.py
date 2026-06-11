@@ -20,19 +20,19 @@ class InvalidTotalStockException(BaseDomainException):
         super().__init__("Total stock is invalid.")
 
 
-class InvalidAvailableStockException(BaseDomainException):
-    """Exception raised when an available stock is invalid."""
+class InvalidReservedStockException(BaseDomainException):
+    """Exception raised when an reserved stock is invalid."""
 
-    def __init__(self, errors: list[str], available_stock: int):
-        """Initializes the InvalidAvailableStockException.
+    def __init__(self, errors: list[str], reserved_stock: int):
+        """Initializes the InvalidReservedStockException.
 
         Args:
             errors (list[str]): A list of error messages.
-            available_stock (int): The available stock of the product.
+            reserved_stock (int): The reserved stock of the product.
         """
         self.errors = errors
-        self.available_stock = available_stock
-        super().__init__("Available stock is invalid.")
+        self.reserved_stock = reserved_stock
+        super().__init__("Reserved stock is invalid.")
 
 
 class StockConflictException(BaseDomainException):
@@ -43,7 +43,7 @@ class StockConflictException(BaseDomainException):
         product_id: UUID,
         warehouse_id: UUID,
         requested_quantity: int,
-        available_stock: int,
+        reserved_stock: int,
     ):
         """Initializes the StockConflictException.
 
@@ -51,12 +51,12 @@ class StockConflictException(BaseDomainException):
             product_id (UUID): The ID of the product.
             warehouse_id (UUID): The ID of the warehouse.
             requested_quantity (int): The requested quantity.
-            available_stock (int): The available stock.
+            reserved_stock (int): The reserved stock.
         """
         self.product_id = product_id
         self.warehouse_id = warehouse_id
         self.requested_quantity = requested_quantity
-        self.available_stock = available_stock
+        self.reserved_stock = reserved_stock
         super().__init__("Stock conflicts with existing stock.")
 
 
