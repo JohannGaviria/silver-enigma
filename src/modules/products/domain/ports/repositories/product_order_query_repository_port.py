@@ -3,9 +3,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from src.modules.products.domain.value_objects.product_referenced_order_vo import (
-    ProductReferencedOrderVO,
-)
+from src.shared.domain.enums.order_status_enum import OrderStatusEnum
 
 
 class ProductOrderQueryRepositoryPort(ABC):
@@ -17,15 +15,16 @@ class ProductOrderQueryRepositoryPort(ABC):
     """
 
     @abstractmethod
-    async def find_order_by_product_id(
-        self, product_id: UUID
-    ) -> ProductReferencedOrderVO | None:
-        """Finds an order by product ID.
+    async def exists_by_product_id_and_statuses(
+        self, product_id: UUID, statuses: set[OrderStatusEnum]
+    ) -> bool:
+        """Check if an order exists by product ID and statuses.
 
         Args:
             product_id (UUID): The ID of the product.
+            statuses (set[OrderStatusEnum]): The set of statuses to check.
 
         Returns:
-            ProductReferencedOrderVO | None: The product referenced order, or None if not found.
+            bool: True if the order exists, False otherwise.
         """
         pass

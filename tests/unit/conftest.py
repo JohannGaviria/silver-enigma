@@ -284,7 +284,7 @@ def product_lifecycle_uow_mock() -> MagicMock:
     products_mock.update.side_effect = lambda entity: entity
     products_mock.find_by_id.return_value = None
 
-    orders_query_mock.find_order_by_product_id.return_value = None
+    orders_query_mock.exists_by_product_id_and_statuses.return_value = False
 
     uow_mock = MagicMock()
     uow_mock.__aenter__ = AsyncMock(return_value=uow_mock)

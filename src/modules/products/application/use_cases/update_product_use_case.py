@@ -125,21 +125,20 @@ class UpdateProductUseCase:
 
             # Validate that a product cannot be updated if it has orders
             # in the CONFIRMED, PROCESSING, or SHIPPED status associated with it.
-            referenced_order = await uow.orders_query.find_order_by_product_id(
-                command.product_id
+            has_blocking_orders = (
+                await uow.orders_query.exists_by_product_id_and_statuses(
+                    command.product_id,
+                    BLOCKING_ORDER_STATUSES,
+                )
             )
-            if (
-                referenced_order is not None
-                and referenced_order.order_status in BLOCKING_ORDER_STATUSES
-            ):
+            if has_blocking_orders:
                 self._logger.warning(
-                    f"Cannot update product with orders in {referenced_order.order_status} status.",
+                    "Cannot update product with active orders.",
                     product_id=command.product_id,
-                    supplier_id=exists_product.supplier_id,
-                    user_id=authenticated_user.user_id,
+                    supplier_id=authenticated_user.user_id,
                 )
                 raise ProductHasActiveOrdersException(
-                    "Cannot update product with orders in {referenced_order.order_status} status."
+                    "Cannot update product with active orders."
                 )
 
             # Update the product and persist the changes

@@ -23,13 +23,9 @@ from src.modules.products.domain.exceptions.product_exception import (
 from src.modules.products.domain.exceptions.product_referenced_order_exception import (
     ProductHasActiveOrdersException,
 )
-from src.modules.products.domain.value_objects.product_referenced_order_vo import (
-    ProductReferencedOrderVO,
-)
 from src.shared.application.dtos.authenticated_user_dto import (
     AuthenticatedUserCommandDto,
 )
-from src.shared.domain.enums.order_status_enum import OrderStatusEnum
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.exceptions.session_exception import (
     InsufficientPermissionsException,
@@ -64,7 +60,7 @@ class TestUpdateProductUseCase:
             supplier_id=supplier_id,
         )
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -229,7 +225,7 @@ class TestUpdateProductUseCase:
         )
 
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -265,7 +261,7 @@ class TestUpdateProductUseCase:
         )
 
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -373,7 +369,7 @@ class TestUpdateProductUseCase:
         )
 
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -408,7 +404,7 @@ class TestUpdateProductUseCase:
 
         existing = _make_product_entity(faker, supplier_id)
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -440,7 +436,7 @@ class TestUpdateProductUseCase:
 
         existing = _make_product_entity(faker, supplier_id)
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -472,7 +468,7 @@ class TestUpdateProductUseCase:
 
         existing = _make_product_entity(faker, supplier_id)
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -503,7 +499,7 @@ class TestUpdateProductUseCase:
 
         existing = _make_product_entity(faker, supplier_id)
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -534,7 +530,7 @@ class TestUpdateProductUseCase:
 
         existing = _make_product_entity(faker, supplier_id)
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -568,7 +564,7 @@ class TestUpdateProductUseCase:
 
         existing = _make_product_entity(faker, supplier_id)
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -599,7 +595,7 @@ class TestUpdateProductUseCase:
 
         existing = _make_product_entity(faker, supplier_id)
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = None
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -619,64 +615,11 @@ class TestUpdateProductUseCase:
         product_lifecycle_uow_mock.commit.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_should_raise_exception_when_product_has_confirmed_order(
-        self,
-        faker: Faker,
-        logger_factory_mock: Mock,
-        product_lifecycle_uow_mock: MagicMock,
-    ) -> None:
-        """A product referenced by a CONFIRMED order cannot be updated."""
-        supplier_id = UUID(faker.uuid4())
-
-        existing = _make_product_entity(
-            faker=faker,
-            supplier_id=supplier_id,
-        )
-
-        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = ProductReferencedOrderVO(
-            order_id=UUID(faker.uuid4()),
-            product_id=existing.id,
-            order_status=OrderStatusEnum.CONFIRMED,
-        )
-
-        command = UpdateProductCommandDto(
-            product_id=existing.id,
-            name="Updated Product",
-        )
-
-        authenticated_user = AuthenticatedUserCommandDto(
-            user_id=supplier_id,
-            role=UserRoleEnum.SUPPLIER,
-        )
-
-        use_case = _make_use_case(
-            logger_factory_mock,
-            product_lifecycle_uow_mock,
-        )
-
-        with pytest.raises(ProductHasActiveOrdersException):
-            await use_case.execute(command, authenticated_user)
-
-        product_lifecycle_uow_mock.products.update.assert_not_awaited()
-        product_lifecycle_uow_mock.commit.assert_not_awaited()
-
-    @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "order_status",
-        [
-            OrderStatusEnum.CONFIRMED,
-            OrderStatusEnum.PROCESSING,
-            OrderStatusEnum.SHIPPED,
-        ],
-    )
     async def test_should_raise_exception_when_product_has_active_orders(
         self,
         faker: Faker,
         logger_factory_mock: Mock,
         product_lifecycle_uow_mock: MagicMock,
-        order_status: OrderStatusEnum,
     ) -> None:
         """Products with active orders cannot be updated."""
         supplier_id = UUID(faker.uuid4())
@@ -688,11 +631,7 @@ class TestUpdateProductUseCase:
 
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
 
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = ProductReferencedOrderVO(
-            order_id=UUID(faker.uuid4()),
-            product_id=existing.id,
-            order_status=order_status,
-        )
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = True
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -714,22 +653,13 @@ class TestUpdateProductUseCase:
         product_lifecycle_uow_mock.commit.assert_not_awaited()
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "order_status",
-        [
-            OrderStatusEnum.DRAFT,
-            OrderStatusEnum.CANCELLED,
-            OrderStatusEnum.DELIVERED,
-        ],
-    )
-    async def test_should_update_product_when_order_status_is_not_blocking(
+    async def test_should_update_product_when_no_blocking_orders_exist(
         self,
         faker: Faker,
         logger_factory_mock: Mock,
         product_lifecycle_uow_mock: MagicMock,
-        order_status: OrderStatusEnum,
     ) -> None:
-        """Non-blocking order statuses should allow product updates."""
+        """Updates must succeed when no blocking orders exist."""
         supplier_id = UUID(faker.uuid4())
 
         existing = _make_product_entity(
@@ -738,12 +668,7 @@ class TestUpdateProductUseCase:
         )
 
         product_lifecycle_uow_mock.products.find_by_id.return_value = existing
-
-        product_lifecycle_uow_mock.orders_query.find_order_by_product_id.return_value = ProductReferencedOrderVO(
-            order_id=UUID(faker.uuid4()),
-            product_id=existing.id,
-            order_status=order_status,
-        )
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
