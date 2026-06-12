@@ -9,6 +9,22 @@ from src.modules.auth.presentation.api.exceptions.auth_exception_handler import 
     auth_exception_handlers,
 )
 from src.modules.auth.presentation.api.routes import auth_router
+from src.modules.products.presentation.api.exceptions.inventory_exception_handlers import (
+    inventory_exception_handlers,
+)
+from src.modules.products.presentation.api.exceptions.inventory_movement_exception_handlers import (
+    inventory_movement_exception_handlers,
+)
+from src.modules.products.presentation.api.exceptions.inventory_warehouse_exception_handlers import (
+    inventory_warehouse_exception_handlers,
+)
+from src.modules.products.presentation.api.exceptions.product_exception_handlers import (
+    product_exception_handlers,
+)
+from src.modules.products.presentation.api.exceptions.stock_exception_handlers import (
+    stock_exception_handlers,
+)
+from src.modules.products.presentation.api.routes import products_router
 from src.modules.warehouses.presentation.api.exceptions.warehouse_exception_handlers import (
     warehouse_exception_handlers,
 )
@@ -57,11 +73,17 @@ app.add_middleware(CorrelationIdMiddleware)
 exception_handlers(app)
 auth_exception_handlers(app)
 warehouse_exception_handlers(app)
+product_exception_handlers(app)
+stock_exception_handlers(app)
+inventory_movement_exception_handlers(app)
+inventory_warehouse_exception_handlers(app)
+inventory_exception_handlers(app)
 
 
 # Includes the routers for the API endpoints
 app.include_router(auth_router.router)
 app.include_router(warehouse_router.router)
+app.include_router(products_router.router)
 
 
 @app.get(

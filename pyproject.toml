@@ -1,6 +1,6 @@
 [project]
 name = "silver-enigma"
-version = "1.2.0"
+version = "1.4.0"
 description = "B2B order engine with stock control and fulfillment traceability for supplier → warehouse → store distribution chains."
 authors = [
     {name = "Johann Gaviria"}
