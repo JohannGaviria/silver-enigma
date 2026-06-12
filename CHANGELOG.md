@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/JohannGaviria/silver-enigma/compare/v1.4.0...v1.5.0) (2026-06-12)
+
+
+### Features
+
+* **products:** implement inventory and catalog management ([93a2131](https://github.com/JohannGaviria/silver-enigma/commit/93a2131285035ae5fa1209d04779ebb65c5fa1fa))
+
 # [1.4.0](https://github.com/JohannGaviria/silver-enigma/compare/v1.3.1...v1.4.0) (2026-05-30)
 
 
