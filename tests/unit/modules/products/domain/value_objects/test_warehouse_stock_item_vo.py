@@ -39,7 +39,7 @@ class TestWarehouseStockItemVO:
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
             reserved_stock=ReservedStockVO(80),
-            stock_disponible=80,
+            available_stock=80,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -50,7 +50,7 @@ class TestWarehouseStockItemVO:
         assert warehouse_stock_item.name == ProductNameVO("Premium Rice")
         assert warehouse_stock_item.total_stock == TotalStockVO(100)
         assert warehouse_stock_item.reserved_stock == ReservedStockVO(80)
-        assert warehouse_stock_item.stock_disponible == 80
+        assert warehouse_stock_item.available_stock == 80
         assert warehouse_stock_item.created_at == created_at
         assert warehouse_stock_item.updated_at == updated_at
 
@@ -70,7 +70,7 @@ class TestWarehouseStockItemVO:
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
             reserved_stock=ReservedStockVO(80),
-            stock_disponible=80,
+            available_stock=80,
             created_at=faker.date_time(),
             updated_at=faker.date_time(),
         )
@@ -100,7 +100,7 @@ class TestWarehouseStockItemVO:
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
             reserved_stock=ReservedStockVO(80),
-            stock_disponible=80,
+            available_stock=80,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -112,7 +112,7 @@ class TestWarehouseStockItemVO:
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
             reserved_stock=ReservedStockVO(80),
-            stock_disponible=80,
+            available_stock=80,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -133,7 +133,7 @@ class TestWarehouseStockItemVO:
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
             reserved_stock=ReservedStockVO(80),
-            stock_disponible=80,
+            available_stock=80,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -145,7 +145,7 @@ class TestWarehouseStockItemVO:
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
             reserved_stock=ReservedStockVO(80),
-            stock_disponible=80,
+            available_stock=80,
             created_at=created_at,
             updated_at=updated_at,
         )

@@ -125,7 +125,7 @@ class TestGetProductCatalogUseCase:
         assert product.description == source.description
         assert product.unit_of_measure == source.unit_of_measure
         assert product.unit_price == source.unit_price
-        assert product.stock_disponible == 70
+        assert product.available_stock == 70
 
     @pytest.mark.asyncio
     async def test_should_call_repository_with_expected_filters(

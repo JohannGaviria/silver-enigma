@@ -43,7 +43,7 @@ def _make_warehouse_stock_vo(faker: Faker) -> WarehouseStockVO:
         name=ProductNameVO("Premium Rice"),
         total_stock=TotalStockVO(stock),
         reserved_stock=ReservedStockVO(stock),
-        stock_disponible=stock,
+        available_stock=stock,
         created_at=faker.date_time(end_datetime=10, tzinfo=UTC),
         updated_at=faker.date_time(end_datetime=10, tzinfo=UTC),
     )
@@ -236,7 +236,7 @@ class TestGetWarehouseStockUseCase:
         assert item.name == str(source.name)
         assert item.total_stock == source.total_stock.value()
         assert item.reserved_stock == source.reserved_stock.value()
-        assert item.stock_disponible == source.stock_disponible
+        assert item.available_stock == source.available_stock
         assert item.created_at == source.created_at
         assert item.updated_at == source.updated_at
 

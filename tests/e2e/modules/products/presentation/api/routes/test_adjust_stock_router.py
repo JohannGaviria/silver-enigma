@@ -98,7 +98,7 @@ class TestAdjustStockRouter:
         assert body["data"]["warehouse_id"] == warehouse_id
         assert body["data"]["total_stock"] == 100
         assert body["data"]["reserved_stock"] == 0
-        assert body["data"]["stock_disponible"] == 100
+        assert body["data"]["available_stock"] == 100
 
         assert body["data"]["id"] is not None
         assert body["data"]["created_at"] is not None

@@ -53,7 +53,7 @@ class AdjustStockApiMapper:
             warehouse_id=command.warehouse_id,
             total_stock=command.total_stock,
             reserved_stock=command.reserved_stock,
-            stock_disponible=command.stock_disponible,
+            available_stock=command.available_stock,
             created_at=command.created_at,
             updated_at=command.updated_at,
         )

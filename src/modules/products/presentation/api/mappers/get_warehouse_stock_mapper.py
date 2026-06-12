@@ -54,7 +54,7 @@ class GetWarehouseStockApiMapper:
             name=warehouse_stock_item.name,
             total_stock=warehouse_stock_item.total_stock,
             reserved_stock=warehouse_stock_item.reserved_stock,
-            stock_disponible=warehouse_stock_item.stock_disponible,
+            available_stock=warehouse_stock_item.available_stock,
             created_at=warehouse_stock_item.created_at,
             updated_at=warehouse_stock_item.updated_at,
         )

@@ -38,7 +38,7 @@ class ProductStockItemDto:
         description (str): Description of the product.
         unit_of_measure (UnitOfMeasureEnum): Unit of measure of the product.
         unit_price (Decimal): Unit price of the product.
-        stock_disponible (int): Stock disponible of the product.
+        available_stock (int): Stock disponible of the product.
     """
 
     product_id: UUID
@@ -46,7 +46,7 @@ class ProductStockItemDto:
     description: str
     unit_of_measure: UnitOfMeasureEnum
     unit_price: Decimal
-    stock_disponible: int
+    available_stock: int
 
     @classmethod
     def from_vo(
@@ -66,7 +66,7 @@ class ProductStockItemDto:
             description=str(product_stock_item_vo.description),
             unit_of_measure=product_stock_item_vo.unit_of_measure,
             unit_price=product_stock_item_vo.unit_price,
-            stock_disponible=product_stock_item_vo.total_stock.value()
+            available_stock=product_stock_item_vo.total_stock.value()
             - product_stock_item_vo.reserved_stock.value(),
         )
 

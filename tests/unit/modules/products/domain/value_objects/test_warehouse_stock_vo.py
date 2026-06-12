@@ -35,7 +35,7 @@ class TestWarehouseStockVO:
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
             reserved_stock=ReservedStockVO(80),
-            stock_disponible=80,
+            available_stock=80,
             created_at=datetime(2025, 1, 1, 10, 0, 0),
             updated_at=datetime(2025, 1, 2, 10, 0, 0),
         )

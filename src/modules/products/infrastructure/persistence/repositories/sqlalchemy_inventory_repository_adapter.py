@@ -239,7 +239,7 @@ class SQLAlchemyInventoryRepositoryAdapter(InventoryRepositoryPort):
                     name=ProductNameVO(row.product_name),
                     total_stock=TotalStockVO(row.total_stock),
                     reserved_stock=ReservedStockVO(row.reserved_stock),
-                    stock_disponible=row.total_stock - row.reserved_stock,
+                    available_stock=row.total_stock - row.reserved_stock,
                     created_at=row.created_at,
                     updated_at=row.updated_at,
                 )

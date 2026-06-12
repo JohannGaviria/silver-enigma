@@ -209,7 +209,7 @@ class AdjustStockUseCase:
             warehouse_id=stock.warehouse_id,
             total_stock=stock.total_stock.value(),
             reserved_stock=stock.reserved_stock.value(),
-            stock_disponible=stock.total_stock.value() - stock.reserved_stock.value(),
+            available_stock=stock.total_stock.value() - stock.reserved_stock.value(),
             created_at=stock.created_at,
             updated_at=stock.updated_at,
         )

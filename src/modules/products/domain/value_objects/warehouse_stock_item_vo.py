@@ -22,7 +22,7 @@ class WarehouseStockItemVO:
         name (ProductNameVO): The name of the product.
         total_stock (TotalStockVO): The total stock of the product.
         reserved_stock (ReservedStockVO): The reserved stock of the product.
-        stock_disponible (int): The stock that is available for sale.
+        available_stock (int): The stock that is available for sale.
         created_at (datetime): The datetime when the warehouse stock item was created.
         updated_at (datetime): The datetime when the warehouse stock item was last updated.
     """
@@ -33,6 +33,6 @@ class WarehouseStockItemVO:
     name: ProductNameVO
     total_stock: TotalStockVO
     reserved_stock: ReservedStockVO
-    stock_disponible: int
+    available_stock: int
     created_at: datetime
     updated_at: datetime

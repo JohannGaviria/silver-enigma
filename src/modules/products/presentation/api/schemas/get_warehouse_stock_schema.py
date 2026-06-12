@@ -15,7 +15,7 @@ class WarehouseStockItemSchema(BaseModel):
         name (str): The name of the product.
         total_stock (int): The total stock of the product.
         reserved_stock (int): The reserved stock of the product.
-        stock_disponible (int): The stock that is available for sale.
+        available_stock (int): The stock that is available for sale.
         created_at (datetime): The datetime when the warehouse stock item was created.
         updated_at (datetime): The datetime when the warehouse stock item was last updated.
     """
@@ -25,7 +25,7 @@ class WarehouseStockItemSchema(BaseModel):
     name: str
     total_stock: int
     reserved_stock: int
-    stock_disponible: int
+    available_stock: int
     created_at: datetime
     updated_at: datetime
 
@@ -55,7 +55,7 @@ class GetWarehouseStockResponseSchema(BaseModel):
                         "name": "Product name",
                         "total_stock": 100,
                         "reserved_stock": 50,
-                        "stock_disponible": 40,
+                        "available_stock": 40,
                         "created_at": "2023-01-01T00:00:00",
                         "updated_at": "2023-01-01T00:00:00",
                     },
@@ -65,7 +65,7 @@ class GetWarehouseStockResponseSchema(BaseModel):
                         "name": "Product name",
                         "total_stock": 100,
                         "reserved_stock": 50,
-                        "stock_disponible": 40,
+                        "available_stock": 40,
                         "created_at": "2023-01-01T00:00:00",
                         "updated_at": "2023-01-01T00:00:00",
                     },
