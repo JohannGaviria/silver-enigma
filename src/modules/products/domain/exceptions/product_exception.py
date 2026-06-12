@@ -62,3 +62,16 @@ class ProductNotActiveException(BaseDomainException):
     def __init__(self) -> None:
         """Initializes the ProductNotActiveException."""
         super().__init__("Product is not active.")
+
+
+class ProductHasActiveOrdersException(BaseDomainException):
+    """Exception raised when a product has active orders."""
+
+    def __init__(self, error: str) -> None:
+        """Initializes the ProductHasActiveOrdersException.
+
+        Args:
+            error (str): The error message.
+        """
+        self.error = error
+        super().__init__("Product has active orders.")

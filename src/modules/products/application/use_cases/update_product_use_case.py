@@ -5,10 +5,8 @@ from src.modules.products.application.dtos.update_product_dto import (
     UpdatedProductResponseDto,
 )
 from src.modules.products.domain.exceptions.product_exception import (
-    ProductNotFoundException,
-)
-from src.modules.products.domain.exceptions.product_referenced_order_exception import (
     ProductHasActiveOrdersException,
+    ProductNotFoundException,
 )
 from src.modules.products.domain.ports.unit_of_work.product_lifecycle_unit_of_work_port import (
     ProductLifecycleUnitOfWorkPort,
@@ -69,6 +67,7 @@ class UpdateProductUseCase:
         Raises:
             InsufficientPermissionsException: If the user does not have sufficient permissions.
             ProductNotFoundException: If the product with the given ID does not exist.
+            ProductHasActiveOrdersException: If the product has active orders.
         """
         self._logger.info(
             "Executing update product use case.",

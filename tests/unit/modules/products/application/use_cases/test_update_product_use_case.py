@@ -18,10 +18,8 @@ from src.modules.products.domain.enums.unit_of_measure_enum import (
 from src.modules.products.domain.exceptions.product_exception import (
     InvalidProductNameException,
     InvalidUnitPriceException,
-    ProductNotFoundException,
-)
-from src.modules.products.domain.exceptions.product_referenced_order_exception import (
     ProductHasActiveOrdersException,
+    ProductNotFoundException,
 )
 from src.shared.application.dtos.authenticated_user_dto import (
     AuthenticatedUserCommandDto,

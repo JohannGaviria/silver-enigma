@@ -14,16 +14,3 @@ class InvalidProductReferencedOrderException(BaseDomainException):
         """
         self.error = error
         super().__init__("Invalid product referenced order.")
-
-
-class ProductHasActiveOrdersException(BaseDomainException):
-    """Exception raised when a product has active orders."""
-
-    def __init__(self, error: str) -> None:
-        """Initializes the ProductHasActiveOrdersException.
-
-        Args:
-            error (str): The error message.
-        """
-        self.error = error
-        super().__init__("Product has active orders.")
