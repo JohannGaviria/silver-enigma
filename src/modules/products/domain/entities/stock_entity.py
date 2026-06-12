@@ -7,8 +7,8 @@ from uuid import UUID, uuid4
 from src.modules.products.domain.exceptions.stock_exception import (
     StockConflictException,
 )
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
 )
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
 from src.shared.domain.entities.base_entity import BaseEntity
@@ -23,7 +23,7 @@ class StockEntity(BaseEntity):
         product_id (UUID): The ID of the product.
         warehouse_id (UUID): The ID of the warehouse.
         total_stock (TotalStockVO): The total number of items in stock.
-        available_stock (AvailableStockVO): The number of items available for purchase.
+        reserved_stock (ReservedStockVO): The number of items reserved for purchase.
         created_at (datetime): The date and time the stock was created.
         updated_at (datetime): The date and time the stock was updated.
     """
@@ -31,7 +31,7 @@ class StockEntity(BaseEntity):
     product_id: UUID
     warehouse_id: UUID
     total_stock: TotalStockVO
-    available_stock: AvailableStockVO
+    reserved_stock: ReservedStockVO
 
     @classmethod
     def create(
@@ -39,7 +39,7 @@ class StockEntity(BaseEntity):
         product_id: UUID,
         warehouse_id: UUID,
         total_stock: TotalStockVO,
-        available_stock: AvailableStockVO,
+        reserved_stock: ReservedStockVO,
     ) -> "StockEntity":
         """Factory method to create a new StockEntity.
 
@@ -51,7 +51,7 @@ class StockEntity(BaseEntity):
             product_id (UUID): The ID of the product.
             warehouse_id (UUID): The ID of the warehouse.
             total_stock (TotalStockVO): The total number of items in stock.
-            available_stock (AvailableStockVO): The number of items available for purchase.
+            reserved_stock (ReservedStockVO): The number of items reserved for purchase.
 
         Returns:
             StockEntity: A new StockEntity instance.
@@ -62,7 +62,7 @@ class StockEntity(BaseEntity):
             product_id=product_id,
             warehouse_id=warehouse_id,
             total_stock=total_stock,
-            available_stock=available_stock,
+            reserved_stock=reserved_stock,
             created_at=now,
             updated_at=now,
         )
@@ -80,12 +80,12 @@ class StockEntity(BaseEntity):
         Returns:
             StockEntity: The updated StockEntity instance.
         """
-        if total_stock.value() < self.available_stock.value():
+        if total_stock.value() < self.reserved_stock.value():
             raise StockConflictException(
                 product_id=self.product_id,
                 warehouse_id=self.warehouse_id,
                 requested_quantity=total_stock.value(),
-                available_stock=self.available_stock.value(),
+                reserved_stock=self.reserved_stock.value(),
             )
 
         now = datetime.now(UTC)
@@ -94,7 +94,7 @@ class StockEntity(BaseEntity):
             product_id=self.product_id,
             warehouse_id=self.warehouse_id,
             total_stock=total_stock,
-            available_stock=self.available_stock,
+            reserved_stock=self.reserved_stock,
             created_at=self.created_at,
             updated_at=now,
         )

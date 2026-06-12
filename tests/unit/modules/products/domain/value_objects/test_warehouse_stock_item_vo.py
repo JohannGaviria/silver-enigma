@@ -5,10 +5,10 @@ from uuid import UUID
 import pytest
 from faker import Faker
 
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
-)
 from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
+)
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
 from src.modules.products.domain.value_objects.warehouse_stock_item_vo import (
     WarehouseStockItemVO,
@@ -38,8 +38,8 @@ class TestWarehouseStockItemVO:
             supplier_id=supplier_id,
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
-            stock_disponible=80,
+            reserved_stock=ReservedStockVO(80),
+            available_stock=80,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -49,8 +49,8 @@ class TestWarehouseStockItemVO:
         assert warehouse_stock_item.supplier_id == supplier_id
         assert warehouse_stock_item.name == ProductNameVO("Premium Rice")
         assert warehouse_stock_item.total_stock == TotalStockVO(100)
-        assert warehouse_stock_item.available_stock == AvailableStockVO(80)
-        assert warehouse_stock_item.stock_disponible == 80
+        assert warehouse_stock_item.reserved_stock == ReservedStockVO(80)
+        assert warehouse_stock_item.available_stock == 80
         assert warehouse_stock_item.created_at == created_at
         assert warehouse_stock_item.updated_at == updated_at
 
@@ -69,8 +69,8 @@ class TestWarehouseStockItemVO:
             supplier_id=UUID(faker.uuid4()),
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
-            stock_disponible=80,
+            reserved_stock=ReservedStockVO(80),
+            available_stock=80,
             created_at=faker.date_time(),
             updated_at=faker.date_time(),
         )
@@ -99,8 +99,8 @@ class TestWarehouseStockItemVO:
             supplier_id=supplier_id,
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
-            stock_disponible=80,
+            reserved_stock=ReservedStockVO(80),
+            available_stock=80,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -111,8 +111,8 @@ class TestWarehouseStockItemVO:
             supplier_id=supplier_id,
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
-            stock_disponible=80,
+            reserved_stock=ReservedStockVO(80),
+            available_stock=80,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -132,8 +132,8 @@ class TestWarehouseStockItemVO:
             supplier_id=UUID("33333333-3333-3333-3333-333333333333"),
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
-            stock_disponible=80,
+            reserved_stock=ReservedStockVO(80),
+            available_stock=80,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -144,8 +144,8 @@ class TestWarehouseStockItemVO:
             supplier_id=UUID("33333333-3333-3333-3333-333333333333"),
             name=ProductNameVO("Premium Rice"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
-            stock_disponible=80,
+            reserved_stock=ReservedStockVO(80),
+            available_stock=80,
             created_at=created_at,
             updated_at=updated_at,
         )

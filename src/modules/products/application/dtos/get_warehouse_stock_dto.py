@@ -36,8 +36,8 @@ class WarehouseStockItemDto:
         product_id (UUID): The ID of the product.
         name (str): The name of the product.
         total_stock (int): The total stock of the product.
-        available_stock (int): The available stock of the product.
-        stock_disponible (int): The stock that is available for sale.
+        reserved_stock (int): The reserved stock of the product.
+        available_stock (int): The stock that is available for sale.
         created_at (datetime): The datetime when the warehouse stock item was created.
         updated_at (datetime): The datetime when the warehouse stock item was last updated.
     """
@@ -46,8 +46,8 @@ class WarehouseStockItemDto:
     product_id: UUID
     name: str
     total_stock: int
+    reserved_stock: int
     available_stock: int
-    stock_disponible: int
     created_at: datetime
     updated_at: datetime
 
@@ -68,8 +68,8 @@ class WarehouseStockItemDto:
             product_id=warehouse_stock_item_vo.product_id,
             name=str(warehouse_stock_item_vo.name),
             total_stock=warehouse_stock_item_vo.total_stock.value(),
-            available_stock=warehouse_stock_item_vo.available_stock.value(),
-            stock_disponible=warehouse_stock_item_vo.stock_disponible,
+            reserved_stock=warehouse_stock_item_vo.reserved_stock.value(),
+            available_stock=warehouse_stock_item_vo.available_stock,
             created_at=warehouse_stock_item_vo.created_at,
             updated_at=warehouse_stock_item_vo.updated_at,
         )

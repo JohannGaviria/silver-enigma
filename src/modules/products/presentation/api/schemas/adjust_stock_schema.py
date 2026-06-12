@@ -32,8 +32,8 @@ class AdjustStockResponseSchema(BaseModel):
         product_id (UUID): The ID of the product.
         warehouse_id (UUID): The ID of the warehouse.
         total_stock (int): The total number of items in stock.
+        reserved_stock (int): The number of items reserved for purchase.
         available_stock (int): The number of items available for purchase.
-        stock_disponible (int): The number of items available for purchase.
         created_at (datetime): The date and time the stock was created.
         updated_at (datetime): The date and time the stock was updated.
     """
@@ -42,8 +42,8 @@ class AdjustStockResponseSchema(BaseModel):
     product_id: UUID
     warehouse_id: UUID
     total_stock: int
+    reserved_stock: int
     available_stock: int
-    stock_disponible: int
     created_at: datetime
     updated_at: datetime
 
@@ -54,8 +54,8 @@ class AdjustStockResponseSchema(BaseModel):
                 "product_id": "00000000-0000-0000-0000-000000000000",
                 "warehouse_id": "00000000-0000-0000-0000-000000000000",
                 "total_stock": 100,
+                "reserved_stock": 50,
                 "available_stock": 50,
-                "stock_disponible": 50,
                 "created_at": "2026-06-08 18:28:46.815704+00:00",
                 "updated_at": "2026-06-08 18:28:46.815704+00:00",
             }

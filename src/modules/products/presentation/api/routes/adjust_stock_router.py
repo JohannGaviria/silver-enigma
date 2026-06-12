@@ -43,7 +43,7 @@ router = APIRouter()
     description=(
         "Adjusts the stock quantity of a product in a specific warehouse. "
         "The operation creates an inventory movement record and updates the "
-        "available stock accordingly."
+        "reserved stock accordingly."
     ),
     responses={
         status.HTTP_200_OK: {
@@ -92,7 +92,7 @@ async def adjust_stock(
     """Adjust product stock.
 
     This endpoint adjusts the stock level of a product in a specific warehouse
-    by registering an auditable inventory movement and updating the available
+    by registering an auditable inventory movement and updating the reserved
     stock accordingly.
 
     Args:

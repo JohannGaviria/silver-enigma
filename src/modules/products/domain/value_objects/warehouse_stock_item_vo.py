@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
-)
 from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
+)
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
 
 
@@ -21,8 +21,8 @@ class WarehouseStockItemVO:
         supplier_id (UUID): The ID of the supplier.
         name (ProductNameVO): The name of the product.
         total_stock (TotalStockVO): The total stock of the product.
-        available_stock (AvailableStockVO): The available stock of the product.
-        stock_disponible (int): The stock that is available for sale.
+        reserved_stock (ReservedStockVO): The reserved stock of the product.
+        available_stock (int): The stock that is available for sale.
         created_at (datetime): The datetime when the warehouse stock item was created.
         updated_at (datetime): The datetime when the warehouse stock item was last updated.
     """
@@ -32,7 +32,7 @@ class WarehouseStockItemVO:
     supplier_id: UUID
     name: ProductNameVO
     total_stock: TotalStockVO
-    available_stock: AvailableStockVO
-    stock_disponible: int
+    reserved_stock: ReservedStockVO
+    available_stock: int
     created_at: datetime
     updated_at: datetime

@@ -17,7 +17,7 @@ class ProductStockItemSchema(BaseModel):
         description (str): The description of the product.
         unit_of_measure (UnitOfMeasureEnum): The unit of measure of the product.
         unit_price (Decimal): The unit price of the product.
-        stock_disponible (int): The stock disponible of the product.
+        available_stock (int): The stock disponible of the product.
     """
 
     product_id: UUID
@@ -25,7 +25,7 @@ class ProductStockItemSchema(BaseModel):
     description: str
     unit_of_measure: UnitOfMeasureEnum
     unit_price: Decimal
-    stock_disponible: int
+    available_stock: int
 
 
 class GetProductCatalogResponseSchema(BaseModel):
@@ -53,7 +53,7 @@ class GetProductCatalogResponseSchema(BaseModel):
                         "description": "High quality rice",
                         "unit_of_measure": "KG",
                         "unit_price": 15.50,
-                        "stock_disponible": 100,
+                        "available_stock": 100,
                     }
                 ],
                 "page": 1,

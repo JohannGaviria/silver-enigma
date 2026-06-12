@@ -14,14 +14,14 @@ from src.modules.products.application.use_cases.get_product_catalog_use_case imp
 from src.modules.products.domain.enums.unit_of_measure_enum import (
     UnitOfMeasureEnum,
 )
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
-)
 from src.modules.products.domain.value_objects.product_stock_item_vo import (
     ProductStockItemVO,
 )
 from src.modules.products.domain.value_objects.product_stock_vo import (
     ProductStockVO,
+)
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
 )
 from src.modules.products.domain.value_objects.total_stock_vo import (
     TotalStockVO,
@@ -47,7 +47,7 @@ class TestGetProductCatalogUseCase:
             unit_of_measure=UnitOfMeasureEnum.UNIT,
             unit_price=Decimal("100.50"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(30),
+            reserved_stock=ReservedStockVO(30),
         )
 
         return ProductStockVO(
@@ -125,7 +125,7 @@ class TestGetProductCatalogUseCase:
         assert product.description == source.description
         assert product.unit_of_measure == source.unit_of_measure
         assert product.unit_price == source.unit_price
-        assert product.stock_disponible == 70
+        assert product.available_stock == 70
 
     @pytest.mark.asyncio
     async def test_should_call_repository_with_expected_filters(

@@ -56,7 +56,7 @@ class GetProductCatalogApiMapper:
             description=item.description,
             unit_of_measure=item.unit_of_measure,
             unit_price=item.unit_price,
-            stock_disponible=item.stock_disponible,
+            available_stock=item.available_stock,
         )
 
     @staticmethod

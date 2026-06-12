@@ -625,3 +625,166 @@ They represent business events that occurred in the system and therefore belong 
 Each inventory operation generates an additional database write.
 
 This overhead is accepted because auditability and traceability are considered more important than the small storage and write-performance cost introduced by the solution.
+
+---
+
+# ADR-011: Rename inventory stock terminology for domain clarity
+
+## Context
+
+The inventory model currently uses the following terminology:
+
+```text
+total_stock
+available_stock
+stock_disponible
+```
+
+However, analysis of the inventory and order lifecycle revealed that `available_stock` does not represent stock available for purchase.
+
+According to the business rules:
+
+- Order confirmation increases `available_stock`.
+- Order cancellation decreases `available_stock`.
+- Order shipment decreases both `total_stock` and `available_stock`.
+
+This behavior indicates that `available_stock` actually represents stock already committed to active orders.
+
+The current naming introduces ambiguity because developers naturally interpret:
+
+```text
+available_stock
+```
+
+as inventory that can still be sold.
+
+The model therefore requires constant mental translation between the name and its actual business meaning.
+
+## Considered alternatives
+
+### Keep current terminology
+
+Maintain:
+
+```text
+total_stock
+available_stock
+stock_disponible
+```
+
+#### Pros
+
+- No refactoring required.
+- No API or database changes.
+
+#### Cons
+
+- Business meaning remains unclear.
+- Higher risk of implementation mistakes.
+- Requires developers to learn a non-intuitive interpretation.
+- Contradicts common inventory terminology.
+
+### Rename only internal domain objects
+
+Keep external contracts unchanged while renaming domain concepts.
+
+#### Pros
+
+- Improves internal readability.
+- Avoids API breaking changes.
+
+#### Cons
+
+- Two different vocabularies coexist.
+- Mapping complexity increases.
+- Documentation remains inconsistent.
+
+### Adopt domain-accurate terminology everywhere
+
+Rename inventory concepts to match their actual business meaning.
+
+#### Pros
+
+- Consistent ubiquitous language.
+- Clearer business intent.
+- Easier maintenance.
+- Reduced cognitive load.
+
+#### Cons
+
+- Requires refactoring.
+- May require database migrations and API adjustments.
+
+## Decision: Adopt domain-accurate stock terminology
+
+The inventory model will use the following terminology:
+
+| Previous Name      | New Name          |
+| ------------------ | ----------------- |
+| `total_stock`      | `total_stock`     |
+| `available_stock`  | `reserved_stock`  |
+| `stock_disponible` | `available_stock` |
+
+Conceptually:
+
+```text
+total_stock
+    = physical inventory
+
+reserved_stock
+    = inventory committed to active orders
+
+available_stock
+    = total_stock - reserved_stock
+```
+
+## Business interpretation
+
+Example:
+
+```text
+total_stock     = 100
+reserved_stock  = 30
+available_stock = 70
+```
+
+Meaning:
+
+- 100 physical units exist in the warehouse.
+- 30 units are already reserved by confirmed orders.
+- 70 units remain available for new purchases.
+
+Order lifecycle operations become explicit:
+
+```text
+CONFIRMED
+    reserved_stock += quantity
+
+CANCELLED
+    reserved_stock -= quantity
+
+SHIPPED
+    total_stock -= quantity
+    reserved_stock -= quantity
+```
+
+## Design principles
+
+- Entity attributes should describe their actual business meaning.
+- Derived values should be named according to what they represent, not how they are calculated.
+- Inventory terminology must be understandable without requiring knowledge of implementation details.
+- Domain language should align with common inventory-management concepts.
+
+## Benefits
+
+- Eliminates ambiguity in the inventory model.
+- Improves readability of business rules.
+- Reduces the likelihood of stock-related bugs.
+- Makes order lifecycle operations easier to understand.
+- Establishes a clearer ubiquitous language across Inventory and Orders modules.
+
+## Trade-off
+
+Existing code, tests, documentation, DTOs, and persistence mappings may require refactoring.
+
+This cost is considered acceptable because the improvement affects a core business concept used throughout the system and prevents long-term confusion in future development.

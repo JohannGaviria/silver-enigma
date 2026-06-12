@@ -14,14 +14,14 @@ from src.modules.products.domain.exceptions.inventory_exception import (
 from src.modules.products.domain.ports.repositories.inventory_repository_port import (
     InventoryRepositoryPort,
 )
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
-)
 from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
 from src.modules.products.domain.value_objects.product_stock_item_vo import (
     ProductStockItemVO,
 )
 from src.modules.products.domain.value_objects.product_stock_vo import ProductStockVO
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
+)
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
 from src.modules.products.domain.value_objects.warehouse_stock_item_vo import (
     WarehouseStockItemVO,
@@ -120,7 +120,7 @@ class SQLAlchemyInventoryRepositoryAdapter(InventoryRepositoryPort):
                     ProductModel.unit_of_measure,
                     ProductModel.unit_price,
                     StockModel.total_stock,
-                    StockModel.available_stock,
+                    StockModel.reserved_stock,
                 )
                 .join(
                     StockModel,
@@ -141,7 +141,7 @@ class SQLAlchemyInventoryRepositoryAdapter(InventoryRepositoryPort):
                     unit_of_measure=UnitOfMeasureEnum(row.unit_of_measure),
                     unit_price=Decimal(row.unit_price),
                     total_stock=TotalStockVO(row.total_stock),
-                    available_stock=AvailableStockVO(row.available_stock),
+                    reserved_stock=ReservedStockVO(row.reserved_stock),
                 )
                 for row in result.all()
             ]
@@ -212,7 +212,7 @@ class SQLAlchemyInventoryRepositoryAdapter(InventoryRepositoryPort):
                     ProductModel.name.label("product_name"),
                     StockModel.id.label("stock_id"),
                     StockModel.total_stock,
-                    StockModel.available_stock,
+                    StockModel.reserved_stock,
                     StockModel.created_at,
                     StockModel.updated_at,
                 )
@@ -238,8 +238,8 @@ class SQLAlchemyInventoryRepositoryAdapter(InventoryRepositoryPort):
                     supplier_id=row.supplier_id,
                     name=ProductNameVO(row.product_name),
                     total_stock=TotalStockVO(row.total_stock),
-                    available_stock=AvailableStockVO(row.available_stock),
-                    stock_disponible=row.total_stock - row.available_stock,
+                    reserved_stock=ReservedStockVO(row.reserved_stock),
+                    available_stock=row.total_stock - row.reserved_stock,
                     created_at=row.created_at,
                     updated_at=row.updated_at,
                 )

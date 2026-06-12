@@ -20,8 +20,8 @@ from src.modules.products.domain.exceptions.product_exception import (
     ProductNotActiveException,
     ProductNotFoundException,
 )
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
 )
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
 from src.shared.application.dtos.authenticated_user_dto import (
@@ -110,8 +110,8 @@ class TestAdjustStockUseCase:
         assert result.product_id == product.id
         assert result.warehouse_id == warehouse.id
         assert result.total_stock == 100
-        assert result.available_stock == 0
-        assert result.stock_disponible == 100
+        assert result.reserved_stock == 0
+        assert result.available_stock == 100
 
     @pytest.mark.asyncio
     async def test_should_update_stock_and_return_response_when_stock_already_exists(
@@ -137,7 +137,7 @@ class TestAdjustStockUseCase:
             product_id=product.id,
             warehouse_id=warehouse.id,
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(25),
+            reserved_stock=ReservedStockVO(25),
         )
 
         inventory_uow_mock.warehouses.find_by_id.return_value = warehouse

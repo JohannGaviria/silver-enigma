@@ -20,8 +20,8 @@ from src.modules.products.domain.exceptions.product_exception import (
 from src.modules.products.domain.ports.unit_of_work.inventory_unit_of_work_port import (
     InventoryUnitOfWorkPort,
 )
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
 )
 from src.modules.products.domain.value_objects.total_stock_vo import TotalStockVO
 from src.shared.application.dtos.authenticated_user_dto import (
@@ -40,8 +40,8 @@ class AdjustStockUseCase:
     """Use case for adjusting stock.
 
     This use case allows suppliers to adjust the stock of a product in a warehouse.
-    It ensures that the total stock remains within the available stock and that
-    the available stock does not go below the reserved quantity.
+    It ensures that the total stock remains within the reserved stock and that
+    the reserved stock does not go below the reserved quantity.
     """
 
     def __init__(
@@ -174,7 +174,7 @@ class AdjustStockUseCase:
                     product_id=command.product_id,
                     warehouse_id=command.warehouse_id,
                     total_stock=total_stock,
-                    available_stock=AvailableStockVO(0),
+                    reserved_stock=ReservedStockVO(0),
                 )
                 stock = await uow.stocks.save(entity)
 
@@ -208,8 +208,8 @@ class AdjustStockUseCase:
             product_id=stock.product_id,
             warehouse_id=stock.warehouse_id,
             total_stock=stock.total_stock.value(),
-            available_stock=stock.available_stock.value(),
-            stock_disponible=stock.total_stock.value() - stock.available_stock.value(),
+            reserved_stock=stock.reserved_stock.value(),
+            available_stock=stock.total_stock.value() - stock.reserved_stock.value(),
             created_at=stock.created_at,
             updated_at=stock.updated_at,
         )

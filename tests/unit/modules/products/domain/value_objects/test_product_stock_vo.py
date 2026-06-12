@@ -10,14 +10,14 @@ from src.modules.products.domain.enums.unit_of_measure_enum import (
 from src.modules.products.domain.exceptions.pagination_exception import (
     InvalidPaginationElementsException,
 )
-from src.modules.products.domain.value_objects.available_stock_vo import (
-    AvailableStockVO,
-)
 from src.modules.products.domain.value_objects.product_stock_item_vo import (
     ProductStockItemVO,
 )
 from src.modules.products.domain.value_objects.product_stock_vo import (
     ProductStockVO,
+)
+from src.modules.products.domain.value_objects.reserved_stock_vo import (
+    ReservedStockVO,
 )
 from src.modules.products.domain.value_objects.total_stock_vo import (
     TotalStockVO,
@@ -39,7 +39,7 @@ class TestProductStockVO:
             unit_of_measure=UnitOfMeasureEnum.KG,
             unit_price=Decimal("15.50"),
             total_stock=TotalStockVO(100),
-            available_stock=AvailableStockVO(80),
+            reserved_stock=ReservedStockVO(80),
         )
 
     # ---------------------------------------------------------------------------

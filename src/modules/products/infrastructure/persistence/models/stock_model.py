@@ -15,7 +15,7 @@ class StockModel(BaseModel):
         product_id (UUID): The ID of the product.
         warehouse_id (UUID): The ID of the warehouse.
         total_stock (int): The total number of items in stock.
-        available_stock (int): The number of items available for purchase.
+        reserved_stock (int): The number of items reserved for purchase.
         created_at (datetime): The date and time the stock was created.
         updated_at (datetime): The date and time the stock was updated.
     """
@@ -25,4 +25,4 @@ class StockModel(BaseModel):
     product_id: Mapped[UUID] = mapped_column(nullable=False, index=True)
     warehouse_id: Mapped[UUID] = mapped_column(nullable=False, index=True)
     total_stock: Mapped[int] = mapped_column(nullable=False)
-    available_stock: Mapped[int] = mapped_column(nullable=False)
+    reserved_stock: Mapped[int] = mapped_column(nullable=False)
