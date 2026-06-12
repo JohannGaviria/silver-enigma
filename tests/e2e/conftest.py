@@ -25,6 +25,9 @@ from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adap
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
 )
+from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_product_order_query_repository_adapter import (
+    SQLAlchemyProductOrderQueryRepositoryAdapter,
+)
 from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_warehouse_order_query_repository_adapter import (
     SQLAlchemyWarehouseOrderQueryRepositoryAdapter,
 )
@@ -222,6 +225,26 @@ def valid_admin_command(faker: Faker) -> CreateFirstAdminCommandDto:
 # ---------------------------------------------------------------------------
 # Modules: ORDERS
 # ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def created_product_with_active_orders(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    """Create a product with active orders."""
+
+    async def fake_exists_by_product_id_and_statuses(
+        self: object,
+        product_id: object,
+        statuses: object,
+    ) -> bool:
+        return True
+
+    monkeypatch.setattr(
+        SQLAlchemyProductOrderQueryRepositoryAdapter,
+        "exists_by_product_id_and_statuses",
+        fake_exists_by_product_id_and_statuses,
+    )
 
 
 @pytest.fixture()

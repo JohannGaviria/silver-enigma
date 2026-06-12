@@ -28,6 +28,9 @@ from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_sto
 from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_inventory_unit_of_work_adapter import (
     SQLAlchemyInventoryUnitOfWorkAdapter,
 )
+from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_product_lifecycle_unit_of_work_adapter import (
+    SQLAlchemyProductLifecycleUnitOfWorkAdapter,
+)
 from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_product_unit_of_work_adapter import (
     SQLAlchemyProductUnitOfWorkAdapter,
 )
@@ -260,5 +263,26 @@ async def inventory_repository(
     """Repository wired to the integration-test session."""
     return SQLAlchemyInventoryRepositoryAdapter(
         session=db_session,
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest.fixture()
+def pinned_product_lifecycle_uow(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyProductLifecycleUnitOfWorkAdapter:
+    """Product Lifecycle UoW pinned to the test session.
+
+    All writes go through the same connection that the conftest transaction
+    controls, so they are rolled back automatically at teardown.
+    """
+
+    class _FixedSessionMaker:
+        def __call__(self) -> AsyncSession:
+            return db_session
+
+    return SQLAlchemyProductLifecycleUnitOfWorkAdapter(
+        session_factory=_FixedSessionMaker(),  # type: ignore[arg-type]
         logger_factory_outbound=logger_factory_outbound,
     )

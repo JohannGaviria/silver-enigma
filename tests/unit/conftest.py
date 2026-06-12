@@ -270,6 +270,35 @@ def product_uow_mock() -> MagicMock:
     return uow_mock
 
 
+@pytest.fixture()
+def product_lifecycle_uow_mock() -> MagicMock:
+    """Build a Product lifecycle Unit-of-Work mock that behaves as an async context manager.
+
+    Returns:
+        MagicMock: A Product lifecycle UoW mock ready to be injected into use cases.
+    """
+    products_mock = AsyncMock()
+    orders_query_mock = AsyncMock()
+
+    products_mock.save.side_effect = lambda entity: entity
+    products_mock.update.side_effect = lambda entity: entity
+    products_mock.find_by_id.return_value = None
+
+    orders_query_mock.exists_by_product_id_and_statuses.return_value = False
+
+    uow_mock = MagicMock()
+    uow_mock.__aenter__ = AsyncMock(return_value=uow_mock)
+    uow_mock.__aexit__ = AsyncMock(return_value=None)
+
+    uow_mock.products = products_mock
+    uow_mock.orders_query = orders_query_mock
+
+    uow_mock.commit = AsyncMock()
+    uow_mock.rollback = AsyncMock()
+
+    return uow_mock
+
+
 def _make_product_entity(
     faker: Faker,
     supplier_id: UUID,

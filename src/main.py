@@ -21,6 +21,9 @@ from src.modules.products.presentation.api.exceptions.inventory_warehouse_except
 from src.modules.products.presentation.api.exceptions.product_exception_handlers import (
     product_exception_handlers,
 )
+from src.modules.products.presentation.api.exceptions.product_referenced_order_exception_handlers import (
+    product_referenced_order_exception_handlers,
+)
 from src.modules.products.presentation.api.exceptions.stock_exception_handlers import (
     stock_exception_handlers,
 )
@@ -74,6 +77,7 @@ exception_handlers(app)
 auth_exception_handlers(app)
 warehouse_exception_handlers(app)
 product_exception_handlers(app)
+product_referenced_order_exception_handlers(app)
 stock_exception_handlers(app)
 inventory_movement_exception_handlers(app)
 inventory_warehouse_exception_handlers(app)
