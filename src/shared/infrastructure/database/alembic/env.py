@@ -13,6 +13,9 @@ from src.modules.warehouses.infrastructure.persistence.models.warehouse_model im
 from src.modules.products.infrastructure.persistence.models.product_model import ProductModel
 from src.modules.products.infrastructure.persistence.models.stock_model import StockModel
 from src.modules.products.infrastructure.persistence.models.inventory_movement_model import InventoryMovementModel
+from src.modules.orders.infrastructure.persistence.models.order_model import OrderModel
+from src.modules.orders.infrastructure.persistence.models.order_items_model import OrderItemsModel
+from src.modules.orders.infrastructure.persistence.models.order_status_history_model import OrderStatusHistoryModel
 
 load_dotenv()
 
