@@ -1,6 +1,9 @@
 from collections.abc import Awaitable, Callable
+from types import SimpleNamespace
+from uuid import UUID
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 from faker import Faker
 from fastapi import status
 from httpx import AsyncClient
@@ -22,6 +25,10 @@ from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adap
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
 )
+from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_warehouse_order_query_repository_adapter import (
+    SQLAlchemyWarehouseOrderQueryRepositoryAdapter,
+)
+from src.shared.domain.enums.order_status_enum import OrderStatusEnum
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapter import (
     StructlogLoggerFactoryOutboundAdapter,
@@ -209,4 +216,28 @@ def valid_admin_command(faker: Faker) -> CreateFirstAdminCommandDto:
         name=faker.name(),
         email=faker.email(),
         plain_password=faker.password(),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Modules: ORDERS
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def created_order_confirmed(monkeypatch: MonkeyPatch) -> None:
+    """Create a confirmed order, pinned to the test session."""
+
+    async def fake_find_by_warehouse_id(
+        self: object, warehouse_id: UUID
+    ) -> SimpleNamespace:
+        return SimpleNamespace(
+            warehouse_id=warehouse_id,
+            order_status=OrderStatusEnum.CONFIRMED,
+        )
+
+    monkeypatch.setattr(
+        SQLAlchemyWarehouseOrderQueryRepositoryAdapter,
+        "find_by_warehouse_id",
+        fake_find_by_warehouse_id,
     )

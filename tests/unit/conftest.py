@@ -198,6 +198,39 @@ def warehouse_uow_mock() -> MagicMock:
     return uow_mock
 
 
+@pytest.fixture()
+def warehouse_lifecycle_uow_mock() -> MagicMock:
+    """Build a Unit-of-Work mock that behaves as an async context manager.
+
+    The returned mock exposes ``uow.warehouses`` (an ``AsyncMock``) with
+    common repository methods preconfigured for testing.
+
+    Returns:
+        MagicMock: A UoW mock ready to be injected into the use case.
+    """
+    warehouses_mock = AsyncMock()
+    orders_query_mock = AsyncMock()
+
+    warehouses_mock.find_by_id.return_value = None
+    warehouses_mock.find_all_by_supplier_id.return_value = []
+    warehouses_mock.update.side_effect = lambda entity: entity
+    warehouses_mock.save.side_effect = lambda entity: entity
+
+    orders_query_mock.find_by_warehouse_id.return_value = None
+
+    uow_mock = MagicMock()
+    uow_mock.__aenter__ = AsyncMock(return_value=uow_mock)
+    uow_mock.__aexit__ = AsyncMock(return_value=None)
+
+    uow_mock.warehouses = warehouses_mock
+    uow_mock.orders_query = orders_query_mock
+
+    uow_mock.commit = AsyncMock()
+    uow_mock.rollback = AsyncMock()
+
+    return uow_mock
+
+
 def _make_warehouse_entity(faker: Faker, supplier_id: UUID) -> WarehouseEntity:
     """Helper to build a WarehouseEntity with valid VOs."""
     return WarehouseEntity.create(

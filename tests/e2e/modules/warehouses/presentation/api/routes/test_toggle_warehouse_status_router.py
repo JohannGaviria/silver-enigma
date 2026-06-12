@@ -1,5 +1,6 @@
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 
 import jwt
 import pytest
@@ -410,3 +411,45 @@ class TestToggleWarehouseStatusRouter:
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    @pytest.mark.asyncio
+    async def test_should_return_409_when_warehouse_has_active_orders(
+        self,
+        async_client: AsyncClient,
+        faker: Faker,
+        created_supplier: UserEntity,
+        plain_password_valid: PlainPasswordVO,
+        access_token_factory: Callable[[str, str], Awaitable[str]],
+        created_order_confirmed: SimpleNamespace,
+    ) -> None:
+        """Warehouse with active orders cannot be deactivated."""
+        access_token = await access_token_factory(
+            str(created_supplier.email),
+            str(plain_password_valid),
+        )
+
+        headers = {"Authorization": f"Bearer {access_token}"}
+
+        create_response = await async_client.post(
+            url="/api/v1/warehouses/",
+            json={
+                "name": faker.company(),
+                "address": faker.address(),
+            },
+            headers=headers,
+        )
+
+        assert create_response.status_code == status.HTTP_201_CREATED
+
+        warehouse_id = create_response.json()["data"]["id"]
+
+        response = await async_client.patch(
+            url=f"/api/v1/warehouses/{warehouse_id}/status",
+            json={"is_active": False},
+            headers=headers,
+        )
+
+        body = response.json()
+
+        assert response.status_code == status.HTTP_409_CONFLICT
+        assert body["status"] == "error"

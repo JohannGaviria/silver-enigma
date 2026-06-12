@@ -20,11 +20,15 @@ from src.modules.warehouses.domain.value_objects.warehouse_by_supplier_cache_val
 from src.modules.warehouses.infrastructure.persistence.repositories.sqlalchemy_warehouse_repository_adapter import (
     SQLAlchemyWarehouseRepositoryAdapter,
 )
+from src.modules.warehouses.infrastructure.persistence.unit_of_work.sqlalchemy_warehouse_lifecycle_unit_of_work_adapter import (
+    SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter,
+)
 from src.modules.warehouses.infrastructure.persistence.unit_of_work.sqlalchemy_warehouse_unit_of_work_adapter import (
     SQLAlchemyWarehouseUnitOfWorkAdapter,
 )
 from src.modules.warehouses.presentation.api.compositions.infrastructure_composition import (
     get_warehouse_by_supplier_cache_outbound,
+    get_warehouse_lifecycle_unit_of_work,
     get_warehouse_repository,
     get_warehouse_unit_of_work,
 )
@@ -139,8 +143,8 @@ def get_toggle_warehouse_status_use_case(
     cache_outbound: RedisCacheOutboundAdapter[
         WarehouseBySupplierCacheValueVO
     ] = Depends(get_warehouse_by_supplier_cache_outbound),
-    warehouse_unit_of_work: SQLAlchemyWarehouseUnitOfWorkAdapter = Depends(
-        get_warehouse_unit_of_work
+    warehouse_lifecycle_unit_of_work: SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter = Depends(
+        get_warehouse_lifecycle_unit_of_work
     ),
 ) -> ToggleWarehouseStatusUseCase:
     """Get the ToggleWarehouseStatusUseCase instance.
@@ -150,8 +154,8 @@ def get_toggle_warehouse_status_use_case(
             factory outbound adapter.
         cache_outbound (RedisCacheOutboundAdapter[WarehouseBySupplierCacheValueVO]):
             The cache outbound adapter.
-        warehouse_unit_of_work (SQLAlchemyWarehouseUnitOfWorkAdapter): The warehouse
-            unit of work adapter.
+        warehouse_lifecycle_unit_of_work (SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter): The warehouse
+            lifecycle unit of work adapter.
 
     Returns:
         ToggleWarehouseStatusUseCase: The ToggleWarehouseStatusUseCase instance.
@@ -159,5 +163,5 @@ def get_toggle_warehouse_status_use_case(
     return ToggleWarehouseStatusUseCase(
         logger_factory_outbound=logger_factory_outbound,
         cache_outbound=cache_outbound,
-        warehouse_unit_of_work=warehouse_unit_of_work,
+        warehouse_lifecycle_unit_of_work=warehouse_lifecycle_unit_of_work,
     )
