@@ -14,6 +14,9 @@ from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_inv
 from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_inventory_unit_of_work_adapter import (
     SQLAlchemyInventoryUnitOfWorkAdapter,
 )
+from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_product_lifecycle_unit_of_work_adapter import (
+    SQLAlchemyProductLifecycleUnitOfWorkAdapter,
+)
 from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_product_unit_of_work_adapter import (
     SQLAlchemyProductUnitOfWorkAdapter,
 )
@@ -41,6 +44,27 @@ async def get_product_uow(
     """
     session_factory = await DatabaseEngine.get_session_factory()
     async with SQLAlchemyProductUnitOfWorkAdapter(
+        session_factory=session_factory,
+        logger_factory_outbound=logger_factory_outbound,
+    ) as uow:
+        yield uow
+
+
+async def get_product_lifecycle_uow(
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+) -> AsyncGenerator[SQLAlchemyProductLifecycleUnitOfWorkAdapter, None]:
+    """Get the SQLAlchemyProductLifecycleUnitOfWorkAdapter instance.
+
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory for creating loggers.
+
+    Returns:
+        SQLAlchemyProductLifecycleUnitOfWorkAdapter: The SQLAlchemyProductLifecycleUnitOfWorkAdapter instance.
+    """
+    session_factory = await DatabaseEngine.get_session_factory()
+    async with SQLAlchemyProductLifecycleUnitOfWorkAdapter(
         session_factory=session_factory,
         logger_factory_outbound=logger_factory_outbound,
     ) as uow:

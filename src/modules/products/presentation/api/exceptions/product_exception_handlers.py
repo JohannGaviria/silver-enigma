@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from src.modules.products.domain.exceptions.product_exception import (
     InvalidProductNameException,
     InvalidUnitPriceException,
+    ProductHasActiveOrdersException,
     ProductNotActiveException,
     ProductNotFoundException,
     ProductRepositoryException,
@@ -162,5 +163,33 @@ def product_exception_handlers(app: FastAPI) -> None:
             status_code=status.HTTP_400_BAD_REQUEST,
             content=jsonable_encoder(
                 ErrorsResponseSchema(message=str(exc)), exclude_none=True
+            ),
+        )
+
+    @app.exception_handler(ProductHasActiveOrdersException)
+    async def product_has_active_orders_exception_handler(
+        request: Request, exc: ProductHasActiveOrdersException
+    ) -> JSONResponse:
+        """Handle ProductHasActiveOrdersException.
+
+        Args:
+            request (Request): The request object.
+            exc (ProductHasActiveOrdersException): The exception to handle.
+
+        Returns:
+            JSONResponse: A JSON response with the error message.
+        """
+        _logger.error(
+            "product has active orders exception occurred while processing request.",
+            request_method=request.method,
+            request_url=request.url.path,
+            exception_message=exc,
+            error=exc.error,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content=jsonable_encoder(
+                ErrorsResponseSchema(message=str(exc), details=[exc.error]),
+                exclude_none=True,
             ),
         )
