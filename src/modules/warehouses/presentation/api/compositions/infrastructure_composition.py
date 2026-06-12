@@ -22,6 +22,9 @@ from src.modules.warehouses.domain.value_objects.warehouse_cache_item_vo import 
 from src.modules.warehouses.domain.value_objects.warehouse_name_vo import (
     WarehouseNameVO,
 )
+from src.modules.warehouses.infrastructure.persistence.unit_of_work.sqlalchemy_warehouse_lifecycle_unit_of_work_adapter import (
+    SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter,
+)
 from src.modules.warehouses.infrastructure.persistence.unit_of_work.sqlalchemy_warehouse_unit_of_work_adapter import (
     SQLAlchemyWarehouseUnitOfWorkAdapter,
 )
@@ -107,6 +110,28 @@ async def get_warehouse_unit_of_work(
     """
     session_factory = await DatabaseEngine.get_session_factory()
     async with SQLAlchemyWarehouseUnitOfWorkAdapter(
+        session_factory=session_factory, logger_factory_outbound=logger_factory_outbound
+    ) as uow:
+        yield uow
+
+
+async def get_warehouse_lifecycle_unit_of_work(
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
+        get_logger_factory_outbound
+    ),
+) -> AsyncGenerator[SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter, None]:
+    """Get an asynchronous warehouse lifecycle unit of work.
+
+    Args:
+        logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory
+            outbound adapter.
+
+    Returns:
+        AsyncGenerator[SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter, None]: An asynchronous
+            warehouse lifecycle unit of work.
+    """
+    session_factory = await DatabaseEngine.get_session_factory()
+    async with SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter(
         session_factory=session_factory, logger_factory_outbound=logger_factory_outbound
     ) as uow:
         yield uow

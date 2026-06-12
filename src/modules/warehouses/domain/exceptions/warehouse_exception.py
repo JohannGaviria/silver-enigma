@@ -52,3 +52,16 @@ class WarehouseNotFoundException(BaseDomainException):
     def __init__(self) -> None:
         """Initialize the WarehouseNotFoundException."""
         super().__init__("Warehouse not found.")
+
+
+class WarehouseHasActiveOrdersException(BaseDomainException):
+    """Exception raised when a warehouse has active orders."""
+
+    def __init__(self, error: str) -> None:
+        """Initialize the WarehouseHasActiveOrdersException.
+
+        Args:
+            error (str): A message describing the error.
+        """
+        self.error = error
+        super().__init__("Warehouse has active orders.")

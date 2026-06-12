@@ -31,11 +31,21 @@ from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_inv
 from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_product_unit_of_work_adapter import (
     SQLAlchemyProductUnitOfWorkAdapter,
 )
+from src.modules.warehouses.domain.entities.warehouse_entity import WarehouseEntity
+from src.modules.warehouses.domain.value_objects.warehouse_address_vo import (
+    WarehouseAddressVO,
+)
+from src.modules.warehouses.domain.value_objects.warehouse_name_vo import (
+    WarehouseNameVO,
+)
 from src.modules.warehouses.infrastructure.persistence.repositories.sqlalchemy_warehouse_query_repository_adapter import (
     SQLAlchemyWarehouseQueryRepositoryAdapter,
 )
 from src.modules.warehouses.infrastructure.persistence.repositories.sqlalchemy_warehouse_repository_adapter import (
     SQLAlchemyWarehouseRepositoryAdapter,
+)
+from src.modules.warehouses.infrastructure.persistence.unit_of_work.sqlalchemy_warehouse_lifecycle_unit_of_work_adapter import (
+    SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter,
 )
 from src.modules.warehouses.infrastructure.persistence.unit_of_work.sqlalchemy_warehouse_unit_of_work_adapter import (
     SQLAlchemyWarehouseUnitOfWorkAdapter,
@@ -124,6 +134,32 @@ def pinned_warehouse_uow(
     return SQLAlchemyWarehouseUnitOfWorkAdapter(
         session_factory=_FixedSessionMaker(),  # type: ignore[arg-type]
         logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest.fixture()
+def pinned_warehouse_lifecycle_uow(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter:
+    """Warehouse Lifecycle UoW pinned to the test session."""
+
+    class _FixedSessionMaker:
+        def __call__(self) -> AsyncSession:
+            return db_session
+
+    return SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter(
+        session_factory=_FixedSessionMaker(),  # type: ignore[arg-type]
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+def _make_warehouse_entity(faker: Faker, supplier_id: UUID) -> WarehouseEntity:
+    """Helper to build a WarehouseEntity with valid values."""
+    return WarehouseEntity.create(
+        supplier_id=supplier_id,
+        name=WarehouseNameVO(faker.company()),
+        address=WarehouseAddressVO(faker.address()),
     )
 
 

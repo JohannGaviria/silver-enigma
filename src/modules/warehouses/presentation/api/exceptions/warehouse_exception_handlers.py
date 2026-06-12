@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from src.modules.warehouses.domain.exceptions.warehouse_exception import (
     InvalidWarehouseAddressException,
     InvalidWarehouseNameException,
+    WarehouseHasActiveOrdersException,
     WarehouseNotFoundException,
     WarehouseRepositoryException,
 )
@@ -139,6 +140,34 @@ def warehouse_exception_handlers(app: FastAPI) -> None:
             status_code=status.HTTP_404_NOT_FOUND,
             content=jsonable_encoder(
                 ErrorsResponseSchema(message=str(exc)),
+                exclude_none=True,
+            ),
+        )
+
+    @app.exception_handler(WarehouseHasActiveOrdersException)
+    async def warehouse_has_active_orders_exception_handler(
+        request: Request, exc: WarehouseHasActiveOrdersException
+    ) -> JSONResponse:
+        """Handle the WarehouseHasActiveOrdersException.
+
+        Args:
+            request (Request): The FastAPI request object.
+            exc (WarehouseHasActiveOrdersException): The exception to handle.
+
+        Returns:
+            JSONResponse: A JSON response containing the error message.
+        """
+        _logger.error(
+            "warehouse has active orders exception occurred while processing request.",
+            request_method=request.method,
+            request_url=request.url.path,
+            exception_message=exc,
+            error=exc.error,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content=jsonable_encoder(
+                ErrorsResponseSchema(message=str(exc), details=[exc.error]),
                 exclude_none=True,
             ),
         )
