@@ -61,6 +61,10 @@ router = APIRouter()
             "model": ErrorsResponseSchema,
             "description": "The product with the given ID was not found.",
         },
+        status.HTTP_409_CONFLICT: {
+            "model": ErrorsResponseSchema,
+            "description": "The product is referenced by an order.",
+        },
         status.HTTP_422_UNPROCESSABLE_CONTENT: {
             "model": ErrorsResponseSchema,
             "description": "The request was invalid.",

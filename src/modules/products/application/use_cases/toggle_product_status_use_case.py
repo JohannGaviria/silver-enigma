@@ -5,14 +5,16 @@ from src.modules.products.application.dtos.toggle_product_status_dto import (
     ToggleProductStatusResponseDto,
 )
 from src.modules.products.domain.exceptions.product_exception import (
+    ProductHasActiveOrdersException,
     ProductNotFoundException,
 )
-from src.modules.products.domain.ports.unit_of_work.product_unit_of_work_port import (
-    ProductUnitOfWorkPort,
+from src.modules.products.domain.ports.unit_of_work.product_lifecycle_unit_of_work_port import (
+    ProductLifecycleUnitOfWorkPort,
 )
 from src.shared.application.dtos.authenticated_user_dto import (
     AuthenticatedUserCommandDto,
 )
+from src.shared.domain.enums.order_status_enum import OrderStatusEnum
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.exceptions.session_exception import (
     InsufficientPermissionsException,
@@ -28,16 +30,17 @@ class ToggleProductStatusUseCase:
     def __init__(
         self,
         logger_factory_outbound: LoggerFactoryOutboundPort,
-        product_unit_of_work: ProductUnitOfWorkPort,
+        product_lifecycle_unit_of_work: ProductLifecycleUnitOfWorkPort,
     ) -> None:
         """Initializes the ToggleProductStatusUseCase.
 
         Args:
             logger_factory_outbound (LoggerFactoryOutboundPort): the logger factory outbound port.
-            product_unit_of_work (ProductUnitOfWorkPort): the product unit of work port.
+            product_lifecycle_unit_of_work (ProductLifecycleUnitOfWorkPort): the product lifecycle
+                unit of work port.
         """
         self._logger = logger_factory_outbound.get_logger(__name__)
-        self.product_unit_of_work = product_unit_of_work
+        self.product_lifecycle_unit_of_work = product_lifecycle_unit_of_work
 
     async def execute(
         self,
@@ -58,6 +61,7 @@ class ToggleProductStatusUseCase:
         Raises:
             InsufficientPermissionsException: If the user does not have sufficient permissions.
             ProductNotFoundException: If the product with the given ID does not exist.
+            ProductHasActiveOrdersException: If the product has active orders.
         """
         self._logger.info(
             "Executing toggle product status use case.",
@@ -76,7 +80,7 @@ class ToggleProductStatusUseCase:
                 "Only suppliers can toggle product statuses."
             )
 
-        async with self.product_unit_of_work as uow:
+        async with self.product_lifecycle_unit_of_work as uow:
             # Find the product by ID and check if it exists
             exists_product = await uow.products.find_by_id(command.product_id)
             if exists_product is None:
@@ -98,10 +102,30 @@ class ToggleProductStatusUseCase:
                     "Don't have permission to toggle product status."
                 )
 
-            # TODO: Validate that a product cannot modify its --is_active-- if it has orders
-            # with the status CONFIRMED, IN PROCESS, or SHIPPED.
-            # This validation will be implemented during the development of the
-            # order management module.
+            # Constants for the blocking order statuses
+            BLOCKING_ORDER_STATUSES = {
+                OrderStatusEnum.CONFIRMED,
+                OrderStatusEnum.PROCESSING,
+                OrderStatusEnum.SHIPPED,
+            }
+
+            # Validate that a product cannot modify its is_active if it has orders
+            # with the status CONFIRMED, PROCESSING, or SHIPPED associated with it.
+            has_blocking_orders = (
+                await uow.orders_query.exists_by_product_id_and_statuses(
+                    command.product_id,
+                    BLOCKING_ORDER_STATUSES,
+                )
+            )
+            if has_blocking_orders:
+                self._logger.warning(
+                    "Cannot toggle product status with active orders.",
+                    product_id=command.product_id,
+                    supplier_id=authenticated_user.user_id,
+                )
+                raise ProductHasActiveOrdersException(
+                    "Cannot toggle product status with active orders."
+                )
 
             # Update the product and persist the changes
             entity = exists_product.update_is_active(command.is_active)
