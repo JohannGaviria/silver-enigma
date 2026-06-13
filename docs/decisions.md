@@ -788,3 +788,280 @@ SHIPPED
 Existing code, tests, documentation, DTOs, and persistence mappings may require refactoring.
 
 This cost is considered acceptable because the improvement affects a core business concept used throughout the system and prevents long-term confusion in future development.
+
+---
+
+# ADR-012: Order lifecycle tracking through status history
+
+## Context
+
+The initial order model stored lifecycle timestamps directly inside the `orders` table:
+
+```sql
+orders
+(
+    id UUID,
+    status order_status,
+    confirmed_at TIMESTAMP,
+    shipped_at TIMESTAMP,
+    delivered_at TIMESTAMP,
+    cancelled_at TIMESTAMP
+)
+```
+
+This approach creates duplicated state information.
+
+The current status:
+
+```text
+orders.status
+```
+
+and lifecycle timestamps:
+
+```text
+confirmed_at
+shipped_at
+delivered_at
+cancelled_at
+```
+
+represent the same domain concept from different perspectives.
+
+As the order lifecycle evolves, this model becomes difficult to maintain because every new status or transition requires adding another column.
+
+Examples:
+
+Future states:
+
+```text
+RETURN_REQUESTED
+RETURNED
+PAYMENT_FAILED
+ON_HOLD
+```
+
+would require additional fields:
+
+```text
+returned_at
+payment_failed_at
+on_hold_at
+```
+
+The order entity would progressively accumulate lifecycle-specific columns.
+
+Additionally, timestamps alone do not provide enough audit information:
+
+- Who changed the order state?
+- What was the previous state?
+- Was the change manual or automatic?
+- How many transitions occurred?
+
+For B2B operations, order lifecycle traceability is a business requirement.
+
+---
+
+## Considered alternatives
+
+### Store lifecycle timestamps in orders
+
+Keep columns such as:
+
+```sql
+confirmed_at
+shipped_at
+delivered_at
+cancelled_at
+```
+
+#### Pros
+
+- Simple queries.
+- Fast access to common timestamps.
+- Minimal implementation complexity.
+
+#### Cons
+
+- Schema changes required for every new status.
+- Duplicates information already represented by status transitions.
+- Cannot track who performed the change.
+- Cannot represent repeated transitions.
+- Weak audit capability.
+
+---
+
+### Create a generic order dates table
+
+Store status timestamps separately:
+
+```sql
+order_dates
+(
+    order_id,
+    status,
+    timestamp
+)
+```
+
+#### Pros
+
+- Removes lifecycle columns from orders.
+- Supports additional statuses.
+
+#### Cons
+
+- Represents only timestamps, not transitions.
+- Does not capture previous status.
+- Does not capture the actor responsible.
+- Duplicates the purpose of a status history table.
+
+---
+
+### Persist order status history
+
+Store every state transition as an immutable record.
+
+Example:
+
+```sql
+order_status_history
+(
+    id UUID,
+    order_id UUID,
+    previous_status order_status,
+    new_status order_status,
+    changed_by UUID,
+    changed_by_role user_role,
+    changed_at TIMESTAMP
+)
+```
+
+#### Pros
+
+- Complete lifecycle audit trail.
+- Supports unlimited future statuses.
+- Captures transition context.
+- Allows reconstruction of order history.
+- Matches B2B traceability requirements.
+
+#### Cons
+
+- Requires an additional query to retrieve historical timestamps.
+- Slightly more storage usage.
+
+## Decision: Use order_status_history as the source of lifecycle history
+
+The `orders` table will store only the current state:
+
+```sql
+orders
+(
+    id UUID,
+    buyer_id UUID,
+    supplier_id UUID,
+    warehouse_id UUID,
+    status order_status,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+```
+
+Lifecycle transitions will be persisted in:
+
+```sql
+order_status_history
+(
+    id UUID,
+    order_id UUID,
+
+    previous_status order_status,
+    new_status order_status,
+
+    changed_by UUID,
+    changed_by_role user_role,
+
+    changed_at TIMESTAMP,
+    created_at TIMESTAMP
+)
+```
+
+Every status transition must create a history record within the same database transaction that updates the order status.
+
+The invariant is:
+
+```text
+Order status updated
+        +
+Status transition recorded
+```
+
+or:
+
+```text
+Neither operation is committed
+```
+
+Partial persistence is not allowed.
+
+## Domain rules
+
+The current state is optimized for operational queries:
+
+```text
+orders.status = CONFIRMED
+```
+
+The history is optimized for auditing:
+
+```text
+How did this order reach CONFIRMED?
+```
+
+Examples:
+
+Retrieve confirmation date:
+
+```text
+First transition where:
+
+new_status = CONFIRMED
+```
+
+Retrieve shipment date:
+
+```text
+First transition where:
+
+new_status = SHIPPED
+```
+
+Retrieve cancellation history:
+
+```text
+All transitions where:
+
+new_status = CANCELLED
+```
+
+## Design principles
+
+- The current state belongs to the aggregate root.
+- Historical transitions belong to an immutable audit trail.
+- Do not duplicate derived lifecycle information.
+- Schema design should support future domain evolution.
+- Business-critical state changes must be traceable.
+
+## Benefits
+
+- Removes duplicated lifecycle data.
+- Supports unlimited order states without schema changes.
+- Provides complete order traceability.
+- Enables operational debugging and compliance auditing.
+- Keeps the `orders` table focused on current aggregate state.
+
+## Trade-off
+
+Reading lifecycle timestamps requires querying `order_status_history` instead of reading a column directly from `orders`.
+
+This additional query complexity is accepted because order traceability and future extensibility are more important than optimizing access to individual timestamps.

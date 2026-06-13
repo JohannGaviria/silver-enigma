@@ -5,10 +5,11 @@ from src.modules.warehouses.application.dtos.toggle_warehouse_status_dto import 
     ToggleWarehouseStatusResponseDto,
 )
 from src.modules.warehouses.domain.exceptions.warehouse_exception import (
+    WarehouseHasActiveOrdersException,
     WarehouseNotFoundException,
 )
-from src.modules.warehouses.domain.ports.unit_of_work.warehouse_unit_of_work_port import (
-    WarehouseUnitOfWorkPort,
+from src.modules.warehouses.domain.ports.unit_of_work.warehouse_lifecycle_unit_of_work_port import (
+    WarehouseLifecycleUnitOfWorkPort,
 )
 from src.modules.warehouses.domain.value_objects.warehouse_by_supplier_cache_key_vo import (
     WarehouseBySupplierCacheKeyVO,
@@ -19,6 +20,7 @@ from src.modules.warehouses.domain.value_objects.warehouse_by_supplier_cache_val
 from src.shared.application.dtos.authenticated_user_dto import (
     AuthenticatedUserCommandDto,
 )
+from src.shared.domain.enums.order_status_enum import OrderStatusEnum
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.exceptions.session_exception import (
     InsufficientPermissionsException,
@@ -38,18 +40,19 @@ class ToggleWarehouseStatusUseCase:
     def __init__(
         self,
         logger_factory_outbound: LoggerFactoryOutboundPort,
-        warehouse_unit_of_work: WarehouseUnitOfWorkPort,
+        warehouse_lifecycle_unit_of_work: WarehouseLifecycleUnitOfWorkPort,
         cache_outbound: CacheOutboundPort[WarehouseBySupplierCacheValueVO],
     ) -> None:
         """Initialize the ToggleWarehouseStatusUseCase.
 
         Args:
             logger_factory_outbound (LoggerFactoryOutboundPort): The logger factory outbound port.
-            warehouse_unit_of_work (WarehouseUnitOfWorkPort): The warehouse unit of work port.
+            warehouse_lifecycle_unit_of_work (WarehouseLifecycleUnitOfWorkPort): The warehouse
+                lifecycle unit of work port.
             cache_outbound (CacheOutboundPort[WarehouseBySupplierCacheValueVO]): The cache outbound port.
         """
         self._logger = logger_factory_outbound.get_logger(__name__)
-        self.warehouse_unit_of_work = warehouse_unit_of_work
+        self.warehouse_lifecycle_unit_of_work = warehouse_lifecycle_unit_of_work
         self.cache_outbound = cache_outbound
 
     async def execute(
@@ -88,7 +91,7 @@ class ToggleWarehouseStatusUseCase:
                 "Only suppliers can toggle warehouse statuses."
             )
 
-        async with self.warehouse_unit_of_work as uow:
+        async with self.warehouse_lifecycle_unit_of_work as uow:
             # Find the warehouse by ID and check if it exists
             exists_warehouse = await uow.warehouses.find_by_id(command.warehouse_id)
             if exists_warehouse is None:
@@ -110,10 +113,30 @@ class ToggleWarehouseStatusUseCase:
                     "Don't have permission to toggle warehouse status."
                 )
 
-            # TODO: Validate that a warehouse cannot be deactivated if it has orders
-            # in the CONFIRMED, PROCESSING, or SHIPPED status associated with it.
-            # This validation will be implemented during the development of the
-            # order management module.
+            # Constants for the blocking order statuses
+            BLOCKING_ORDER_STATUSES = {
+                OrderStatusEnum.CONFIRMED,
+                OrderStatusEnum.PROCESSING,
+                OrderStatusEnum.SHIPPED,
+            }
+
+            # Validate that a warehouse cannot be deactivated if it has orders
+            # with the status CONFIRMED, PROCESSING, or SHIPPED associated with it.
+            has_blocking_orders = (
+                await uow.orders_query.exists_by_warehouse_id_and_statuses(
+                    command.warehouse_id,
+                    BLOCKING_ORDER_STATUSES,
+                )
+            )
+            if has_blocking_orders:
+                self._logger.warning(
+                    "Cannot toggle warehouse status with active orders.",
+                    warehouse_id=command.warehouse_id,
+                    supplier_id=authenticated_user.user_id,
+                )
+                raise WarehouseHasActiveOrdersException(
+                    "Cannot toggle warehouse status with active orders."
+                )
 
             # Invalidate the cache for the warehouse by supplier
             key = WarehouseBySupplierCacheKeyVO.from_supplier_id(

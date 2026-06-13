@@ -66,6 +66,10 @@ router = APIRouter()
             "model": ErrorsResponseSchema,
             "description": "The authenticated user does not have permission to toggle this warehouse.",
         },
+        status.HTTP_409_CONFLICT: {
+            "model": ErrorsResponseSchema,
+            "description": "The warehouse has active orders.",
+        },
         status.HTTP_500_INTERNAL_SERVER_ERROR: {
             "model": ErrorsResponseSchema,
             "description": "Internal server error.",

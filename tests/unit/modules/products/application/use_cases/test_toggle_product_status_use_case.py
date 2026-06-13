@@ -12,6 +12,7 @@ from src.modules.products.application.use_cases.toggle_product_status_use_case i
     ToggleProductStatusUseCase,
 )
 from src.modules.products.domain.exceptions.product_exception import (
+    ProductHasActiveOrdersException,
     ProductNotFoundException,
 )
 from src.shared.application.dtos.authenticated_user_dto import (
@@ -26,12 +27,12 @@ from tests.unit.conftest import _make_product_entity
 
 def _make_use_case(
     logger_factory_mock: Mock,
-    product_uow_mock: MagicMock,
+    product_lifecycle_uow_mock: MagicMock,
 ) -> ToggleProductStatusUseCase:
     """Instantiate ToggleProductStatusUseCase with the provided mocks."""
     return ToggleProductStatusUseCase(
         logger_factory_outbound=logger_factory_mock,
-        product_unit_of_work=product_uow_mock,
+        product_lifecycle_unit_of_work=product_lifecycle_uow_mock,
     )
 
 
@@ -42,7 +43,7 @@ class TestToggleProductStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
         is_active: bool,
     ) -> None:
         """A valid command must update product status, persist changes and return the response DTO."""
@@ -53,7 +54,7 @@ class TestToggleProductStatusUseCase:
             supplier_id=supplier_id,
         )
 
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
 
         command = ToggleProductStatusCommandDto(
             product_id=existing.id,
@@ -67,14 +68,16 @@ class TestToggleProductStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         result = await use_case.execute(command, authenticated_user)
 
-        product_uow_mock.products.find_by_id.assert_awaited_once_with(existing.id)
-        product_uow_mock.products.update.assert_awaited_once()
-        product_uow_mock.commit.assert_awaited_once()
+        product_lifecycle_uow_mock.products.find_by_id.assert_awaited_once_with(
+            existing.id
+        )
+        product_lifecycle_uow_mock.products.update.assert_awaited_once()
+        product_lifecycle_uow_mock.commit.assert_awaited_once()
 
         assert isinstance(result, ToggleProductStatusResponseDto)
         assert result.id == existing.id
@@ -86,7 +89,7 @@ class TestToggleProductStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """Only suppliers may toggle product statuses."""
         command = ToggleProductStatusCommandDto(
@@ -101,7 +104,7 @@ class TestToggleProductStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
@@ -112,7 +115,7 @@ class TestToggleProductStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """Admins must not be allowed to toggle product statuses."""
         command = ToggleProductStatusCommandDto(
@@ -127,7 +130,7 @@ class TestToggleProductStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
@@ -138,7 +141,7 @@ class TestToggleProductStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """Repository operations must not be executed when authorization fails."""
         command = ToggleProductStatusCommandDto(
@@ -153,25 +156,25 @@ class TestToggleProductStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
             await use_case.execute(command, authenticated_user)
 
-        product_uow_mock.products.find_by_id.assert_not_awaited()
-        product_uow_mock.products.update.assert_not_awaited()
-        product_uow_mock.commit.assert_not_awaited()
+        product_lifecycle_uow_mock.products.find_by_id.assert_not_awaited()
+        product_lifecycle_uow_mock.products.update.assert_not_awaited()
+        product_lifecycle_uow_mock.commit.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_should_raise_exception_when_product_does_not_exist(
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """A missing product must raise ProductNotFoundException."""
-        product_uow_mock.products.find_by_id.return_value = None
+        product_lifecycle_uow_mock.products.find_by_id.return_value = None
 
         command = ToggleProductStatusCommandDto(
             product_id=UUID(faker.uuid4()),
@@ -185,7 +188,7 @@ class TestToggleProductStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(ProductNotFoundException):
@@ -196,10 +199,10 @@ class TestToggleProductStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """No update nor commit should occur when product does not exist."""
-        product_uow_mock.products.find_by_id.return_value = None
+        product_lifecycle_uow_mock.products.find_by_id.return_value = None
 
         command = ToggleProductStatusCommandDto(
             product_id=UUID(faker.uuid4()),
@@ -213,21 +216,21 @@ class TestToggleProductStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(ProductNotFoundException):
             await use_case.execute(command, authenticated_user)
 
-        product_uow_mock.products.update.assert_not_awaited()
-        product_uow_mock.commit.assert_not_awaited()
+        product_lifecycle_uow_mock.products.update.assert_not_awaited()
+        product_lifecycle_uow_mock.commit.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_should_raise_exception_when_product_belongs_to_another_supplier(
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """A product owned by another supplier must be rejected."""
         owner_id = UUID(faker.uuid4())
@@ -238,7 +241,7 @@ class TestToggleProductStatusUseCase:
             supplier_id=owner_id,
         )
 
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
 
         command = ToggleProductStatusCommandDto(
             product_id=existing.id,
@@ -252,7 +255,7 @@ class TestToggleProductStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
@@ -263,7 +266,7 @@ class TestToggleProductStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """No update nor commit should occur on ownership mismatch."""
         owner_id = UUID(faker.uuid4())
@@ -274,7 +277,7 @@ class TestToggleProductStatusUseCase:
             supplier_id=owner_id,
         )
 
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
 
         command = ToggleProductStatusCommandDto(
             product_id=existing.id,
@@ -288,21 +291,21 @@ class TestToggleProductStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
             await use_case.execute(command, authenticated_user)
 
-        product_uow_mock.products.update.assert_not_awaited()
-        product_uow_mock.commit.assert_not_awaited()
+        product_lifecycle_uow_mock.products.update.assert_not_awaited()
+        product_lifecycle_uow_mock.commit.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_should_preserve_immutable_fields_in_response(
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """Immutable fields must remain unchanged after a successful status toggle."""
         supplier_id = UUID(faker.uuid4())
@@ -312,7 +315,7 @@ class TestToggleProductStatusUseCase:
             supplier_id=supplier_id,
         )
 
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
 
         command = ToggleProductStatusCommandDto(
             product_id=existing.id,
@@ -326,7 +329,7 @@ class TestToggleProductStatusUseCase:
 
         result = await _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         ).execute(command, authenticated_user)
 
         assert result.id == existing.id
@@ -342,7 +345,7 @@ class TestToggleProductStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """The use case must always return a ToggleProductStatusResponseDto."""
         supplier_id = UUID(faker.uuid4())
@@ -352,7 +355,7 @@ class TestToggleProductStatusUseCase:
             supplier_id=supplier_id,
         )
 
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
 
         command = ToggleProductStatusCommandDto(
             product_id=existing.id,
@@ -366,7 +369,7 @@ class TestToggleProductStatusUseCase:
 
         result = await _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         ).execute(command, authenticated_user)
 
         assert isinstance(result, ToggleProductStatusResponseDto)
@@ -376,7 +379,7 @@ class TestToggleProductStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """Commit must be executed exactly once during a successful toggle."""
         supplier_id = UUID(faker.uuid4())
@@ -386,7 +389,7 @@ class TestToggleProductStatusUseCase:
             supplier_id=supplier_id,
         )
 
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
 
         command = ToggleProductStatusCommandDto(
             product_id=existing.id,
@@ -400,7 +403,82 @@ class TestToggleProductStatusUseCase:
 
         await _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         ).execute(command, authenticated_user)
 
-        product_uow_mock.commit.assert_awaited_once()
+        product_lifecycle_uow_mock.commit.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_should_raise_exception_when_product_has_active_orders(
+        self,
+        faker: Faker,
+        logger_factory_mock: Mock,
+        product_lifecycle_uow_mock: MagicMock,
+    ) -> None:
+        """Products with active orders cannot have their status toggled."""
+        supplier_id = UUID(faker.uuid4())
+
+        existing = _make_product_entity(
+            faker=faker,
+            supplier_id=supplier_id,
+        )
+
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = True
+
+        command = ToggleProductStatusCommandDto(
+            product_id=existing.id,
+            is_active=False,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=supplier_id,
+            role=UserRoleEnum.SUPPLIER,
+        )
+
+        with pytest.raises(ProductHasActiveOrdersException):
+            await _make_use_case(
+                logger_factory_mock,
+                product_lifecycle_uow_mock,
+            ).execute(command, authenticated_user)
+
+        product_lifecycle_uow_mock.products.update.assert_not_awaited()
+        product_lifecycle_uow_mock.commit.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_should_toggle_product_status_when_no_blocking_orders_exist(
+        self,
+        faker: Faker,
+        logger_factory_mock: Mock,
+        product_lifecycle_uow_mock: MagicMock,
+    ) -> None:
+        """Toggle must succeed when no blocking orders exist."""
+        supplier_id = UUID(faker.uuid4())
+
+        existing = _make_product_entity(
+            faker=faker,
+            supplier_id=supplier_id,
+        )
+
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
+
+        command = ToggleProductStatusCommandDto(
+            product_id=existing.id,
+            is_active=False,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=supplier_id,
+            role=UserRoleEnum.SUPPLIER,
+        )
+
+        result = await _make_use_case(
+            logger_factory_mock,
+            product_lifecycle_uow_mock,
+        ).execute(command, authenticated_user)
+
+        assert isinstance(result, ToggleProductStatusResponseDto)
+
+        product_lifecycle_uow_mock.products.update.assert_awaited_once()
+        product_lifecycle_uow_mock.commit.assert_awaited_once()

@@ -18,6 +18,7 @@ from src.modules.products.domain.enums.unit_of_measure_enum import (
 from src.modules.products.domain.exceptions.product_exception import (
     InvalidProductNameException,
     InvalidUnitPriceException,
+    ProductHasActiveOrdersException,
     ProductNotFoundException,
 )
 from src.shared.application.dtos.authenticated_user_dto import (
@@ -32,12 +33,12 @@ from tests.unit.conftest import _make_product_entity
 
 def _make_use_case(
     logger_factory_mock: Mock,
-    product_uow_mock: MagicMock,
+    product_lifecycle_uow_mock: MagicMock,
 ) -> UpdateProductUseCase:
     """Instantiate UpdateProductUseCase with the provided mocks."""
     return UpdateProductUseCase(
         logger_factory_outbound=logger_factory_mock,
-        product_unit_of_work=product_uow_mock,
+        product_lifecycle_unit_of_work=product_lifecycle_uow_mock,
     )
 
 
@@ -47,7 +48,7 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """A valid command for an existing owned product must update, persist, and return the DTO."""
         supplier_id = UUID(faker.uuid4())
@@ -56,7 +57,8 @@ class TestUpdateProductUseCase:
             faker=faker,
             supplier_id=supplier_id,
         )
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -73,14 +75,16 @@ class TestUpdateProductUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         result = await use_case.execute(command, authenticated_user)
 
-        product_uow_mock.products.find_by_id.assert_awaited_once_with(existing.id)
-        product_uow_mock.products.update.assert_awaited_once()
-        product_uow_mock.commit.assert_awaited_once()
+        product_lifecycle_uow_mock.products.find_by_id.assert_awaited_once_with(
+            existing.id
+        )
+        product_lifecycle_uow_mock.products.update.assert_awaited_once()
+        product_lifecycle_uow_mock.commit.assert_awaited_once()
 
         assert isinstance(result, UpdatedProductResponseDto)
         assert result.id == existing.id
@@ -95,7 +99,7 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """A non-SUPPLIER role must be rejected before any repository interaction."""
         command = UpdateProductCommandDto(
@@ -109,7 +113,7 @@ class TestUpdateProductUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
@@ -120,7 +124,7 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """Repository operations must not be executed when authorization fails."""
         command = UpdateProductCommandDto(
@@ -134,25 +138,25 @@ class TestUpdateProductUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
             await use_case.execute(command, authenticated_user)
 
-        product_uow_mock.products.find_by_id.assert_not_awaited()
-        product_uow_mock.products.update.assert_not_awaited()
-        product_uow_mock.commit.assert_not_awaited()
+        product_lifecycle_uow_mock.products.find_by_id.assert_not_awaited()
+        product_lifecycle_uow_mock.products.update.assert_not_awaited()
+        product_lifecycle_uow_mock.commit.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_should_raise_exception_when_product_does_not_exist(
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """When find_by_id returns None a ProductNotFoundException must be raised."""
-        product_uow_mock.products.find_by_id.return_value = None
+        product_lifecycle_uow_mock.products.find_by_id.return_value = None
 
         command = UpdateProductCommandDto(
             product_id=UUID(faker.uuid4()),
@@ -166,7 +170,7 @@ class TestUpdateProductUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(ProductNotFoundException):
@@ -177,10 +181,10 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """Neither update nor commit should occur when the product is not found."""
-        product_uow_mock.products.find_by_id.return_value = None
+        product_lifecycle_uow_mock.products.find_by_id.return_value = None
 
         command = UpdateProductCommandDto(
             product_id=UUID(faker.uuid4()),
@@ -193,21 +197,21 @@ class TestUpdateProductUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(ProductNotFoundException):
             await use_case.execute(command, authenticated_user)
 
-        product_uow_mock.products.update.assert_not_awaited()
-        product_uow_mock.commit.assert_not_awaited()
+        product_lifecycle_uow_mock.products.update.assert_not_awaited()
+        product_lifecycle_uow_mock.commit.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_should_raise_exception_when_product_belongs_to_another_supplier(
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """A product owned by a different supplier must raise InsufficientPermissionsException."""
         owner_id = UUID(faker.uuid4())
@@ -218,7 +222,8 @@ class TestUpdateProductUseCase:
             supplier_id=owner_id,
         )
 
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -231,7 +236,7 @@ class TestUpdateProductUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
@@ -242,7 +247,7 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """Neither update nor commit should occur on an ownership mismatch."""
         owner_id = UUID(faker.uuid4())
@@ -253,7 +258,8 @@ class TestUpdateProductUseCase:
             supplier_id=owner_id,
         )
 
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -266,14 +272,14 @@ class TestUpdateProductUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
             await use_case.execute(command, authenticated_user)
 
-        product_uow_mock.products.update.assert_not_awaited()
-        product_uow_mock.commit.assert_not_awaited()
+        product_lifecycle_uow_mock.products.update.assert_not_awaited()
+        product_lifecycle_uow_mock.commit.assert_not_awaited()
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -284,7 +290,7 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
         invalid_name: str,
     ) -> None:
         """Every invalid name variant must raise InvalidProductNameException."""
@@ -300,13 +306,13 @@ class TestUpdateProductUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InvalidProductNameException):
             await use_case.execute(command, authenticated_user)
 
-        product_uow_mock.products.find_by_id.assert_not_awaited()
+        product_lifecycle_uow_mock.products.find_by_id.assert_not_awaited()
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -321,7 +327,7 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
         invalid_price: Decimal,
     ) -> None:
         """Every negative unit price variant must raise InvalidUnitPriceException."""
@@ -337,20 +343,20 @@ class TestUpdateProductUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         with pytest.raises(InvalidUnitPriceException):
             await use_case.execute(command, authenticated_user)
 
-        product_uow_mock.products.find_by_id.assert_not_awaited()
+        product_lifecycle_uow_mock.products.find_by_id.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_should_keep_existing_values_when_optional_fields_are_not_provided(
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """When no optional fields are provided the entity must retain its original values."""
         supplier_id = UUID(faker.uuid4())
@@ -360,7 +366,8 @@ class TestUpdateProductUseCase:
             supplier_id=supplier_id,
         )
 
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -373,7 +380,7 @@ class TestUpdateProductUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         )
 
         result = await use_case.execute(command, authenticated_user)
@@ -388,13 +395,14 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """When only name is given the remaining product fields must remain unchanged."""
         supplier_id = UUID(faker.uuid4())
 
         existing = _make_product_entity(faker, supplier_id)
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -408,7 +416,7 @@ class TestUpdateProductUseCase:
 
         result = await _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         ).execute(command, authenticated_user)
 
         assert result.name == "Updated Name"
@@ -419,13 +427,14 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """When only description is given the remaining product fields must remain unchanged."""
         supplier_id = UUID(faker.uuid4())
 
         existing = _make_product_entity(faker, supplier_id)
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -439,7 +448,7 @@ class TestUpdateProductUseCase:
 
         result = await _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         ).execute(command, authenticated_user)
 
         assert result.description == "Updated Description"
@@ -450,13 +459,14 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """When only unit_of_measure is given the remaining product fields must remain unchanged."""
         supplier_id = UUID(faker.uuid4())
 
         existing = _make_product_entity(faker, supplier_id)
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -470,7 +480,7 @@ class TestUpdateProductUseCase:
 
         result = await _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         ).execute(command, authenticated_user)
 
         assert result.unit_of_measure == UnitOfMeasureEnum.KG
@@ -480,13 +490,14 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """When only unit_price is given the remaining product fields must remain unchanged."""
         supplier_id = UUID(faker.uuid4())
 
         existing = _make_product_entity(faker, supplier_id)
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -500,7 +511,7 @@ class TestUpdateProductUseCase:
 
         result = await _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         ).execute(command, authenticated_user)
 
         assert result.unit_price == Decimal("999.99")
@@ -510,13 +521,14 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """Immutable fields must remain unchanged after a successful update."""
         supplier_id = UUID(faker.uuid4())
 
         existing = _make_product_entity(faker, supplier_id)
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -530,7 +542,7 @@ class TestUpdateProductUseCase:
 
         result = await _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         ).execute(command, authenticated_user)
 
         assert result.id == existing.id
@@ -543,13 +555,14 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """The use case must always return an UpdatedProductResponseDto instance."""
         supplier_id = UUID(faker.uuid4())
 
         existing = _make_product_entity(faker, supplier_id)
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -563,7 +576,7 @@ class TestUpdateProductUseCase:
 
         result = await _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         ).execute(command, authenticated_user)
 
         assert isinstance(result, UpdatedProductResponseDto)
@@ -573,13 +586,14 @@ class TestUpdateProductUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        product_uow_mock: MagicMock,
+        product_lifecycle_uow_mock: MagicMock,
     ) -> None:
         """Commit must be executed exactly once during a successful update."""
         supplier_id = UUID(faker.uuid4())
 
         existing = _make_product_entity(faker, supplier_id)
-        product_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
 
         command = UpdateProductCommandDto(
             product_id=existing.id,
@@ -593,7 +607,83 @@ class TestUpdateProductUseCase:
 
         await _make_use_case(
             logger_factory_mock,
-            product_uow_mock,
+            product_lifecycle_uow_mock,
         ).execute(command, authenticated_user)
 
-        product_uow_mock.commit.assert_awaited_once()
+        product_lifecycle_uow_mock.commit.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_should_raise_exception_when_product_has_active_orders(
+        self,
+        faker: Faker,
+        logger_factory_mock: Mock,
+        product_lifecycle_uow_mock: MagicMock,
+    ) -> None:
+        """Products with active orders cannot be updated."""
+        supplier_id = UUID(faker.uuid4())
+
+        existing = _make_product_entity(
+            faker=faker,
+            supplier_id=supplier_id,
+        )
+
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = True
+
+        command = UpdateProductCommandDto(
+            product_id=existing.id,
+            name="Updated Product",
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=supplier_id,
+            role=UserRoleEnum.SUPPLIER,
+        )
+
+        with pytest.raises(ProductHasActiveOrdersException):
+            await _make_use_case(
+                logger_factory_mock,
+                product_lifecycle_uow_mock,
+            ).execute(command, authenticated_user)
+
+        product_lifecycle_uow_mock.products.update.assert_not_awaited()
+        product_lifecycle_uow_mock.commit.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_should_update_product_when_no_blocking_orders_exist(
+        self,
+        faker: Faker,
+        logger_factory_mock: Mock,
+        product_lifecycle_uow_mock: MagicMock,
+    ) -> None:
+        """Updates must succeed when no blocking orders exist."""
+        supplier_id = UUID(faker.uuid4())
+
+        existing = _make_product_entity(
+            faker=faker,
+            supplier_id=supplier_id,
+        )
+
+        product_lifecycle_uow_mock.products.find_by_id.return_value = existing
+        product_lifecycle_uow_mock.orders_query.exists_by_product_id_and_statuses.return_value = False
+
+        command = UpdateProductCommandDto(
+            product_id=existing.id,
+            name="Updated Product",
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=supplier_id,
+            role=UserRoleEnum.SUPPLIER,
+        )
+
+        result = await _make_use_case(
+            logger_factory_mock,
+            product_lifecycle_uow_mock,
+        ).execute(command, authenticated_user)
+
+        assert isinstance(result, UpdatedProductResponseDto)
+
+        product_lifecycle_uow_mock.products.update.assert_awaited_once()
+        product_lifecycle_uow_mock.commit.assert_awaited_once()

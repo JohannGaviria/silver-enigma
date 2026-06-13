@@ -1,6 +1,7 @@
 from collections.abc import Awaitable, Callable
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 from faker import Faker
 from fastapi import status
 from httpx import AsyncClient
@@ -21,6 +22,12 @@ from src.modules.auth.infrastructure.outbound.argon2_password_hash_outbound_adap
 )
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
+)
+from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_product_order_query_repository_adapter import (
+    SQLAlchemyProductOrderQueryRepositoryAdapter,
+)
+from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_warehouse_order_query_repository_adapter import (
+    SQLAlchemyWarehouseOrderQueryRepositoryAdapter,
 )
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapter import (
@@ -209,4 +216,47 @@ def valid_admin_command(faker: Faker) -> CreateFirstAdminCommandDto:
         name=faker.name(),
         email=faker.email(),
         plain_password=faker.password(),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Modules: ORDERS
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def created_product_with_active_orders(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    """Create a product with active orders."""
+
+    async def fake_exists_by_product_id_and_statuses(
+        self: object,
+        product_id: object,
+        statuses: object,
+    ) -> bool:
+        return True
+
+    monkeypatch.setattr(
+        SQLAlchemyProductOrderQueryRepositoryAdapter,
+        "exists_by_product_id_and_statuses",
+        fake_exists_by_product_id_and_statuses,
+    )
+
+
+@pytest.fixture()
+def created_order_confirmed(monkeypatch: MonkeyPatch) -> None:
+    """Simulate a warehouse with a confirmed active order."""
+
+    async def fake_exists_by_warehouse_id_and_statuses(
+        self: object,
+        warehouse_id: object,
+        statuses: object,
+    ) -> bool:
+        return True
+
+    monkeypatch.setattr(
+        SQLAlchemyWarehouseOrderQueryRepositoryAdapter,
+        "exists_by_warehouse_id_and_statuses",
+        fake_exists_by_warehouse_id_and_statuses,
     )

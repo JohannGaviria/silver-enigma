@@ -14,6 +14,7 @@ from src.modules.warehouses.application.use_cases.toggle_warehouse_status_use_ca
     ToggleWarehouseStatusUseCase,
 )
 from src.modules.warehouses.domain.exceptions.warehouse_exception import (
+    WarehouseHasActiveOrdersException,
     WarehouseNotFoundException,
     WarehouseRepositoryException,
 )
@@ -29,13 +30,13 @@ from tests.unit.conftest import _make_warehouse_entity
 
 def _make_use_case(
     logger_factory_mock: Mock,
-    warehouse_uow_mock: MagicMock,
+    warehouse_lifecycle_uow_mock: MagicMock,
     cache_outbound_mock: AsyncMock,
 ) -> ToggleWarehouseStatusUseCase:
     """Instantiate ToggleWarehouseStatusUseCase with the provided mocks."""
     return ToggleWarehouseStatusUseCase(
         logger_factory_outbound=logger_factory_mock,
-        warehouse_unit_of_work=warehouse_uow_mock,
+        warehouse_lifecycle_unit_of_work=warehouse_lifecycle_uow_mock,
         cache_outbound=cache_outbound_mock,
     )
 
@@ -47,7 +48,7 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
         is_active: bool,
     ) -> None:
@@ -55,7 +56,8 @@ class TestToggleWarehouseStatusUseCase:
         supplier_id = UUID(faker.uuid4())
         existing = _make_warehouse_entity(faker, supplier_id)
 
-        warehouse_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -69,15 +71,17 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
         result = await use_case.execute(command, authenticated_user)
 
-        warehouse_uow_mock.warehouses.find_by_id.assert_awaited_once_with(existing.id)
-        warehouse_uow_mock.warehouses.update.assert_awaited_once()
-        warehouse_uow_mock.commit.assert_awaited_once()
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.assert_awaited_once_with(
+            existing.id
+        )
+        warehouse_lifecycle_uow_mock.warehouses.update.assert_awaited_once()
+        warehouse_lifecycle_uow_mock.commit.assert_awaited_once()
 
         assert isinstance(result, ToggleWarehouseStatusResponseDto)
         assert result.id == existing.id
@@ -89,7 +93,7 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """Only suppliers may toggle warehouse statuses."""
@@ -105,7 +109,7 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
@@ -117,7 +121,7 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """Admins must not be allowed to toggle warehouse statuses."""
@@ -133,7 +137,7 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
@@ -145,7 +149,7 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """Repository and cache must not be accessed when authorization fails."""
@@ -161,15 +165,15 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
             await use_case.execute(command, authenticated_user)
 
-        warehouse_uow_mock.warehouses.find_by_id.assert_not_awaited()
-        warehouse_uow_mock.warehouses.update.assert_not_awaited()
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.assert_not_awaited()
+        warehouse_lifecycle_uow_mock.warehouses.update.assert_not_awaited()
         cache_outbound_mock.delete.assert_not_awaited()
 
     @pytest.mark.asyncio
@@ -177,11 +181,11 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """A missing warehouse must raise WarehouseNotFoundException."""
-        warehouse_uow_mock.warehouses.find_by_id.return_value = None
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = None
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=UUID(faker.uuid4()),
@@ -195,7 +199,7 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
@@ -207,11 +211,11 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """No update nor cache invalidation should occur when warehouse does not exist."""
-        warehouse_uow_mock.warehouses.find_by_id.return_value = None
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = None
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=UUID(faker.uuid4()),
@@ -225,14 +229,14 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
         with pytest.raises(WarehouseNotFoundException):
             await use_case.execute(command, authenticated_user)
 
-        warehouse_uow_mock.warehouses.update.assert_not_awaited()
+        warehouse_lifecycle_uow_mock.warehouses.update.assert_not_awaited()
         cache_outbound_mock.delete.assert_not_awaited()
 
     @pytest.mark.asyncio
@@ -240,7 +244,7 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """A warehouse owned by another supplier must be rejected."""
@@ -249,7 +253,8 @@ class TestToggleWarehouseStatusUseCase:
 
         existing = _make_warehouse_entity(faker, owner_id)
 
-        warehouse_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -263,7 +268,7 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
@@ -275,7 +280,7 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """No update nor cache invalidation should occur on ownership mismatch."""
@@ -284,7 +289,8 @@ class TestToggleWarehouseStatusUseCase:
 
         existing = _make_warehouse_entity(faker, owner_id)
 
-        warehouse_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -298,14 +304,14 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
         with pytest.raises(InsufficientPermissionsException):
             await use_case.execute(command, authenticated_user)
 
-        warehouse_uow_mock.warehouses.update.assert_not_awaited()
+        warehouse_lifecycle_uow_mock.warehouses.update.assert_not_awaited()
         cache_outbound_mock.delete.assert_not_awaited()
 
     @pytest.mark.asyncio
@@ -313,16 +319,17 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """Repository exceptions raised during update must propagate."""
         supplier_id = UUID(faker.uuid4())
         existing = _make_warehouse_entity(faker, supplier_id)
 
-        warehouse_uow_mock.warehouses.find_by_id.return_value = existing
-        warehouse_uow_mock.warehouses.update.side_effect = WarehouseRepositoryException(
-            "DB error"
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
+        warehouse_lifecycle_uow_mock.warehouses.update.side_effect = (
+            WarehouseRepositoryException("DB error")
         )
 
         command = ToggleWarehouseStatusCommandDto(
@@ -337,7 +344,7 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
@@ -349,14 +356,15 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """Cache must be invalidated exactly once during a successful toggle."""
         supplier_id = UUID(faker.uuid4())
         existing = _make_warehouse_entity(faker, supplier_id)
 
-        warehouse_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -370,7 +378,7 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
@@ -383,14 +391,15 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """The cache key must contain the authenticated supplier ID."""
         supplier_id = UUID(faker.uuid4())
         existing = _make_warehouse_entity(faker, supplier_id)
 
-        warehouse_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -404,7 +413,7 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
@@ -419,14 +428,15 @@ class TestToggleWarehouseStatusUseCase:
         self,
         faker: Faker,
         logger_factory_mock: Mock,
-        warehouse_uow_mock: MagicMock,
+        warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
     ) -> None:
         """The use case must always return a ToggleWarehouseStatusResponseDto."""
         supplier_id = UUID(faker.uuid4())
         existing = _make_warehouse_entity(faker, supplier_id)
 
-        warehouse_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -440,10 +450,85 @@ class TestToggleWarehouseStatusUseCase:
 
         use_case = _make_use_case(
             logger_factory_mock,
-            warehouse_uow_mock,
+            warehouse_lifecycle_uow_mock,
             cache_outbound_mock,
         )
 
         result = await use_case.execute(command, authenticated_user)
 
         assert isinstance(result, ToggleWarehouseStatusResponseDto)
+
+    @pytest.mark.asyncio
+    async def test_should_raise_exception_when_warehouse_has_active_orders(
+        self,
+        faker: Faker,
+        logger_factory_mock: Mock,
+        warehouse_lifecycle_uow_mock: MagicMock,
+        cache_outbound_mock: AsyncMock,
+    ) -> None:
+        """Warehouse cannot be deactivated when it has active orders."""
+        supplier_id = UUID(faker.uuid4())
+        existing = _make_warehouse_entity(faker, supplier_id)
+
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = True
+
+        command = ToggleWarehouseStatusCommandDto(
+            warehouse_id=existing.id,
+            is_active=False,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=supplier_id,
+            role=UserRoleEnum.SUPPLIER,
+        )
+
+        use_case = _make_use_case(
+            logger_factory_mock,
+            warehouse_lifecycle_uow_mock,
+            cache_outbound_mock,
+        )
+
+        with pytest.raises(WarehouseHasActiveOrdersException):
+            await use_case.execute(command, authenticated_user)
+
+        warehouse_lifecycle_uow_mock.warehouses.update.assert_not_awaited()
+        warehouse_lifecycle_uow_mock.commit.assert_not_awaited()
+        cache_outbound_mock.delete.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_should_allow_toggle_when_no_blocking_orders_exist(
+        self,
+        faker: Faker,
+        logger_factory_mock: Mock,
+        warehouse_lifecycle_uow_mock: MagicMock,
+        cache_outbound_mock: AsyncMock,
+    ) -> None:
+        """Warehouse can be toggled when no blocking orders exist."""
+        supplier_id = UUID(faker.uuid4())
+        existing = _make_warehouse_entity(faker, supplier_id)
+
+        warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
+
+        command = ToggleWarehouseStatusCommandDto(
+            warehouse_id=existing.id,
+            is_active=False,
+        )
+
+        authenticated_user = AuthenticatedUserCommandDto(
+            user_id=supplier_id,
+            role=UserRoleEnum.SUPPLIER,
+        )
+
+        use_case = _make_use_case(
+            logger_factory_mock,
+            warehouse_lifecycle_uow_mock,
+            cache_outbound_mock,
+        )
+
+        await use_case.execute(command, authenticated_user)
+
+        warehouse_lifecycle_uow_mock.warehouses.update.assert_awaited_once()
+        warehouse_lifecycle_uow_mock.commit.assert_awaited_once()
+        cache_outbound_mock.delete.assert_awaited_once()
