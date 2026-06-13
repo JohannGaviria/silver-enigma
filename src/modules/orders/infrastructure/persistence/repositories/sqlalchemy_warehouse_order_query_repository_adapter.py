@@ -13,9 +13,6 @@ from src.modules.orders.infrastructure.persistence.models.order_model import Ord
 from src.modules.warehouses.domain.ports.repositories.warehouse_order_query_repository_port import (
     WarehouseOrderQueryRepositoryPort,
 )
-from src.modules.warehouses.domain.value_objects.warehouse_referenced_order_vo import (
-    WarehouseReferencedOrderVO,
-)
 from src.shared.domain.enums.order_status_enum import OrderStatusEnum
 from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
     LoggerFactoryOutboundPort,
@@ -28,7 +25,7 @@ class SQLAlchemyWarehouseOrderQueryRepositoryAdapter(WarehouseOrderQueryReposito
     This adapter participates in the Unit of Work pattern: it never calls
     ``session.commit()`` or ``session.rollback()`` directly. Transaction
     control is the exclusive responsibility of the
-    :class:`SQLAlchemyAuthUnitOfWorkAdapter` that owns the session.
+    :class:`SQLAlchemyWarehouseLifecycleUnitOfWorkAdapter` that owns the session.
     """
 
     def __init__(
@@ -45,31 +42,29 @@ class SQLAlchemyWarehouseOrderQueryRepositoryAdapter(WarehouseOrderQueryReposito
         self.session = session
         self._logger = logger_factory_outbound.get_logger(__name__)
 
-    async def find_by_warehouse_id(
-        self, warehouse_id: UUID
-    ) -> WarehouseReferencedOrderVO | None:
-        """Find a warehouse by ID.
+    async def exists_by_warehouse_id_and_statuses(
+        self, warehouse_id: UUID, statuses: set[OrderStatusEnum]
+    ) -> bool:
+        """Check if an order exists for a warehouse with any of the given statuses.
 
         Args:
-            warehouse_id (UUID): The ID of the warehouse to find.
+            warehouse_id (UUID): The ID of the warehouse.
+            statuses (set[OrderStatusEnum]): The set of statuses to check.
 
         Returns:
-            WarehouseEntity | None: The found warehouse entity or None if not found.
+            bool: True if a matching order exists, False otherwise.
         """
         try:
-            stmt = select(OrderModel).where(OrderModel.warehouse_id == warehouse_id)
-            result = await self.session.execute(stmt)
-            model = result.scalar_one_or_none()
-
-            return (
-                WarehouseReferencedOrderVO(
-                    order_id=model.id,
-                    warehouse_id=model.warehouse_id,
-                    order_status=OrderStatusEnum(model.status_order),
+            stmt = (
+                select(OrderModel.id)
+                .where(
+                    OrderModel.warehouse_id == warehouse_id,
+                    OrderModel.status_order.in_(statuses),
                 )
-                if model
-                else None
+                .limit(1)
             )
+            result = await self.session.execute(stmt)
+            return result.scalar_one_or_none() is not None
         except SQLAlchemyError as e:
             self._logger.error(
                 "Database error while retrieving order.", exc_info=str(e)

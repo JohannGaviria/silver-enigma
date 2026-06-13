@@ -21,7 +21,6 @@ from src.modules.warehouses.domain.exceptions.warehouse_exception import (
 from src.shared.application.dtos.authenticated_user_dto import (
     AuthenticatedUserCommandDto,
 )
-from src.shared.domain.enums.order_status_enum import OrderStatusEnum
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.domain.exceptions.session_exception import (
     InsufficientPermissionsException,
@@ -58,9 +57,7 @@ class TestToggleWarehouseStatusUseCase:
         existing = _make_warehouse_entity(faker, supplier_id)
 
         warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
-        warehouse_lifecycle_uow_mock.orders_query.find_by_warehouse_id.return_value = (
-            None
-        )
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -257,9 +254,7 @@ class TestToggleWarehouseStatusUseCase:
         existing = _make_warehouse_entity(faker, owner_id)
 
         warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
-        warehouse_lifecycle_uow_mock.orders_query.find_by_warehouse_id.return_value = (
-            None
-        )
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -295,9 +290,7 @@ class TestToggleWarehouseStatusUseCase:
         existing = _make_warehouse_entity(faker, owner_id)
 
         warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
-        warehouse_lifecycle_uow_mock.orders_query.find_by_warehouse_id.return_value = (
-            None
-        )
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -334,9 +327,7 @@ class TestToggleWarehouseStatusUseCase:
         existing = _make_warehouse_entity(faker, supplier_id)
 
         warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
-        warehouse_lifecycle_uow_mock.orders_query.find_by_warehouse_id.return_value = (
-            None
-        )
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
         warehouse_lifecycle_uow_mock.warehouses.update.side_effect = (
             WarehouseRepositoryException("DB error")
         )
@@ -373,9 +364,7 @@ class TestToggleWarehouseStatusUseCase:
         existing = _make_warehouse_entity(faker, supplier_id)
 
         warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
-        warehouse_lifecycle_uow_mock.orders_query.find_by_warehouse_id.return_value = (
-            None
-        )
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -410,9 +399,7 @@ class TestToggleWarehouseStatusUseCase:
         existing = _make_warehouse_entity(faker, supplier_id)
 
         warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
-        warehouse_lifecycle_uow_mock.orders_query.find_by_warehouse_id.return_value = (
-            None
-        )
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -449,9 +436,7 @@ class TestToggleWarehouseStatusUseCase:
         existing = _make_warehouse_entity(faker, supplier_id)
 
         warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
-        warehouse_lifecycle_uow_mock.orders_query.find_by_warehouse_id.return_value = (
-            None
-        )
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -474,33 +459,19 @@ class TestToggleWarehouseStatusUseCase:
         assert isinstance(result, ToggleWarehouseStatusResponseDto)
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "status",
-        [
-            OrderStatusEnum.CONFIRMED,
-            OrderStatusEnum.PROCESSING,
-            OrderStatusEnum.SHIPPED,
-        ],
-    )
     async def test_should_raise_exception_when_warehouse_has_active_orders(
         self,
         faker: Faker,
         logger_factory_mock: Mock,
         warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
-        status: OrderStatusEnum,
     ) -> None:
         """Warehouse cannot be deactivated when it has active orders."""
         supplier_id = UUID(faker.uuid4())
         existing = _make_warehouse_entity(faker, supplier_id)
 
-        order = Mock()
-        order.order_status = status
-
         warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
-        warehouse_lifecycle_uow_mock.orders_query.find_by_warehouse_id.return_value = (
-            order
-        )
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = True
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,
@@ -526,33 +497,19 @@ class TestToggleWarehouseStatusUseCase:
         cache_outbound_mock.delete.assert_not_awaited()
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "status",
-        [
-            OrderStatusEnum.DRAFT,
-            OrderStatusEnum.DELIVERED,
-            OrderStatusEnum.CANCELLED,
-        ],
-    )
-    async def test_should_allow_toggle_when_order_status_is_not_blocking(
+    async def test_should_allow_toggle_when_no_blocking_orders_exist(
         self,
         faker: Faker,
         logger_factory_mock: Mock,
         warehouse_lifecycle_uow_mock: MagicMock,
         cache_outbound_mock: AsyncMock,
-        status: OrderStatusEnum,
     ) -> None:
-        """Warehouse can be deactivated when orders are not in blocking statuses."""
+        """Warehouse can be toggled when no blocking orders exist."""
         supplier_id = UUID(faker.uuid4())
         existing = _make_warehouse_entity(faker, supplier_id)
 
-        order = Mock()
-        order.order_status = status
-
         warehouse_lifecycle_uow_mock.warehouses.find_by_id.return_value = existing
-        warehouse_lifecycle_uow_mock.orders_query.find_by_warehouse_id.return_value = (
-            order
-        )
+        warehouse_lifecycle_uow_mock.orders_query.exists_by_warehouse_id_and_statuses.return_value = False
 
         command = ToggleWarehouseStatusCommandDto(
             warehouse_id=existing.id,

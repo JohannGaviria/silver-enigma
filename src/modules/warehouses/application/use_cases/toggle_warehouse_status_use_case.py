@@ -121,22 +121,21 @@ class ToggleWarehouseStatusUseCase:
             }
 
             # Validate that a warehouse cannot be deactivated if it has orders
-            # in the CONFIRMED, PROCESSING, or SHIPPED status associated with it.
-            referenced_order = await uow.orders_query.find_by_warehouse_id(
-                command.warehouse_id
+            # with the status CONFIRMED, PROCESSING, or SHIPPED associated with it.
+            has_blocking_orders = (
+                await uow.orders_query.exists_by_warehouse_id_and_statuses(
+                    command.warehouse_id,
+                    BLOCKING_ORDER_STATUSES,
+                )
             )
-            if (
-                referenced_order is not None
-                and referenced_order.order_status in BLOCKING_ORDER_STATUSES
-            ):
+            if has_blocking_orders:
                 self._logger.warning(
-                    f"Cannot deactivate warehouse with orders in {referenced_order.order_status} status.",
-                    warehouse_id=str(command.warehouse_id),
-                    supplier_id=str(exists_warehouse.supplier_id),
-                    user_id=str(authenticated_user.user_id),
+                    "Cannot toggle warehouse status with active orders.",
+                    warehouse_id=command.warehouse_id,
+                    supplier_id=authenticated_user.user_id,
                 )
                 raise WarehouseHasActiveOrdersException(
-                    f"Cannot deactivate warehouse with orders in {referenced_order.order_status} status."
+                    "Cannot toggle warehouse status with active orders."
                 )
 
             # Invalidate the cache for the warehouse by supplier
