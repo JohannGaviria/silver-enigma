@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/JohannGaviria/silver-enigma/compare/v1.5.0...v1.6.0) (2026-06-13)
+
+
+### Features
+
+* **products-warehouses:** add active order validations for products and warehouses ([891e306](https://github.com/JohannGaviria/silver-enigma/commit/891e306679654d4d7ba5dd32a604ad31aba4b583))
+
 # [1.5.0](https://github.com/JohannGaviria/silver-enigma/compare/v1.4.0...v1.5.0) (2026-06-12)
 
 
