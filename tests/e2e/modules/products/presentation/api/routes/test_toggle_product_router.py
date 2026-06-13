@@ -359,3 +359,45 @@ class TestToggleProductStatusRouter:
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    @pytest.mark.asyncio
+    async def test_should_return_409_when_product_has_active_orders(
+        self,
+        async_client: AsyncClient,
+        faker: Faker,
+        created_supplier: UserEntity,
+        plain_password_valid: PlainPasswordVO,
+        access_token_factory: Callable[[str, str], Awaitable[str]],
+        created_product_with_active_orders: None,
+    ) -> None:
+        """Products with active orders cannot have their status toggled."""
+        access_token = await access_token_factory(
+            str(created_supplier.email),
+            str(plain_password_valid),
+        )
+
+        headers = {"Authorization": f"Bearer {access_token}"}
+
+        create_response = await async_client.post(
+            url="/api/v1/products/",
+            json={
+                "name": faker.company(),
+                "description": faker.text(max_nb_chars=100),
+                "unit_of_measure": UnitOfMeasureEnum.UNIT.value,
+                "unit_price": "10.50",
+            },
+            headers=headers,
+        )
+
+        product_id = create_response.json()["data"]["id"]
+
+        response = await async_client.patch(
+            url=f"/api/v1/products/{product_id}/status",
+            json={"is_active": False},
+            headers=headers,
+        )
+
+        body = response.json()
+
+        assert response.status_code == status.HTTP_409_CONFLICT
+        assert body["status"] == "error"

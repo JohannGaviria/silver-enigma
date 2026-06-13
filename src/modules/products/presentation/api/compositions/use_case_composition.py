@@ -95,20 +95,23 @@ def get_toggle_product_status_use_case(
     logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter = Depends(
         get_logger_factory_outbound
     ),
-    product_unit_of_work: SQLAlchemyProductUnitOfWorkAdapter = Depends(get_product_uow),
+    product_lifecycle_unit_of_work: SQLAlchemyProductLifecycleUnitOfWorkAdapter = Depends(
+        get_product_lifecycle_uow
+    ),
 ) -> ToggleProductStatusUseCase:
     """Get the ToggleProductStatusUseCase instance.
 
     Args:
         logger_factory_outbound (StructlogLoggerFactoryOutboundAdapter): The logger factory outbound adapter.
-        product_unit_of_work (SQLAlchemyProductUnitOfWorkAdapter): The product unit of work adapter.
+        product_lifecycle_unit_of_work (SQLAlchemyProductLifecycleUnitOfWorkAdapter): The product lifecycle
+            unit of work adapter.
 
     Returns:
         ToggleProductStatusUseCase: The ToggleProductStatusUseCase instance.
     """
     return ToggleProductStatusUseCase(
         logger_factory_outbound=logger_factory_outbound,
-        product_unit_of_work=product_unit_of_work,
+        product_lifecycle_unit_of_work=product_lifecycle_unit_of_work,
     )
 
 
