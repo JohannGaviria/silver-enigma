@@ -3,6 +3,21 @@
 from src.shared.domain.exceptions.base_exception import BaseDomainException
 
 
+class InvalidQuantityException(BaseDomainException):
+    """Exception raised for invalid quantity."""
+
+    def __init__(self, errors: list[str], quantity: int) -> None:
+        """Initialize the InvalidQuantityException.
+
+        Args:
+            errors (list[str]): A list of error messages describing the invalid quantity.
+            quantity (int): The invalid quantity.
+        """
+        self.errors = errors
+        self.quantity = quantity
+        super().__init__("Invalid quantity provided.")
+
+
 class OrderRepositoryException(BaseDomainException):
     """Exception raised for errors that occur within the OrderRepository."""
 
