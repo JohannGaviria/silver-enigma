@@ -74,7 +74,7 @@ router = APIRouter()
                 "referenced products or related entities."
             ),
         },
-        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
             "model": ErrorsResponseSchema,
             "description": (
                 "The request body contains validation errors and could not "

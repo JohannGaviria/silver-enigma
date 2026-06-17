@@ -1,4 +1,5 @@
 from collections.abc import Awaitable, Callable
+from decimal import Decimal
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
@@ -28,6 +29,13 @@ from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_produ
 )
 from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_warehouse_order_query_repository_adapter import (
     SQLAlchemyWarehouseOrderQueryRepositoryAdapter,
+)
+from src.modules.products.domain.entities.product_entity import ProductEntity
+from src.modules.products.domain.enums.unit_of_measure_enum import UnitOfMeasureEnum
+from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
+from src.modules.products.domain.value_objects.unit_price_vo import UnitPriceVO
+from src.modules.products.infrastructure.persistence.unit_of_work.sqlalchemy_product_unit_of_work_adapter import (
+    SQLAlchemyProductUnitOfWorkAdapter,
 )
 from src.shared.domain.enums.user_role_enum import UserRoleEnum
 from src.shared.infrastructure.outbound.structlog_logger_factory_outbound_adapter import (
@@ -217,6 +225,74 @@ def valid_admin_command(faker: Faker) -> CreateFirstAdminCommandDto:
         email=faker.email(),
         plain_password=faker.password(),
     )
+
+
+# ---------------------------------------------------------------------------
+# Modules: PRODUCTS
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+async def created_product(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+    faker: Faker,
+    created_supplier: UserEntity,
+) -> ProductEntity:
+    """Create a product associated with the supplier."""
+    unit_of_work = SQLAlchemyProductUnitOfWorkAdapter(
+        session_factory=_make_session_factory(db_session),
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+    async with unit_of_work as uow:
+        product = ProductEntity.create(
+            supplier_id=created_supplier.id,
+            name=ProductNameVO(faker.company()),
+            description=faker.text(max_nb_chars=100),
+            unit_of_measure=UnitOfMeasureEnum.UNIT,
+            unit_price=UnitPriceVO(Decimal("10.50")),
+        )
+
+        saved_product = await uow.products.save(product)
+
+        await uow.commit()
+
+    return saved_product
+
+
+@pytest.fixture()
+async def created_products(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+    faker: Faker,
+    created_supplier: UserEntity,
+) -> list[ProductEntity]:
+    """Create multiple products associated with the supplier."""
+    unit_of_work = SQLAlchemyProductUnitOfWorkAdapter(
+        session_factory=_make_session_factory(db_session),
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+    products: list[ProductEntity] = []
+
+    async with unit_of_work as uow:
+        for _ in range(3):
+            product = ProductEntity.create(
+                supplier_id=created_supplier.id,
+                name=ProductNameVO(faker.company()),
+                description=faker.text(max_nb_chars=100),
+                unit_of_measure=UnitOfMeasureEnum.UNIT,
+                unit_price=UnitPriceVO(Decimal("10.50")),
+            )
+
+            saved_product = await uow.products.save(product)
+
+            products.append(saved_product)
+
+        await uow.commit()
+
+    return products
 
 
 # ---------------------------------------------------------------------------
