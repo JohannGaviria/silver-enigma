@@ -1065,3 +1065,281 @@ new_status = CANCELLED
 Reading lifecycle timestamps requires querying `order_status_history` instead of reading a column directly from `orders`.
 
 This additional query complexity is accepted because order traceability and future extensibility are more important than optimizing access to individual timestamps.
+
+---
+
+# ADR-013: Warehouse assignment happens during fulfillment, not order creation
+
+## Context
+
+The initial order creation flow considered storing `warehouse_id` directly in the `orders` table.
+
+The reasoning behind this approach was that every order would eventually be fulfilled from a warehouse, so associating an order with a warehouse appeared convenient.
+
+However, the business flow revealed that the buyer does not know how the supplier manages its inventory.
+
+When a buyer creates an order, the buyer only expresses a commercial intention:
+
+```text
+Buyer wants to purchase:
+
+- Product A
+- Product B
+- Product C
+
+from Supplier X
+````
+
+The buyer has no knowledge about:
+
+- Supplier warehouse structure
+- Product stock distribution
+- Inventory availability by warehouse
+- Which warehouse should fulfill the order
+
+The supplier owns the inventory organization and decides how products are physically fulfilled.
+
+Example:
+
+```text
+Supplier A
+
+Warehouse 1:
+    Product A - 100 units
+    Product B - 50 units
+
+Warehouse 2:
+    Product C - 20 units
+```
+
+An order may require products distributed across multiple warehouses.
+
+Therefore:
+
+```text
+Order -> Warehouse
+```
+
+does not accurately represent the business relationship.
+
+The real relationship is:
+
+```text
+Order
+    |
+    +-- Order Items
+            |
+            +-- Inventory Allocation
+                    |
+                    +-- Warehouse
+```
+
+## Considered alternatives
+
+### Store warehouse_id directly in orders
+
+Example:
+
+```sql
+orders
+(
+    id UUID,
+    buyer_id UUID,
+    supplier_id UUID,
+    warehouse_id UUID
+)
+```
+
+#### Pros
+
+- Simple queries.
+- Easy warehouse validation.
+- Straightforward implementation.
+
+#### Cons
+
+- Assumes one order belongs to one warehouse.
+- Couples commercial intent with physical fulfillment.
+- Does not support orders fulfilled from multiple warehouses.
+- Requires the buyer flow to know supplier inventory structure.
+- Makes order creation responsible for logistics decisions.
+
+### Assign warehouse during order creation
+
+The system could automatically select a warehouse while creating the order.
+
+Example:
+
+```text
+Create Order
+        |
+        v
+Find warehouse
+        |
+        v
+Create order with warehouse_id
+```
+
+#### Pros
+
+- Warehouse information exists immediately.
+- Simplifies later processing.
+
+#### Cons
+
+- Mixes order creation with inventory allocation.
+- Requires inventory availability checks during order creation.
+- Couples Orders and Inventory modules.
+- Prevents future fulfillment strategies.
+- Makes warehouse selection part of the buyer workflow.
+
+### Assign warehouses during fulfillment
+
+Keep orders independent from inventory location.
+
+Example:
+
+```text
+Order
+
+Supplier X
+Items:
+    Product A x5
+    Product B x2
+
+
+Fulfillment allocation:
+
+Warehouse 1:
+    Product A x5
+
+Warehouse 2:
+    Product B x2
+```
+
+#### Pros
+
+- Keeps Order focused on commercial intent.
+- Allows multiple warehouses per order.
+- Keeps inventory ownership inside the Inventory domain.
+- Supports future fulfillment strategies.
+- Matches real supplier operations.
+
+#### Cons
+
+- Requires an additional allocation step.
+- Requires querying inventory before fulfillment.
+
+## Decision: Warehouse assignment belongs to fulfillment
+
+The `Order` aggregate will not contain `warehouse_id`.
+
+The order model represents only the commercial transaction:
+
+```sql
+orders
+(
+    id UUID,
+    buyer_id UUID,
+    supplier_id UUID,
+    status order_status,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+```
+
+Order items represent requested products:
+
+```sql
+order_items
+(
+    id UUID,
+    order_id UUID,
+    product_id UUID,
+    quantity INTEGER
+)
+```
+
+Warehouse assignment is introduced later through an inventory allocation concept.
+
+Example:
+
+```sql
+inventory_allocation
+(
+    id UUID,
+    order_item_id UUID,
+    warehouse_id UUID,
+    quantity INTEGER
+)
+```
+
+The allocation process determines:
+
+- From which warehouse stock will be taken.
+- How much quantity each warehouse contributes.
+- Whether fulfillment can proceed.
+
+## Domain boundaries
+
+The responsibility separation is:
+
+### Orders module
+
+Responsible for:
+
+- Buyer purchase intent.
+- Supplier relationship.
+- Requested products.
+- Order lifecycle.
+
+It does not know:
+
+- Warehouse structure.
+- Stock distribution.
+- Inventory allocation rules.
+
+### Inventory module
+
+Responsible for:
+
+- Stock availability.
+- Warehouse inventory.
+- Reservation.
+- Allocation decisions.
+
+It determines:
+
+```text
+Order Item
+        |
+        v
+Warehouse
+```
+
+## Design principles
+
+- Commercial concepts and physical fulfillment concepts must remain separated.
+- The buyer should not require knowledge of supplier internal operations.
+- Warehouse selection is an inventory decision, not an order creation decision.
+- Aggregates should only contain information they own.
+- Cross-module communication must happen through explicit ports.
+
+## Benefits
+
+- Supports orders fulfilled by multiple warehouses.
+- Preserves bounded-context separation between Orders and Inventory.
+- Prevents unnecessary coupling between buyer workflows and supplier logistics.
+- Allows future optimization strategies:
+
+  - nearest warehouse selection
+  - cost optimization
+  - stock balancing
+  - partial fulfillment
+- Keeps the Order aggregate simpler and more stable.
+
+## Trade-off
+
+Fulfillment requires an additional allocation step before inventory can be reserved or dispatched.
+
+This complexity is accepted because warehouse assignment is a logistics concern owned by inventory management, not a responsibility of order creation.
