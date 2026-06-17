@@ -2,7 +2,7 @@
 
 from src.modules.orders.application.dtos.create_order_dto import (
     CreateOrderCommandDto,
-    CreateOrderResponseDTO,
+    CreateOrderResponseDto,
     ProductDetailsDto,
 )
 from src.modules.orders.domain.entities.order_entity import OrderEntity
@@ -19,7 +19,7 @@ from src.modules.orders.domain.exceptions.order_exception import (
 from src.modules.orders.domain.ports.unit_of_work.order_management_unit_of_work_port import (
     OrderManagementUnitOfWorkPort,
 )
-from src.modules.orders.domain.value_object.quantity_vo import QuantityVO
+from src.modules.orders.domain.value_objects.quantity_vo import QuantityVO
 from src.shared.application.dtos.authenticated_user_dto import (
     AuthenticatedUserCommandDto,
 )
@@ -57,7 +57,7 @@ class CreateOrderUseCase:
         self,
         command: CreateOrderCommandDto,
         authenticated_user: AuthenticatedUserCommandDto,
-    ) -> CreateOrderResponseDTO:
+    ) -> CreateOrderResponseDto:
         """Execute the use case to create an order.
 
         This method creates an order and its associated order items and order status history.
@@ -67,7 +67,7 @@ class CreateOrderUseCase:
             authenticated_user (AuthenticatedUserCommandDto): The authenticated user.
 
         Returns:
-            CreateOrderResponseDTO: The response to create an order.
+            CreateOrderResponseDto: The response to create an order.
 
         Raises:
             InsufficientPermissionsException: If the user does not have the required permissions.
@@ -99,7 +99,8 @@ class CreateOrderUseCase:
             raise OrderItemsRequiredException()
 
         # Verify if items are unique
-        if len(command.items) != len(set(command.items)):
+        product_ids = [item.product_id for item in command.items]
+        if len(product_ids) != len(set(product_ids)):
             self._logger.warning(
                 "Duplicate items provided for order.",
                 buyer_id=authenticated_user.user_id,
@@ -198,7 +199,7 @@ class CreateOrderUseCase:
             status=saved_order.status_order,
         )
 
-        return CreateOrderResponseDTO(
+        return CreateOrderResponseDto(
             id=saved_order.id,
             buyer_id=saved_order.buyer_id,
             items=items_response,

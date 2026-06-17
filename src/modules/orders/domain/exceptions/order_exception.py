@@ -67,3 +67,16 @@ class ProductsFromDifferentSuppliersException(BaseDomainException):
     def __init__(self) -> None:
         """Initialize the ProductsFromDifferentSuppliersException."""
         super().__init__("Products from different suppliers provided for order.")
+
+
+class InvalidReferencedProductException(BaseDomainException):
+    """Exception raised when an invalid referenced product is provided for an order."""
+
+    def __init__(self, errors: list[str]) -> None:
+        """Initialize the InvalidReferencedProductException.
+
+        Args:
+            errors (list[str]): A list of error messages describing the invalid referenced product.
+        """
+        self.errors = errors
+        super().__init__("Invalid referenced product provided for order.")

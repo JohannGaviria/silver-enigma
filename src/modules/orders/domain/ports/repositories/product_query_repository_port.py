@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from src.modules.orders.domain.value_object.referenced_product_vo import (
+from src.modules.orders.domain.value_objects.referenced_product_vo import (
     ReferencedProductVO,
 )
 

@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID, uuid4
 
-from src.modules.orders.domain.value_object.quantity_vo import QuantityVO
+from src.modules.orders.domain.value_objects.quantity_vo import QuantityVO
 from src.shared.domain.entities.base_entity import BaseEntity
 
 

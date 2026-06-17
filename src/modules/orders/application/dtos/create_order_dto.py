@@ -48,7 +48,7 @@ class CreateOrderCommandDto:
 
 
 @dataclass(frozen=True)
-class CreateOrderResponseDTO:
+class CreateOrderResponseDto:
     """DTO representing the response to create an order.
 
     Attributes:
