@@ -28,7 +28,7 @@ class QuantityVO(BaseValueObject):
         """
         errors: list[str] = []
 
-        if self.quantity > 0:
+        if self.quantity <= 0:
             errors.append("Quantity must be greater than 0.")
 
         if errors:

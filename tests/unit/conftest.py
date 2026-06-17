@@ -9,6 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
 )
+from src.modules.orders.domain.value_objects.quantity_vo import QuantityVO
+from src.modules.orders.domain.value_objects.referenced_product_vo import (
+    ReferencedProductVO,
+)
 from src.modules.products.domain.entities.product_entity import ProductEntity
 from src.modules.products.domain.enums.unit_of_measure_enum import UnitOfMeasureEnum
 from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
@@ -357,3 +361,53 @@ def inventory_uow_mock() -> MagicMock:
     uow_mock.rollback = AsyncMock()
 
     return uow_mock
+
+
+# ---------------------------------------------------------------------------
+# Modules: ORDERS
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def order_management_uow_mock() -> MagicMock:
+    """Build an Order Unit-of-Work mock that behaves as an async context manager."""
+    products_query_mock = AsyncMock()
+    orders_mock = AsyncMock()
+    order_items_mock = AsyncMock()
+    orders_status_history_mock = AsyncMock()
+
+    products_query_mock.find_by_ids.return_value = []
+
+    orders_mock.save.side_effect = lambda entity: entity
+    order_items_mock.save_many.side_effect = lambda entities: entities
+    orders_status_history_mock.save.side_effect = lambda entity: entity
+
+    uow_mock = MagicMock()
+
+    uow_mock.__aenter__ = AsyncMock(return_value=uow_mock)
+    uow_mock.__aexit__ = AsyncMock(return_value=None)
+
+    uow_mock.product_query = products_query_mock
+    uow_mock.orders = orders_mock
+    uow_mock.order_items = order_items_mock
+    uow_mock.orders_status_history = orders_status_history_mock
+
+    uow_mock.commit = AsyncMock()
+    uow_mock.rollback = AsyncMock()
+
+    return uow_mock
+
+
+def _make_referenced_product(
+    faker: Faker,
+    supplier_id: UUID,
+    is_active: bool = True,
+) -> ReferencedProductVO:
+    return ReferencedProductVO(
+        product_id=UUID(faker.uuid4()),
+        supplier_id=supplier_id,
+        name=faker.word(),
+        quantity=QuantityVO(10),
+        unit_price=Decimal("100.50"),
+        is_active=is_active,
+    )

@@ -15,13 +15,11 @@ class OrderEntity(BaseEntity):
     Attributes:
         buyer_id (UUID): The ID of the buyer.
         supplier_id (UUID): The ID of the supplier.
-        warehouse_id (UUID): The ID of the warehouse.
         status_order (OrderStatusEnum): The order status.
     """
 
     buyer_id: UUID
     supplier_id: UUID
-    warehouse_id: UUID
     status_order: OrderStatusEnum
 
     @classmethod
@@ -29,7 +27,6 @@ class OrderEntity(BaseEntity):
         cls,
         buyer_id: UUID,
         supplier_id: UUID,
-        warehouse_id: UUID,
         status_order: OrderStatusEnum,
     ) -> "OrderEntity":
         """Factory method to create a new OrderEntity instance.
@@ -37,7 +34,6 @@ class OrderEntity(BaseEntity):
         Args:
             buyer_id (UUID): The ID of the buyer.
             supplier_id (UUID): The ID of the supplier.
-            warehouse_id (UUID): The ID of the warehouse.
             status_order (OrderStatusEnum): The order status.
 
         Returns:
@@ -48,7 +44,6 @@ class OrderEntity(BaseEntity):
             id=uuid4(),
             buyer_id=buyer_id,
             supplier_id=supplier_id,
-            warehouse_id=warehouse_id,
             status_order=status_order,
             created_at=now,
             updated_at=now,

@@ -9,6 +9,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
 )
+from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_order_items_repository_adapter import (
+    SQLAlchemyOrderItemsRepositoryAdapter,
+)
+from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_order_repository_adapter import (
+    SQLAlchemyOrderRepositoryAdapter,
+)
+from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_order_status_history_repository_adapter import (
+    SQLAlchemyOrderStatusHistoryRepositoryAdapter,
+)
+from src.modules.orders.infrastructure.persistence.unit_of_work.sqlalchemy_order_management_unit_of_work_adapter import (
+    SQLAlchemyOrderManagementUnitOfWorkAdapter,
+)
 from src.modules.products.domain.entities.product_entity import ProductEntity
 from src.modules.products.domain.enums.unit_of_measure_enum import UnitOfMeasureEnum
 from src.modules.products.domain.value_objects.product_name_vo import ProductNameVO
@@ -18,6 +30,9 @@ from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_inv
 )
 from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_inventory_repository_adapter import (
     SQLAlchemyInventoryRepositoryAdapter,
+)
+from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_product_query_repository_adapter import (
+    SQLAlchemyProductQueryRepositoryAdapter,
 )
 from src.modules.products.infrastructure.persistence.repositories.sqlalchemy_product_repository_adapter import (
     SQLAlchemyProductRepositoryAdapter,
@@ -283,6 +298,84 @@ def pinned_product_lifecycle_uow(
             return db_session
 
     return SQLAlchemyProductLifecycleUnitOfWorkAdapter(
+        session_factory=_FixedSessionMaker(),  # type: ignore[arg-type]
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest.fixture()
+def product_query_repository(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyProductQueryRepositoryAdapter:
+    """Returns an order product query repository bound to the test session.
+
+    This adapter implements orders' ProductQueryRepositoryPort and lives in
+    the products infrastructure layer because products owns the data.
+    """
+    return SQLAlchemyProductQueryRepositoryAdapter(
+        session=db_session,
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Orders
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def order_repository(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyOrderRepositoryAdapter:
+    """Returns an order repository bound to the test session."""
+    return SQLAlchemyOrderRepositoryAdapter(
+        session=db_session,
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest.fixture
+def order_items_repository(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyOrderItemsRepositoryAdapter:
+    """Returns an order items repository bound to the test session."""
+    return SQLAlchemyOrderItemsRepositoryAdapter(
+        session=db_session,
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest.fixture
+def order_status_history_repository(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyOrderStatusHistoryRepositoryAdapter:
+    """Returns an order status history repository bound to the test session."""
+    return SQLAlchemyOrderStatusHistoryRepositoryAdapter(
+        session=db_session,
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest_asyncio.fixture
+async def pinned_order_management_uow(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyOrderManagementUnitOfWorkAdapter:
+    """Returns an order management UoW pinned to the test transaction.
+
+    All writes go through the same connection that the conftest transaction
+    controls, so they are rolled back automatically at teardown.
+    """
+
+    class _FixedSessionMaker:
+        def __call__(self) -> AsyncSession:
+            return db_session
+
+    return SQLAlchemyOrderManagementUnitOfWorkAdapter(
         session_factory=_FixedSessionMaker(),  # type: ignore[arg-type]
         logger_factory_outbound=logger_factory_outbound,
     )
