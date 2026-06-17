@@ -9,6 +9,10 @@ from src.modules.auth.presentation.api.exceptions.auth_exception_handler import 
     auth_exception_handlers,
 )
 from src.modules.auth.presentation.api.routes import auth_router
+from src.modules.orders.presentation.api.exceptions.order_exception_handlers import (
+    order_exception_handlers,
+)
+from src.modules.orders.presentation.api.routes import orders_router
 from src.modules.products.presentation.api.exceptions.inventory_exception_handlers import (
     inventory_exception_handlers,
 )
@@ -86,12 +90,14 @@ stock_exception_handlers(app)
 inventory_movement_exception_handlers(app)
 inventory_warehouse_exception_handlers(app)
 inventory_exception_handlers(app)
+order_exception_handlers(app)
 
 
 # Includes the routers for the API endpoints
 app.include_router(auth_router.router)
 app.include_router(warehouse_router.router)
 app.include_router(products_router.router)
+app.include_router(orders_router.router)
 
 
 @app.get(
