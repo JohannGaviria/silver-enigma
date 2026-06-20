@@ -16,6 +16,7 @@ from src.modules.products.infrastructure.persistence.models.inventory_movement_m
 from src.modules.orders.infrastructure.persistence.models.order_model import OrderModel
 from src.modules.orders.infrastructure.persistence.models.order_items_model import OrderItemsModel
 from src.modules.orders.infrastructure.persistence.models.order_status_history_model import OrderStatusHistoryModel
+from src.modules.orders.infrastructure.persistence.models.inventory_allocation_model import InventoryAllocationModel
 
 load_dotenv()
 
