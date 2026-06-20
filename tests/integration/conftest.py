@@ -9,6 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.modules.auth.infrastructure.persistence.unit_of_work.sqlalchemy_user_unit_of_work_adapter import (
     SQLAlchemyUserUnitOfWorkAdapter,
 )
+from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_inventory_allocation_repository_adapter import (
+    SQLAlchemyInventoryAllocationRepositoryAdapter,
+)
 from src.modules.orders.infrastructure.persistence.repositories.sqlalchemy_order_items_repository_adapter import (
     SQLAlchemyOrderItemsRepositoryAdapter,
 )
@@ -377,5 +380,17 @@ async def pinned_order_management_uow(
 
     return SQLAlchemyOrderManagementUnitOfWorkAdapter(
         session_factory=_FixedSessionMaker(),  # type: ignore[arg-type]
+        logger_factory_outbound=logger_factory_outbound,
+    )
+
+
+@pytest.fixture
+def inventory_allocation_repository(
+    db_session: AsyncSession,
+    logger_factory_outbound: StructlogLoggerFactoryOutboundAdapter,
+) -> SQLAlchemyInventoryAllocationRepositoryAdapter:
+    """Returns an inventory allocation repository bound to the test session."""
+    return SQLAlchemyInventoryAllocationRepositoryAdapter(
+        session=db_session,
         logger_factory_outbound=logger_factory_outbound,
     )

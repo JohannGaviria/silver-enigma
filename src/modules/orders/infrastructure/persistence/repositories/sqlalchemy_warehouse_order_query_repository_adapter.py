@@ -9,6 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.modules.orders.domain.exceptions.order_exception import (
     OrderRepositoryException,
 )
+from src.modules.orders.infrastructure.persistence.models.inventory_allocation_model import (
+    InventoryAllocationModel,
+)
+from src.modules.orders.infrastructure.persistence.models.order_items_model import (
+    OrderItemsModel,
+)
 from src.modules.orders.infrastructure.persistence.models.order_model import OrderModel
 from src.modules.warehouses.domain.ports.repositories.warehouse_order_query_repository_port import (
     WarehouseOrderQueryRepositoryPort,
@@ -21,6 +27,19 @@ from src.shared.domain.ports.outbound.logger_factory_outbound_port import (
 
 class SQLAlchemyWarehouseOrderQueryRepositoryAdapter(WarehouseOrderQueryRepositoryPort):
     """Implements WarehouseOrderQueryRepositoryPort using SQLAlchemy for database operations.
+
+    Following ADR-013, ``orders`` no longer stores ``warehouse_id`` directly:
+    the relationship between an order and a warehouse is established at
+    fulfillment time through ``inventory_allocations``, one row per
+    (order item, warehouse, quantity) combination. This adapter therefore
+    joins ``orders`` -> ``order_items`` -> ``inventory_allocations`` to
+    determine whether a warehouse is involved in any order with a blocking
+    status.
+
+    Until a fulfillment use case starts writing ``inventory_allocations``,
+    this query will correctly return False for every warehouse, because no
+    allocation rows exist yet — there is no order-warehouse relationship to
+    report, which matches the current state of the business process.
 
     This adapter participates in the Unit of Work pattern: it never calls
     ``session.commit()`` or ``session.rollback()`` directly. Transaction
@@ -47,6 +66,10 @@ class SQLAlchemyWarehouseOrderQueryRepositoryAdapter(WarehouseOrderQueryReposito
     ) -> bool:
         """Check if an order exists for a warehouse with any of the given statuses.
 
+        The relationship is resolved via inventory allocations: a warehouse
+        is considered involved in an order if at least one of the order's
+        items has an allocation pointing at that warehouse.
+
         Args:
             warehouse_id (UUID): The ID of the warehouse.
             statuses (set[OrderStatusEnum]): The set of statuses to check.
@@ -57,8 +80,13 @@ class SQLAlchemyWarehouseOrderQueryRepositoryAdapter(WarehouseOrderQueryReposito
         try:
             stmt = (
                 select(OrderModel.id)
+                .join(OrderItemsModel, OrderItemsModel.order_id == OrderModel.id)
+                .join(
+                    InventoryAllocationModel,
+                    InventoryAllocationModel.order_item_id == OrderItemsModel.id,
+                )
                 .where(
-                    OrderModel.warehouse_id == warehouse_id,
+                    InventoryAllocationModel.warehouse_id == warehouse_id,
                     OrderModel.status_order.in_(statuses),
                 )
                 .limit(1)
